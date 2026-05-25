@@ -83,9 +83,23 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
+### T-007 — Configure CI Checks
+
+#### Acceptance Criteria
+
+- [ ] Workflow runs on pull requests targeting `main`.
+- [ ] Workflow runs on direct pushes to `main`.
+- [ ] Workflow installs dependencies reproducibly.
+- [ ] Workflow runs typecheck.
+- [ ] Workflow runs unit/API tests.
+- [ ] Workflow runs E2E tests once E2E tooling exists.
+- [ ] Required workflow secrets, if any, are documented.
+
+---
+
 ## Phase 2 — Database and Domain
 
-### T-007 — Create Measurements Migration
+### T-008 — Create Measurements Migration
 
 #### Acceptance Criteria
 
@@ -97,7 +111,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
-### T-008 — Implement Measurement Repository
+### T-009 — Implement Measurement Repository
 
 #### Acceptance Criteria
 
@@ -111,7 +125,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
-### T-009 — Implement Derived Calculations
+### T-010 — Implement Derived Calculations
 
 #### Acceptance Criteria
 
@@ -123,7 +137,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
-### T-010 — Implement Weekly Logic
+### T-011 — Implement Weekly Logic
 
 #### Acceptance Criteria
 
@@ -140,7 +154,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ## Phase 3 — Authentication
 
-### T-011 — Implement Login
+### T-012 — Implement Login
 
 #### Acceptance Criteria
 
@@ -153,7 +167,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
-### T-012 — Protect Routes
+### T-013 — Protect Routes
 
 #### Acceptance Criteria
 
@@ -165,7 +179,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
-### T-013 — Implement Logout
+### T-014 — Implement Logout
 
 #### Acceptance Criteria
 
@@ -177,7 +191,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ## Phase 4 — Measurement CRUD
 
-### T-014 — Implement Measurement Form
+### T-015 — Implement Measurement Form
 
 #### Acceptance Criteria
 
@@ -192,7 +206,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
-### T-015 — Implement Measurement List
+### T-016 — Implement Measurement List
 
 #### Acceptance Criteria
 
@@ -206,7 +220,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
-### T-016 — Implement Delete Confirmation
+### T-017 — Implement Delete Confirmation
 
 #### Acceptance Criteria
 
@@ -219,7 +233,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ## Phase 5 — Weekly Dashboard
 
-### T-017 — Implement Weekly Dashboard API
+### T-018 — Implement Weekly Dashboard API
 
 #### Acceptance Criteria
 
@@ -232,7 +246,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ---
 
-### T-018 — Implement Dashboard UI
+### T-019 — Implement Dashboard UI
 
 #### Acceptance Criteria
 
@@ -249,7 +263,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ## Phase 6 — CSV Export
 
-### T-019 — Implement CSV Export
+### T-020 — Implement CSV Export
 
 #### Acceptance Criteria
 
@@ -263,7 +277,7 @@ Related: `docs/technical/03-deployment.md`.
 
 ## Phase 7 — CSV Import
 
-### T-020 — Implement CSV Import
+### T-021 — Implement CSV Import
 
 #### Acceptance Criteria
 
@@ -280,7 +294,20 @@ Related: `docs/technical/03-deployment.md`.
 
 ## Phase 8 — Final Validation
 
-### T-021 — Validate V1 End-to-End
+### T-022 — Configure Deployment Automation
+
+#### Acceptance Criteria
+
+- [ ] Deployment workflow is created after the Cloudflare deployment strategy is chosen.
+- [ ] Deployment workflow runs on direct pushes to `main`.
+- [ ] Deployment workflow runs automated checks before deploy.
+- [ ] Deployment workflow deploys to the selected Cloudflare target.
+- [ ] Required deployment secrets are documented.
+- [ ] Deployment workflow does not commit or expose secrets.
+
+---
+
+### T-023 — Validate V1 End-to-End
 
 #### Acceptance Criteria
 
@@ -297,4 +324,6 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Unit tests pass.
 - [ ] API/backend tests pass.
 - [ ] E2E tests pass.
+- [ ] CI checks pass on `main`.
+- [ ] Deployment automation works.
 - [ ] Docs reflect final behavior.

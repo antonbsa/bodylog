@@ -77,6 +77,37 @@ migrations/
 - Secrets configured through Wrangler or the Cloudflare dashboard.
 - Remote D1 database.
 
+## Automation
+
+V1 should include workflow automation before final delivery.
+
+### CI Checks
+
+CI should run on:
+
+- pull requests targeting `main`;
+- direct pushes to `main`.
+
+CI should install dependencies reproducibly and run the relevant checks, including typecheck, unit/API tests, and E2E tests once E2E tooling exists.
+
+### Deployment
+
+Deployment automation should be added after the deployment strategy is chosen.
+
+The deployment workflow should:
+
+- run on direct pushes to `main`;
+- run automated checks before deploying;
+- deploy to the selected Cloudflare target;
+- use repository or environment secrets for Cloudflare credentials;
+- avoid committing or exposing secrets.
+
+Expected deployment secret:
+
+```txt
+CLOUDFLARE_API_TOKEN
+```
+
 ## Initial Deployment Strategy
 
 Pending decision:

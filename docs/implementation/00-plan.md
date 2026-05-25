@@ -36,6 +36,7 @@ Main tasks:
 - Configure React/Vite frontend.
 - Configure Hono backend.
 - Configure unit and E2E test tooling.
+- Configure CI workflow for PRs and pushes to `main`.
 - Configure lint/typecheck.
 - Configure basic PWA setup.
 - Configure expected variables/secrets.
@@ -44,7 +45,7 @@ Expected result:
 
 - App opens.
 - API responds to healthcheck.
-- Typecheck and baseline tests pass.
+- Typecheck and baseline tests pass locally and in CI.
 
 ---
 
@@ -168,6 +169,7 @@ Main tasks:
 - Review mobile UX.
 - Test PWA installability.
 - Test deployment.
+- Confirm deployment workflow works.
 - Test full flows.
 - Update documentation.
 - Register V1.1/V2 pending items.

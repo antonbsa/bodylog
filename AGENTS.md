@@ -29,6 +29,7 @@ Use `docs/product/04-backlog.md` only to understand future ideas. Do not impleme
 - Runtime: Cloudflare Workers
 - Database: Cloudflare D1
 - Deploy target: Cloudflare only
+- Automation: CI workflows for PRs to `main`, direct pushes to `main`, and deployment
 - Authentication: simple single-user password using secrets/environment variables
 - V2 planned database migration: serverless Postgres
 
@@ -93,3 +94,11 @@ If ambiguity does not block implementation, choose the simplest option that sati
 - Add E2E coverage for complete user-facing flows once the frontend route exists.
 - Keep tests focused on V1 behavior and acceptance criteria.
 - If a task cannot reasonably have automated coverage yet, document the reason and perform a manual validation.
+
+## Automation Expectations
+
+- V1 should include workflow files for automated checks on pull requests targeting `main`.
+- V1 should include workflow files for automated checks on direct pushes to `main`.
+- V1 should include deployment automation once the Cloudflare deployment strategy is chosen.
+- Workflow automation must run the relevant automated checks before deployment.
+- Required deployment secrets must be documented and must not be committed.
