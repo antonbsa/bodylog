@@ -89,6 +89,16 @@ npm run deploy
 ```
 
 In non-interactive environments, Wrangler requires `CLOUDFLARE_API_TOKEN` to be set before deployment.
+Use `.env.example` as the template for a local `.env` file, then load it before deploying:
+
+```sh
+cp .env.example .env
+# edit .env and set CLOUDFLARE_API_TOKEN
+set -a
+source .env
+set +a
+npm run deploy
+```
 
 Current API base:
 
