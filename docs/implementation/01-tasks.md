@@ -26,11 +26,15 @@ Related: ADR-016.
 
 #### Acceptance Criteria
 
-- [ ] Create local D1 database.
-- [ ] Create remote D1 database.
-- [ ] Run initial migration.
-- [ ] Execute a simple query through the API.
-- [ ] Document migration command.
+- [x] Create local D1 database.
+- [x] Create remote D1 database.
+- [x] Run initial migration.
+- [x] Execute a simple query through the API.
+- [x] Document migration command.
+
+Validation route: `GET /api/health/d1`
+
+Database: `body_metrics_tracker`
 
 ---
 
@@ -103,11 +107,11 @@ Related: `docs/technical/03-deployment.md`.
 
 #### Acceptance Criteria
 
-- [ ] `measurements` table created.
-- [ ] `date` field is unique.
-- [ ] `weight_kg` is required.
-- [ ] Optional fields are nullable.
-- [ ] Migration works locally and remotely.
+- [x] `measurements` table created.
+- [x] `date` field is unique.
+- [x] `weight_kg` is required.
+- [x] Optional fields are nullable.
+- [x] Migration works locally and remotely.
 
 ---
 

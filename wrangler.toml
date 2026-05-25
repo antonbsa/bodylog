@@ -4,3 +4,8 @@ compatibility_date = "2026-05-25"
 
 [observability]
 enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "body_metrics_tracker"
+database_id = "6666c800-569f-4971-b19c-fa8b807a98e1"

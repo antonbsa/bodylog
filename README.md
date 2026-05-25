@@ -82,6 +82,14 @@ npm test
 
 Automated tests live in the root `tests/` directory.
 
+Run D1 migrations:
+
+```sh
+npx wrangler d1 create body_metrics_tracker
+npm run db:migrate:local
+npm run db:migrate:remote
+```
+
 Deploy the Worker to Cloudflare:
 
 ```sh
@@ -111,8 +119,9 @@ Current API base:
 
 ```txt
 GET /api/health
+GET /api/health/d1
 ```
 
 ## Status
 
-T-001 backend API base implemented.
+T-002 D1 validation implemented.
