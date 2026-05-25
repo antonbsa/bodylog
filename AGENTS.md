@@ -87,6 +87,7 @@ If ambiguity does not block implementation, choose the simplest option that sati
 
 ## Testing Expectations
 
+- Place automated test files under the root `tests/` directory, not inside `src/`.
 - Unit-test domain logic such as derived calculations, validation, weekly grouping, weekly averages, and weekly comparison.
 - Test repository and API behavior where persistence, authentication, routing, or serialization rules are implemented.
 - Add E2E coverage for complete user-facing flows once the frontend route exists.

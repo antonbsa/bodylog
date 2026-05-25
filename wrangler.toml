@@ -1,0 +1,6 @@
+name = "bodylog-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-25"
+
+[observability]
+enabled = true

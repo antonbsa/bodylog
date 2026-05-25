@@ -59,6 +59,7 @@ For each task:
 
 Automated tests are expected to be implemented together with features, not postponed to final validation.
 
+- Test files should live under the root `tests/` directory.
 - Domain rules should have unit tests.
 - API, repository, and authentication behavior should have backend tests.
 - Completed browser flows should have E2E tests.

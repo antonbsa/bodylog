@@ -8,13 +8,15 @@ Related: ADR-014.
 
 #### Acceptance Criteria
 
-- [ ] Create a minimal Hono app.
-- [ ] Run locally through Wrangler.
+- [x] Create a minimal Hono app.
+- [x] Run locally through Wrangler.
 - [ ] Deploy to Cloudflare Workers.
-- [ ] Create `/api/health` route.
-- [ ] Confirm basic middleware works.
-- [ ] Confirm the structure supports `/api/*` routes.
-- [ ] Document minimum development and deployment commands.
+- [x] Create `/api/health` route.
+- [x] Confirm basic middleware works.
+- [x] Confirm the structure supports `/api/*` routes.
+- [x] Document minimum development and deployment commands.
+
+Deployment note: `npm run deploy` is configured, but deployment from this environment requires `CLOUDFLARE_API_TOKEN`.
 
 ---
 

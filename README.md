@@ -59,6 +59,43 @@ Start with:
 
 Agent-specific instructions are in [`AGENTS.md`](./AGENTS.md).
 
+## Development
+
+Install dependencies:
+
+```sh
+npm install
+```
+
+Run the Worker locally through Wrangler:
+
+```sh
+npm run dev
+```
+
+Validate the current backend base:
+
+```sh
+npm run typecheck
+npm test
+```
+
+Automated tests live in the root `tests/` directory.
+
+Deploy the Worker to Cloudflare:
+
+```sh
+npm run deploy
+```
+
+In non-interactive environments, Wrangler requires `CLOUDFLARE_API_TOKEN` to be set before deployment.
+
+Current API base:
+
+```txt
+GET /api/health
+```
+
 ## Status
 
-Initial V1 specification base. Implementation has not started yet.
+T-001 backend API base implemented.
