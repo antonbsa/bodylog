@@ -10,6 +10,12 @@
 - Weekly dashboard as the main screen.
 - Measurement history list.
 
+### UI Direction
+
+The detailed UI/design direction is intentionally pending.
+
+Before implementing frontend UI screens, decide and document the basic visual direction, navigation pattern, and any design references. This should happen before building the dashboard, measurement form, history list, or import/export screens.
+
 ### Measurements
 
 - One record per date.

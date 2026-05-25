@@ -58,7 +58,18 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ## Phase 1 — Base
 
-### T-004 — Create Project Structure
+### T-004 — Decide UI Direction
+
+#### Acceptance Criteria
+
+- [ ] Basic visual direction is documented.
+- [ ] Navigation pattern is documented.
+- [ ] Any design references or constraints are documented.
+- [ ] Decision is made before implementing frontend UI screens.
+
+---
+
+### T-005 — Create Project Structure
 
 #### Acceptance Criteria
 
@@ -71,7 +82,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-005 — Configure Frontend
+### T-006 — Configure Frontend
 
 #### Acceptance Criteria
 
@@ -82,7 +93,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-006 — Configure Basic PWA
+### T-007 — Configure Basic PWA
 
 #### Acceptance Criteria
 
@@ -93,7 +104,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-007 — Configure CI Checks
+### T-008 — Configure CI Checks
 
 #### Acceptance Criteria
 
@@ -109,7 +120,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ## Phase 2 — Database and Domain
 
-### T-008 — Create Measurements Migration
+### T-009 — Create Measurements Migration
 
 #### Acceptance Criteria
 
@@ -121,7 +132,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-009 — Implement Measurement Repository
+### T-010 — Implement Measurement Repository
 
 #### Acceptance Criteria
 
@@ -135,7 +146,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-010 — Implement Derived Calculations
+### T-011 — Implement Derived Calculations
 
 #### Acceptance Criteria
 
@@ -147,7 +158,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-011 — Implement Weekly Logic
+### T-012 — Implement Weekly Logic
 
 #### Acceptance Criteria
 
@@ -164,7 +175,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ## Phase 3 — Authentication
 
-### T-012 — Implement Login
+### T-013 — Implement Login
 
 #### Acceptance Criteria
 
@@ -177,7 +188,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-013 — Protect Routes
+### T-014 — Protect Routes
 
 #### Acceptance Criteria
 
@@ -189,7 +200,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-014 — Implement Logout
+### T-015 — Implement Logout
 
 #### Acceptance Criteria
 
@@ -201,7 +212,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ## Phase 4 — Measurement CRUD
 
-### T-015 — Implement Measurement Form
+### T-016 — Implement Measurement Form
 
 #### Acceptance Criteria
 
@@ -216,7 +227,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-016 — Implement Measurement List
+### T-017 — Implement Measurement List
 
 #### Acceptance Criteria
 
@@ -230,7 +241,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-017 — Implement Delete Confirmation
+### T-018 — Implement Delete Confirmation
 
 #### Acceptance Criteria
 
@@ -243,7 +254,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ## Phase 5 — Weekly Dashboard
 
-### T-018 — Implement Weekly Dashboard API
+### T-019 — Implement Weekly Dashboard API
 
 #### Acceptance Criteria
 
@@ -256,7 +267,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-019 — Implement Dashboard UI
+### T-020 — Implement Dashboard UI
 
 #### Acceptance Criteria
 
@@ -273,7 +284,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ## Phase 6 — CSV Export
 
-### T-020 — Implement CSV Export
+### T-021 — Implement CSV Export
 
 #### Acceptance Criteria
 
@@ -287,7 +298,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ## Phase 7 — CSV Import
 
-### T-021 — Implement CSV Import
+### T-022 — Implement CSV Import
 
 #### Acceptance Criteria
 
@@ -304,7 +315,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ## Phase 8 — Final Validation
 
-### T-022 — Configure Deployment Automation
+### T-023 — Configure Deployment Automation
 
 #### Acceptance Criteria
 
@@ -317,7 +328,7 @@ Minimal Pages deployment will be created with the frontend base because the fron
 
 ---
 
-### T-023 — Validate V1 End-to-End
+### T-024 — Validate V1 End-to-End
 
 #### Acceptance Criteria
 
