@@ -86,6 +86,21 @@ If ambiguity does not block implementation, choose the simplest option that sati
 6. Validate against acceptance criteria.
 7. Update docs if behavior changed.
 
+## Commit Message Rules
+
+Use Conventional Commits.
+
+Preferred prefixes:
+
+- `feat:` for runtime product behavior.
+- `fix:` for bug fixes.
+- `docs:` for documentation, specs, task checklists, planning files, and agent instructions.
+- `test:` for test-only changes.
+- `chore:` for tooling, dependency, formatting, or repository maintenance.
+- `refactor:` for code restructuring with no behavior change.
+
+Use `docs:` for changes under `docs/` and `AGENTS.md`, including spec changes and task status updates.
+
 ## Testing Expectations
 
 - Place automated test files under the root `tests/` directory, not inside `src/`.
