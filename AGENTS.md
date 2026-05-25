@@ -12,15 +12,24 @@ The V1 priority is delivery, not product completeness.
 
 Before implementing any task, read these files:
 
-1. `docs/product/00-product-brief.md`
-2. `docs/product/01-requirements.md`
-3. `docs/product/03-scope.md`
-4. `docs/technical/00-architecture.md`
-5. `docs/technical/01-data-model.md`
-6. `docs/technical/02-api-contract.md`
-7. `docs/implementation/01-tasks.md`
+1. `docs/product/overview.md`
+2. `docs/product/requirements.md`
+3. `docs/product/scope.md`
+4. `docs/technical/architecture.md`
+5. `docs/technical/database.md`
+6. `docs/technical/api.md`
+7. `docs/implementation/plan.md`
+8. The selected task file under `backlog/`
 
-Use `docs/product/04-backlog.md` only to understand future ideas. Do not implement backlog items unless explicitly requested.
+Use `docs/product/future-ideas.md` only to understand future ideas. Do not implement future ideas unless explicitly requested.
+
+## Documentation and Backlog Conventions
+
+- Use `docs/` for stable product, technical, architectural, and planning knowledge.
+- Use `backlog/` for executable work, implementation tasks, task progress, and delivery tracking.
+- Keep requirements and architecture as current-state living documents.
+- Capture important decisions as ADR-style files under `docs/technical/decisions/`.
+- Do not add execution task tracking back into `docs/implementation/`.
 
 ## V1 Technical Decisions
 
@@ -99,7 +108,7 @@ Preferred prefixes:
 - `chore:` for tooling, dependency, formatting, or repository maintenance.
 - `refactor:` for code restructuring with no behavior change.
 
-Use `docs:` for changes under `docs/` and `AGENTS.md`, including spec changes and task status updates.
+Use `docs:` for changes under `docs/`, `backlog/`, and `AGENTS.md`, including spec changes and task status updates.
 
 When completing work that actually changed project files, include a suggested commit message at the end of the final response.
 Do not include a commit message suggestion for planning, explanation, review, or advice-only responses with no file changes.

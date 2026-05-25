@@ -100,4 +100,5 @@ Use this checklist before considering V1 complete.
 - [ ] Requirements match implemented behavior.
 - [ ] API contract matches implemented routes.
 - [ ] Data model matches migrations.
-- [ ] Backlog contains deferred ideas.
+- [ ] Future ideas are documented separately from executable backlog tasks.
+- [ ] Executable task tracking lives under `backlog/`.

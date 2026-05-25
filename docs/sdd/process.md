@@ -13,7 +13,7 @@ Define a lightweight process for moving from idea to working V1 without over-doc
 5. Describe core user flows.
 6. Define the initial data model.
 7. Define the technical architecture.
-8. Break the work into small tasks.
+8. Break the work into small tasks under `backlog/`.
 9. Implement one task at a time.
 10. Validate implementation against acceptance criteria.
 11. Update specs when behavior or decisions change.
@@ -53,7 +53,7 @@ For each task:
 3. Add or update automated tests for the implemented behavior.
 4. Run the relevant checks/tests.
 5. Manually validate behavior that cannot reasonably be automated yet.
-6. Mark the task as complete or record what remains.
+6. Move or update the task under `backlog/` to reflect what remains.
 
 ## Testing Rule
 
@@ -73,6 +73,6 @@ If ambiguity does not block implementation, choose the simplest option that sati
 
 ## Scope Control
 
-Ideas that are useful but not required for V1 must go to `docs/product/04-backlog.md`.
+Ideas that are useful but not required for V1 must go to `docs/product/future-ideas.md`.
 
-Backlog items are not implementation permission. They require explicit selection before being built.
+Future ideas are not implementation permission. Executable implementation work belongs under `backlog/` and requires explicit selection before being built.

@@ -55,9 +55,10 @@ The project is personal and V1-focused. If a detail does not affect the current 
 
 ## Documentation Categories
 
-- `docs/product`: product definition, requirements, user flows, scope, backlog.
-- `docs/technical`: architecture, data model, API contract, deployment, decisions.
-- `docs/implementation`: plan, tasks, validation.
+- `docs/product`: product definition, requirements, user flows, scope, and future ideas.
+- `docs/technical`: architecture, data model, API contract, deployment, and ADR-style decisions.
+- `docs/implementation`: high-level implementation plan and validation context.
+- `backlog`: executable implementation tasks, task progress, and delivery tracking.
 - `AGENTS.md`: operating instructions for AI coding agents.
 
 ## Rule of Thumb

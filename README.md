@@ -1,4 +1,4 @@
-# Body Metrics Tracker
+# BodyLog
 
 A personal, mobile-first PWA for logging daily body metrics from a bioimpedance scale and tracking weekly progress through simple averages and comparisons.
 
@@ -39,23 +39,20 @@ Only weight is required in V1. Derived values such as BMI, body fat mass, muscle
 
 ## Documentation
 
-The project follows a lightweight Spec-Driven Development workflow.
+Project documentation is stored under `docs/`.
 
-```txt
-docs/
-  sdd/              Process and documentation model
-  product/          Product definition, requirements, scope, backlog
-  technical/        Architecture, data model, API contract, deployment decisions
-  implementation/   Implementation plan, tasks, validation checklist
-```
+- Product overview: `docs/product/overview.md`
+- Product requirements: `docs/product/requirements.md`
+- User flows: `docs/product/user-flows.md`
+- V1 scope: `docs/product/scope.md`
+- Future ideas: `docs/product/future-ideas.md`
+- Implementation plan: `docs/implementation/plan.md`
+- Technical architecture: `docs/technical/architecture.md`
+- API contract: `docs/technical/api.md`
+- Database model: `docs/technical/database.md`
+- Technical decisions: `docs/technical/decisions/`
 
-Start with:
-
-1. `docs/product/00-product-brief.md`
-2. `docs/product/01-requirements.md`
-3. `docs/product/03-scope.md`
-4. `docs/technical/00-architecture.md`
-5. `docs/implementation/01-tasks.md`
+Executable implementation tasks are tracked separately under `backlog/`.
 
 Agent-specific instructions are in [`AGENTS.md`](./AGENTS.md).
 
