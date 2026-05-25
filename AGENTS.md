@@ -101,6 +101,9 @@ Preferred prefixes:
 
 Use `docs:` for changes under `docs/` and `AGENTS.md`, including spec changes and task status updates.
 
+When completing work that changes files, include a suggested commit message at the end of the final response.
+The suggestion must follow these commit message rules.
+
 ## Testing Expectations
 
 - Place automated test files under the root `tests/` directory, not inside `src/`.
