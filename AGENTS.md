@@ -101,7 +101,8 @@ Preferred prefixes:
 
 Use `docs:` for changes under `docs/` and `AGENTS.md`, including spec changes and task status updates.
 
-When completing work that changes files, include a suggested commit message at the end of the final response.
+When completing work that actually changed project files, include a suggested commit message at the end of the final response.
+Do not include a commit message suggestion for planning, explanation, review, or advice-only responses with no file changes.
 The suggestion must follow these commit message rules.
 
 ## Testing Expectations
