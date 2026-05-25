@@ -90,6 +90,13 @@ npm run db:migrate:local
 npm run db:migrate:remote
 ```
 
+Run ad hoc (manual) D1 queries:
+
+```sh
+npm run db:query:local -- "SELECT COUNT(*) AS count FROM measurements"
+npm run db:query:remote -- "SELECT COUNT(*) AS count FROM measurements"
+```
+
 Deploy the Worker to Cloudflare:
 
 ```sh
