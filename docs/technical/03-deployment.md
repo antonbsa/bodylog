@@ -1,31 +1,31 @@
 # Deployment
 
-## Objetivo
+## Goal
 
-Fazer deploy da V1 inteira dentro da Cloudflare, preferencialmente dentro dos limites do plano gratuito, para uso pessoal.
+Deploy the full V1 on Cloudflare, preferably within free plan limits, for personal usage.
 
-Compatibilidade com Vercel não é requisito da V1.
+Vercel compatibility is not a V1 requirement.
 
-## Componentes Cloudflare
+## Cloudflare Components
 
-- Cloudflare Pages ou Workers Static Assets para frontend.
-- Cloudflare Worker com Hono para API.
-- Cloudflare D1 para banco.
-- Cloudflare Secrets para senha e segredo de sessão.
+- Cloudflare Pages or Workers Static Assets for the frontend.
+- Cloudflare Worker with Hono for the API.
+- Cloudflare D1 for the database.
+- Cloudflare Secrets for the app password and session secret.
 
-## Limites relevantes
+## Relevant Limits
 
-Para uso pessoal, a V1 deve operar confortavelmente dentro dos limites gratuitos esperados.
+For personal usage, V1 should operate comfortably within expected free-tier limits.
 
-Mesmo assim, a implementação deve evitar:
+Even so, the implementation should avoid:
 
-- queries desnecessárias;
-- full scans frequentes em tabelas grandes;
-- chamadas repetidas no dashboard;
+- unnecessary queries;
+- frequent full scans on large tables;
+- repeated dashboard calls;
 - polling;
-- processamento pesado no Worker.
+- heavy processing inside the Worker.
 
-## Variáveis e secrets
+## Variables and Secrets
 
 ### Secrets
 
@@ -34,19 +34,19 @@ APP_PASSWORD
 SESSION_SECRET
 ```
 
-### Configuração
+### Configuration
 
 ```txt
 USER_HEIGHT_M
 ```
 
-`USER_HEIGHT_M` pode começar como variável de ambiente ou constante versionada, desde que não represente segredo.
+`USER_HEIGHT_M` can start as an environment variable or versioned constant, as long as it is not treated as a secret.
 
 ## D1
 
-### Banco
+### Database
 
-Nome sugerido:
+Suggested name:
 
 ```txt
 body_metrics_tracker
@@ -54,77 +54,77 @@ body_metrics_tracker
 
 ### Migrations
 
-Migrations devem ser versionadas no repositório.
+Migrations should be versioned in the repository.
 
-Exemplo:
+Example:
 
 ```txt
 migrations/
   0001_create_measurements.sql
 ```
 
-## Ambientes
+## Environments
 
 ### Local
 
-- Frontend rodando via Vite.
-- API Hono rodando via Wrangler local/dev.
-- D1 local ou preview.
+- Frontend running through Vite.
+- Hono API running through Wrangler local/dev.
+- Local or preview D1 database.
 
-### Produção
+### Production
 
-- Deploy Cloudflare.
-- Secrets configurados via Wrangler ou painel.
-- D1 remoto.
+- Cloudflare deployment.
+- Secrets configured through Wrangler or the Cloudflare dashboard.
+- Remote D1 database.
 
-## Estratégia de deploy inicial
+## Initial Deployment Strategy
 
-Decisão pendente:
+Pending decision:
 
-### Opção A — Pages + Worker separado
+### Option A — Pages + Separate Worker
 
-- Frontend em Cloudflare Pages.
-- API em Worker separado.
-- Mais separação.
+- Frontend on Cloudflare Pages.
+- API on a separate Worker.
+- More separation.
 
-### Opção B — Worker único com assets
+### Option B — Single Worker with Assets
 
-- Um Worker serve frontend e API.
-- Menos peças.
-- Pode simplificar deploy.
+- One Worker serves frontend and API.
+- Fewer moving parts.
+- May simplify deployment.
 
-A decisão deve ser tomada durante o plano técnico final.
+This decision should be made during final technical setup.
 
-## Riscos
+## Risks
 
-### Risco 1 — CSV histórico da planilha
+### Risk 1 — Historical CSV from the Spreadsheet
 
-O formato real da planilha pode não bater com os cabeçalhos esperados.
+The real spreadsheet format may not match the expected headers.
 
-Mitigação:
+Mitigation:
 
-- Implementar importação com mapeamento mínimo.
-- Começar com formato canônico.
-- Ajustar depois com base no CSV real.
+- Implement import using a canonical format first.
+- Add minimal mapping if needed.
+- Adjust after testing with the real CSV.
 
-### Risco 2 — Autenticação simples
+### Risk 2 — Simple Authentication
 
-Senha única é aceitável para V1 pessoal, mas não é modelo escalável.
+A single password is acceptable for personal V1 usage, but it is not a scalable authentication model.
 
-Mitigação:
+Mitigation:
 
-- Proteger todas as rotas.
-- Usar cookie seguro.
-- Não expor senha no frontend.
-- Manter secrets fora do repositório.
+- Protect all data routes.
+- Use secure cookies.
+- Do not expose the password in the frontend.
+- Keep secrets out of the repository.
 
-### Risco 3 — Migração futura para Postgres serverless
+### Risk 3 — Future Migration to Serverless Postgres
 
-A V2 pretende migrar de D1 para Postgres serverless.
+V2 is expected to migrate from D1 to serverless Postgres.
 
-Mitigação na V1:
+V1 mitigation:
 
-- Isolar acesso ao banco em camada de repositório.
-- Evitar SQL espalhado pela aplicação.
-- Manter migrations versionadas.
-- Evitar dependência excessiva de detalhes específicos do D1 fora da camada de persistência.
+- Isolate data access in a repository layer.
+- Avoid SQL spread across the application.
+- Keep migrations versioned.
+- Avoid excessive dependency on D1-specific details outside persistence.

@@ -1,96 +1,124 @@
 # Backlog
 
-## Dados e contexto
+This file stores useful ideas that are explicitly outside the current V1 scope unless selected later.
 
-- Campo de observação por registro.
-- Campo opcional de horário da medição.
-- Marcação de status da medição:
-  - normal;
-  - fora do horário;
-  - pós-refeição;
-  - pós-treino;
-  - sono ruim;
-  - hidratação atípica;
-  - outro.
-- Configuração de altura via UI.
-- Registro de fase atual:
-  - cutting;
-  - bulking;
-  - manutenção;
-  - recomposição;
-  - indefinido.
+## V1.1 Candidates
 
-## Análises
+### Daily Observations
 
-- Gráficos de tendência por métrica.
-- Média móvel de 7 dias.
-- Comparação mensal.
-- Comparação entre períodos personalizados.
-- Comparação parcial contra os mesmos dias da semana anterior.
-- Detecção visual de outliers.
-- Mostrar aderência de registro por semana.
-- Separar tendência de peso, BF kg e músculo kg.
-- Destacar divergências úteis:
-  - BF% caiu, mas BF kg ficou estável;
-  - músculo% subiu, mas músculo kg caiu;
-  - peso subiu com BF kg estável.
+Add optional notes to daily measurements.
 
-## Interpretação
+Possible use cases:
 
-- Definir regras configuráveis para dizer se uma variação é positiva, negativa ou neutra.
-- Considerar objetivo atual antes de classificar variação como boa ou ruim.
-- Comentários automáticos simples baseados em tendência.
-- Sinais de alerta para variações muito bruscas.
+- unusual hydration;
+- bad sleep;
+- post-workout measurement;
+- post-meal measurement;
+- injury context;
+- unusual sodium/carbohydrate intake.
 
-## Backup e integração
+### Optional Measurement Time
 
-- Backup automático para Google Sheets.
-- Importação/exportação Google Sheets.
-- Sincronização bidirecional com Google Sheets.
-- Exportação JSON.
-- Exportação XLSX.
-- Agendamento automático de backup.
-- Histórico de backups.
+Add an optional time field to measurements.
 
-## Offline e PWA
+The field should not be required. It may help identify outliers later.
 
-- Offline-first.
-- Registro rápido offline.
-- Sync posterior.
-- Tratamento de conflito entre dados locais e remotos.
-- Indicador de conexão/sincronização.
-- Cache de dashboard e listagem.
+### Better CSV Mapping
 
-## UI/UX
+Support alternative CSV headers from the existing spreadsheet export.
 
-- UI desktop-friendly.
-- Dashboard analítico avançado.
-- Filtros na listagem.
-- Busca por data.
-- Paginação ou infinite scroll.
-- Animações discretas.
-- Melhorias visuais nos cards semanais.
-- Indicadores com setas.
-- Temas claro/escuro.
+## V2 Candidates
 
-## Segurança
+### Google Sheets Automatic Backup
 
-- Sessão com expiração configurável.
-- Rate limit básico.
-- Rotação de senha.
-- Troca de senha via UI.
-- Proteção adicional para rotas de importação/exportação.
-- Auditoria simples de operações críticas.
+Automatically back up records to Google Sheets.
 
-## Técnico
+This should not block V1 because CSV export is enough for the first version.
 
-- Migração de Cloudflare D1 para Postgres serverless.
-- Abstração do repositório para facilitar troca de banco na V2.
-- Testes unitários para cálculo de métricas.
-- Testes de integração da API.
-- Testes E2E dos fluxos principais.
-- Validação mais forte de CSV.
-- Camada de domínio isolada.
-- CI com lint, typecheck e testes.
-- Estratégia de migrations.
-- Estratégia de seed local.
+### Offline-first Logging
+
+Allow measurements to be recorded without an active connection and synced later.
+
+This is valuable because the daily logging flow should be fast and resilient, but it adds complexity and is not required for V1.
+
+### Desktop-friendly Dashboard
+
+Improve desktop layout for deeper analysis.
+
+The V1 desktop experience only needs to be usable. Future versions can include more complete dashboards.
+
+### Charts
+
+Add visual trend charts for:
+
+- weight;
+- body fat percentage;
+- body fat mass;
+- muscle percentage;
+- muscle mass;
+- resting metabolism.
+
+### Moving Averages
+
+Add moving average views such as:
+
+- 7-day moving average;
+- 14-day moving average;
+- 30-day moving average.
+
+### Monthly Comparison
+
+Add month-over-month summaries and averages.
+
+### Measurement Status Tags
+
+Add tags such as:
+
+- normal;
+- out of usual time;
+- after meal;
+- after workout;
+- poor sleep;
+- atypical hydration.
+
+### Goal Phases
+
+Allow the user to mark periods as:
+
+- bulking;
+- cutting;
+- maintenance;
+- deload;
+- injury recovery.
+
+This would help interpret variations later.
+
+### Automatic Interpretation
+
+Add optional interpretation of trends only after enough context exists.
+
+This should not be added in V1 because direction alone is safer and less misleading.
+
+### Serverless Postgres Migration
+
+Migrate from Cloudflare D1 to serverless Postgres.
+
+The V1 should keep persistence behind a repository/service layer to reduce future migration cost.
+
+### More Robust Authentication
+
+Replace simple password authentication with a more robust model if the app becomes public-facing or multi-user.
+
+### Notifications
+
+Add reminders for daily measurement logging.
+
+### Data Quality Indicators
+
+Show warnings when weekly averages are based on too few measurements.
+
+Example:
+
+```txt
+This week has only 2 measurements, so the average may be less representative.
+```

@@ -1,169 +1,184 @@
 # Architecture
 
-## Visão geral
+## Overview
 
-A V1 será um web app mobile-first com frontend em React/Vite/TypeScript, backend em Hono/TypeScript rodando em Cloudflare Workers e persistência em Cloudflare D1.
-
-A V1 será Cloudflare-only. Compatibilidade com Vercel não é requisito.
-
-## Componentes
+The V1 architecture is a small Cloudflare-based web application.
 
 ```txt
-[PWA React/Vite]
-      |
-      | HTTPS
-      v
-[Cloudflare Worker API — Hono]
-      |
-      v
-[Cloudflare D1]
+React/Vite PWA
+      ↓
+Hono API on Cloudflare Workers
+      ↓
+Cloudflare D1
 ```
+
+The application is designed for one user, mobile-first usage, and simple weekly analysis of body metrics.
 
 ## Frontend
 
 ### Stack
 
-- React.
-- Vite.
-- TypeScript.
-- PWA.
-- UI mobile-first.
+- React
+- Vite
+- TypeScript
+- PWA basics
 
-### Responsabilidades
+### Responsibilities
 
-- Renderizar dashboard semanal.
-- Renderizar formulário de registro/edição.
-- Renderizar listagem.
-- Acionar importação CSV.
-- Acionar exportação CSV.
-- Controlar estado de sessão no cliente.
-- Consumir API autenticada.
+- Render the authenticated app.
+- Show the weekly dashboard.
+- Open the measurement form.
+- List measurements.
+- Call API endpoints.
+- Handle CSV import/export UI.
+- Keep the UX mobile-first.
+
+### V1 UI Structure
+
+Suggested screens/routes:
+
+```txt
+/login
+/dashboard
+/measurements
+/import-export
+```
+
+The dashboard should be the main authenticated screen.
 
 ## Backend
 
-### Stack definida para V1
+### Stack
 
-- TypeScript.
-- Hono.
-- Cloudflare Workers.
-- Cloudflare D1.
+- Hono
+- TypeScript
+- Cloudflare Workers
 
-### Justificativa
+### Responsibilities
 
-Hono é mais compatível com Cloudflare Workers do que frameworks Node tradicionais, pois trabalha bem com runtimes baseados em Web Standards. Isso reduz risco técnico e simplifica o deploy completo na Cloudflare.
+- Authentication endpoints.
+- Measurement CRUD endpoints.
+- Weekly dashboard endpoint.
+- CSV import/export endpoints.
+- Validation.
+- Derived metric calculations.
+- Data access through repository/service layers.
 
-Fastify não será usado na V1.
+## Database
 
-## Banco de dados
+### V1 Database
 
-### Stack definida para V1
+- Cloudflare D1
 
-- Cloudflare D1.
+### Future V2 Database
 
-### Justificativa
+- Serverless Postgres
 
-- Integrado ao ecossistema Cloudflare.
-- SQL simples.
-- Suficiente para uso pessoal.
-- Evita operar banco externo na V1.
-- Compatível com o objetivo de deploy completo na Cloudflare.
+The V1 must avoid spreading database-specific logic across handlers. SQL and persistence details should be isolated behind repositories.
 
-### Observação
+## Suggested Layers
 
-Embora D1 tenha semelhanças com SQLite, a V1 deve tratar D1 como banco serverless gerenciado da Cloudflare, não como arquivo `.sqlite` local tradicional.
+```txt
+api routes
+  ↓
+use cases / services
+  ↓
+repositories
+  ↓
+D1
+```
 
-## Planejamento para V2
+### Routes
 
-Na V2, o projeto deverá migrar de Cloudflare D1 para Postgres serverless.
+Handle HTTP concerns:
 
-Motivos esperados:
+- request parsing;
+- response formatting;
+- auth guard;
+- status codes.
 
-- maior portabilidade;
-- melhor ecossistema de ferramentas;
-- maior flexibilidade para consultas e integrações futuras;
-- evolução para dashboards e análises mais avançadas.
+### Services / Use Cases
 
-A V1 deve isolar o acesso ao banco em uma camada de repositório para reduzir custo de migração futura.
+Handle product behavior:
 
-## Autenticação
+- create or update measurement by date;
+- calculate weekly summaries;
+- import CSV;
+- export CSV.
 
-### Modelo
+### Repositories
 
-- Usuário único.
-- Senha única definida como secret.
-- Sem cadastro.
-- Sem recuperação de senha.
-- Sem roles.
+Handle persistence:
 
-### Estratégia recomendada
+- SQL queries;
+- D1 bindings;
+- database row mapping.
 
-- Login valida a senha informada contra secret do ambiente.
-- API cria sessão assinada.
-- Sessão armazenada em cookie `HttpOnly`, `Secure`, `SameSite=Strict`.
-- Todas as rotas de dados exigem sessão válida.
+## Authentication
 
-### Fora da V1
+V1 uses simple single-user authentication.
 
-- OAuth.
-- Magic link.
-- Multiusuário.
-- Recuperação de senha.
-- RBAC.
+- The password is stored as a Cloudflare secret/environment variable.
+- The backend validates login requests.
+- A secure session cookie should be used.
+- All data routes require authentication.
 
-## Deploy
+This is acceptable for personal V1 usage but not a scalable authentication model.
 
-### Alvo
+## Deployment
 
-- Cloudflare dentro do plano gratuito enquanto o uso for pessoal.
+The full V1 deploy target is Cloudflare.
 
-### Possível distribuição
+Possible deployment models:
 
-- Frontend: Cloudflare Pages ou Workers Static Assets.
-- API: Cloudflare Worker com Hono.
-- DB: Cloudflare D1.
+### Option A — Cloudflare Pages + Worker API
 
-A escolha exata entre Pages + Worker separado ou um único Worker com assets deve ser tomada no plano técnico final.
+- Frontend deployed to Cloudflare Pages.
+- API deployed as a Worker.
+- Clear separation between frontend and backend.
 
-## Cálculos
+### Option B — Single Worker with Static Assets
 
-Cálculos podem ser implementados em camada de domínio compartilhável ou no backend.
+- One Worker serves frontend assets and API routes.
+- Fewer moving parts.
+- Potentially simpler for a personal app.
 
-Recomendação:
+The final choice should be made during implementation.
 
-- Backend retorna dados primários e derivados principais.
-- Frontend pode formatar e exibir.
-- Fórmulas devem ter testes unitários.
+## Non-Goals
 
-## Importação CSV
+The architecture does not need to support:
 
-Importação deve ser feita no backend.
+- Vercel deployment;
+- multi-user scale;
+- complex authorization;
+- offline-first behavior;
+- native mobile deployment;
+- advanced analytics pipelines.
 
-Fluxo:
+## Key Risks
 
-1. Frontend envia arquivo.
-2. Backend valida cabeçalhos.
-3. Backend normaliza dados.
-4. Backend valida tipos.
-5. Backend faz upsert por data.
-6. Backend retorna resumo.
+### D1 to Postgres Migration
 
-## Exportação CSV
+D1 is suitable for V1 on Cloudflare, but V2 plans a migration to serverless Postgres.
 
-Exportação pode ser gerada no backend.
+Mitigation:
 
-O CSV deve conter dados primários, e opcionalmente derivados calculados para conveniência.
+- isolate data access;
+- keep domain types independent from D1-specific types;
+- version migrations;
+- avoid D1-specific behavior outside repositories.
 
-## Offline
+### CSV Import Compatibility
 
-V1 será PWA instalável, mas não offline-first.
+The current spreadsheet export format may not match the canonical CSV format.
 
-Offline-first fica para V2.
+Mitigation:
 
-## Segurança mínima
+- start with a canonical CSV format;
+- validate rows clearly;
+- add mapping only after seeing real CSV exports.
 
-- Secrets fora do repositório.
-- Autenticação exigida em todas as rotas de dados.
-- Cookies seguros.
-- Validação de input.
-- Confirmação antes de exclusão.
-- Importação CSV com validação.
+### Authentication Simplicity
+
+Simple password auth is enough for personal V1 usage but should not be treated as production-grade multi-user security.

@@ -1,60 +1,72 @@
-# SDD Guide
+# Spec-Driven Development Guide
 
-## Definição adotada
+## Purpose
 
-SDD, neste projeto, significa **Spec-Driven Development**.
+Use specifications as the main source of context to turn an idea into working software, reducing ambiguity between intent, implementation, and validation.
 
-A especificação deve funcionar como fonte principal de contexto para transformar uma ideia em software funcional com menos ambiguidade, especialmente quando agentes de IA forem usados para implementação.
+This project uses SDD as a lightweight delivery tool, not as bureaucracy.
 
-## Objetivo do processo
+## Principles
 
-- Reduzir ambiguidade antes do código.
-- Controlar escopo.
-- Garantir rastreabilidade mínima entre requisito, tarefa, implementação e validação.
-- Facilitar retomada do projeto no futuro.
-- Permitir que outros agentes entendam o contexto sem reexplicação manual.
+- Delivery over perfection.
+- Specification should be sufficient, not exhaustive.
+- Each requirement should be testable or manually verifiable.
+- Each implementation task should map to a requirement or technical decision.
+- Out-of-scope items must be explicitly recorded.
+- Important decisions should be documented briefly.
+- Documentation should help implementation, not delay it.
 
-## Princípios
+## SDD Levels
 
-- Entrega acima de perfeição.
-- Especificação suficiente, não exaustiva.
-- Cada requisito importante deve ser validável.
-- Toda tarefa deve estar associada a um requisito, decisão técnica ou preparação necessária.
-- O que está fora da V1 deve ser registrado explicitamente.
-- Decisões importantes devem ser documentadas de forma curta.
-- A documentação deve reduzir trabalho, não criar burocracia.
+### Spec-first
 
-## Nível de SDD adotado
+The specification is written before implementation starts.
 
-Este projeto usa:
+### Spec-anchored
 
-- **Spec-first**: a especificação vem antes da implementação relevante.
-- **Spec-anchored**: a especificação continua sendo referência viva durante o desenvolvimento.
+The specification remains active during project evolution and is updated when decisions change.
 
-Este projeto não usa, neste momento:
+### Spec-as-source
 
-- **Spec-as-source rígido**: a spec não é a única fonte editável do sistema, e o código não precisa ser completamente gerado a partir dela.
+The specification becomes the primary editable source and implementation is treated as derived from it.
 
-## Critério de boa especificação
+## Adopted Level
 
-Uma especificação é boa quando permite responder:
+This project uses **spec-first + spec-anchored**.
 
-- O que será construído?
-- Para quem?
-- Por quê?
-- O que entra na V1?
-- O que fica fora?
-- Quais dados existem?
-- Quais fluxos principais existem?
-- Como saber se está pronto?
-- Quais riscos técnicos precisam ser validados?
+It does not use strict spec-as-source. Code can evolve directly when needed, but relevant behavior changes must be reflected in the docs.
 
-## Antipadrões
+## When to Use the Specs
 
-Evitar:
+Use the specs to:
 
-- Documentar arquitetura futura sem necessidade.
-- Incluir segurança, escala ou multiusuário antes do tempo.
-- Criar documentos longos sem relação direta com entrega.
-- Escrever requisitos que não possam ser testados.
-- Adicionar features úteis, mas não necessárias para a V1.
+- understand the product goal;
+- define implementation boundaries;
+- guide AI agents;
+- avoid scope creep;
+- validate whether V1 is complete;
+- preserve context across sessions.
+
+## When Not to Overuse the Specs
+
+Do not use specs as an excuse to avoid building.
+
+The project is personal and V1-focused. If a detail does not affect the current implementation, it can be postponed to the backlog.
+
+## Documentation Categories
+
+- `docs/product`: product definition, requirements, user flows, scope, backlog.
+- `docs/technical`: architecture, data model, API contract, deployment, decisions.
+- `docs/implementation`: plan, tasks, validation.
+- `AGENTS.md`: operating instructions for AI coding agents.
+
+## Rule of Thumb
+
+A document is useful only if it helps answer one of these questions:
+
+- What are we building?
+- Why are we building it?
+- What is included in V1?
+- How should it behave?
+- How will we implement it?
+- How will we know it is done?

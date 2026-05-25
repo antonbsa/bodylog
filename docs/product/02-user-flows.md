@@ -1,75 +1,76 @@
 # User Flows
 
-## UF-001 — Abrir dashboard semanal
+## Flow 1 — Login
 
-1. Usuário acessa o app.
-2. Se não estiver autenticado, informa a senha.
-3. Sistema exibe dashboard da semana atual.
-4. Dashboard mostra:
-   - médias da semana atual;
-   - quantidade de registros usados;
-   - comparação contra semana anterior;
-   - direção da variação: subiu, desceu ou estável.
+1. The user opens the app.
+2. If not authenticated, the login screen is displayed.
+3. The user enters the configured password.
+4. The system validates the password.
+5. If valid, the user is redirected to the weekly dashboard.
+6. If invalid, the system shows an error message.
 
-## UF-002 — Registrar medição de hoje
+## Flow 2 — View Weekly Dashboard
 
-1. Usuário abre dashboard.
-2. Usuário clica em "Registrar medição".
-3. Sistema abre formulário com data de hoje.
-4. Se não houver registro para hoje, campos editáveis aparecem vazios.
-5. Usuário preenche peso e opcionalmente BF%, músculo% e RM.
-6. Usuário salva.
-7. Sistema persiste o registro.
-8. Sistema volta para dashboard ou mostra feedback de sucesso.
-9. Médias e variações são recalculadas.
+1. The authenticated user opens the app.
+2. The dashboard loads the current week summary.
+3. The dashboard displays current week averages.
+4. The dashboard displays variation against the previous full week.
+5. The dashboard indicates that the current week may be partial.
+6. The dashboard shows direction indicators for metrics.
+7. The user can open the measurement form from the dashboard.
 
-## UF-003 — Editar registro existente por data
+## Flow 3 — Create a Daily Measurement
 
-1. Usuário abre formulário de registro.
-2. Usuário altera a data para uma data que já possui registro.
-3. Sistema carrega automaticamente os dados existentes.
-4. Usuário altera os valores.
-5. Usuário salva.
-6. Sistema atualiza o registro existente.
+1. The user taps the register button.
+2. The measurement form opens with today's date selected.
+3. The system checks whether a record already exists for the selected date.
+4. If no record exists, the form is empty.
+5. The user enters at least weight.
+6. The user optionally enters body fat percentage, muscle percentage, and resting metabolism.
+7. The user saves.
+8. The system creates the measurement.
+9. The dashboard and history reflect the new record.
 
-## UF-004 — Criar registro em data passada
+## Flow 4 — Edit a Daily Measurement by Date
 
-1. Usuário abre formulário de registro.
-2. Usuário seleciona uma data passada sem registro.
-3. Sistema mantém campos vazios.
-4. Usuário preenche os dados.
-5. Usuário salva.
-6. Sistema cria novo registro.
+1. The user opens the measurement form.
+2. The user selects a date.
+3. The system checks whether a record exists for that date.
+4. If a record exists, the form is populated with existing values.
+5. The user changes values.
+6. The user saves.
+7. The system updates the existing measurement for that date.
+8. Weekly averages and history update accordingly.
 
-## UF-005 — Listar registros
+## Flow 5 — Delete a Measurement
 
-1. Usuário acessa a tela de listagem.
-2. Sistema mostra registros em ordem decrescente por data.
-3. Usuário visualiza dados primários e derivados disponíveis.
-4. Usuário pode escolher editar ou excluir um registro.
+1. The user opens a measurement from the history list or form context.
+2. The user chooses delete.
+3. The system asks for confirmation.
+4. The user confirms.
+5. The system deletes the measurement.
+6. History and weekly calculations update accordingly.
 
-## UF-006 — Excluir registro
+## Flow 6 — View Measurement History
 
-1. Usuário acessa listagem.
-2. Usuário seleciona excluir.
-3. Sistema pede confirmação.
-4. Usuário confirma.
-5. Sistema remove o registro.
-6. Médias e variações são recalculadas.
+1. The user opens the history/list section.
+2. The system displays measurements ordered by date descending.
+3. The user reviews raw and derived metrics.
+4. The user can select a record for editing or deletion.
 
-## UF-007 — Exportar dados
+## Flow 7 — Export CSV
 
-1. Usuário acessa opção de exportação.
-2. Usuário solicita exportar registros.
-3. Sistema gera CSV.
-4. Usuário baixa o arquivo.
+1. The user opens the export action.
+2. The system generates a CSV file with all records.
+3. The user downloads the file.
+4. The CSV can be used as manual backup.
 
-## UF-008 — Importar dados históricos
+## Flow 8 — Import CSV
 
-1. Usuário exporta dados atuais da planilha para CSV.
-2. Usuário acessa importação no app.
-3. Usuário envia o CSV.
-4. Sistema valida cabeçalhos e dados.
-5. Sistema importa registros válidos.
-6. Sistema atualiza registros com datas duplicadas.
-7. Sistema mostra resumo da importação.
+1. The user opens the import action.
+2. The user selects a CSV exported from the previous spreadsheet workflow.
+3. The system validates the file.
+4. Valid rows are imported or updated by date.
+5. Invalid rows are reported.
+6. The system shows an import summary.
+7. The dashboard and history reflect imported records.

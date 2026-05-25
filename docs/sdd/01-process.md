@@ -1,62 +1,67 @@
 # SDD Process
 
-## Fluxo geral
+## Goal
 
-1. Definir problema e objetivo.
-2. Definir usuário-alvo.
-3. Definir escopo da V1.
-4. Registrar fora de escopo e backlog.
-5. Definir requisitos funcionais.
-6. Definir requisitos não funcionais mínimos.
-7. Descrever fluxos principais.
-8. Definir modelo de dados inicial.
-9. Definir arquitetura mínima.
-10. Registrar riscos técnicos.
-11. Quebrar implementação em tarefas pequenas.
-12. Implementar uma tarefa por vez.
-13. Validar contra critérios de aceite.
-14. Atualizar documentação quando houver divergência entre spec e implementação.
+Define a lightweight process for moving from idea to working V1 without over-documenting the project.
 
-## Regra principal
+## Process Flow
 
-Nenhuma implementação relevante deve começar sem:
+1. Define the problem and product goal.
+2. Define the V1 scope.
+3. Write functional requirements.
+4. Write minimum non-functional requirements.
+5. Describe core user flows.
+6. Define the initial data model.
+7. Define the technical architecture.
+8. Break the work into small tasks.
+9. Implement one task at a time.
+10. Validate implementation against acceptance criteria.
+11. Update specs when behavior or decisions change.
 
-- objetivo claro;
-- requisito ou decisão associada;
-- critério de aceite;
-- tarefa definida.
+## Main Rule
 
-## Nível de detalhe esperado
+No meaningful implementation should start without:
 
-Para este projeto, a documentação deve ser objetiva.
+- a clear goal;
+- an associated requirement or decision;
+- acceptance criteria;
+- a small implementation task.
 
-O objetivo não é prever tudo.  
-O objetivo é impedir ambiguidades óbvias e evitar crescimento descontrolado de escopo.
+## Documentation Update Rules
 
-## Quando atualizar os documentos
+Update docs when:
 
-Atualizar a documentação quando:
+- a requirement changes;
+- a feature moves in or out of V1;
+- an API contract changes;
+- the data model changes;
+- a technical decision changes;
+- implementation behavior diverges from the spec.
 
-- um requisito mudar;
-- uma feature for movida entre V1, V1.1 e V2;
-- uma decisão técnica for tomada;
-- uma decisão técnica for revertida;
-- uma limitação prática for descoberta;
-- um risco técnico for validado ou invalidado;
-- a implementação divergir da especificação.
+Do not update docs for:
 
-## Ordem de leitura recomendada
+- minor refactors that do not change behavior;
+- internal naming changes with no product impact;
+- temporary local debugging steps.
 
-```txt
-README.md
-docs/sdd/00-sdd-guide.md
-docs/sdd/01-process.md
-docs/sdd/02-agent-rules.md
-docs/product/00-product-brief.md
-docs/product/01-requirements.md
-docs/product/02-user-flows.md
-docs/product/03-scope.md
-docs/technical/00-architecture.md
-docs/technical/01-data-model.md
-docs/implementation/01-tasks.md
-```
+## Implementation Loop
+
+For each task:
+
+1. Read the relevant requirement and acceptance criteria.
+2. Implement the smallest useful change.
+3. Run checks/tests when available.
+4. Manually validate the behavior if tests do not exist yet.
+5. Mark the task as complete or record what remains.
+
+## Ambiguity Rule
+
+If ambiguity blocks implementation, stop and document the question.
+
+If ambiguity does not block implementation, choose the simplest option that satisfies the current V1 and document the assumption if it may matter later.
+
+## Scope Control
+
+Ideas that are useful but not required for V1 must go to `docs/product/04-backlog.md`.
+
+Backlog items are not implementation permission. They require explicit selection before being built.

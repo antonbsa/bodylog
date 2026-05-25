@@ -1,145 +1,117 @@
 # Data Model
 
-## Entidade principal: Measurement
+## Entity: Measurement
 
-Representa uma medição corporal em uma data específica.
+A measurement represents the body metrics recorded for one date.
 
-```ts
-type Measurement = {
-  id: string;
-  date: string; // YYYY-MM-DD
-  weightKg: number;
-  bodyFatPercentage: number | null;
-  musclePercentage: number | null;
-  restingMetabolismKcal: number | null;
-  createdAt: string;
-  updatedAt: string;
-};
-```
+V1 allows at most one measurement per date.
 
-## Campos obrigatórios
+## Fields
 
-Na V1, apenas `weightKg` é obrigatório.
+| Field | Type | Required | Description |
+|---|---|---:|---|
+| `id` | string | yes | Unique measurement identifier. |
+| `date` | string | yes | Measurement date in `YYYY-MM-DD` format. Must be unique. |
+| `weightKg` | number | yes | Body weight in kilograms. |
+| `bodyFatPercentage` | number/null | no | Body fat percentage from the scale. |
+| `musclePercentage` | number/null | no | Muscle percentage from the scale. |
+| `restingMetabolismKcal` | number/null | no | Resting metabolism from the scale. |
+| `createdAt` | string | yes | Creation timestamp. |
+| `updatedAt` | string | yes | Last update timestamp. |
 
-## Campos opcionais
+## Derived Values
 
-- `bodyFatPercentage`.
-- `musclePercentage`.
-- `restingMetabolismKcal`.
+Derived values should be calculated by the application and do not need to be stored in V1.
 
-## Campos fora da V1
-
-- Observação.
-- Horário da medição.
-- Status/contexto da medição.
-
-## Restrições
-
-- Deve existir no máximo um registro por data.
-- `date` deve ser única.
-- Datas devem ser armazenadas como `YYYY-MM-DD`.
-- O sistema deve usar semana começando na segunda-feira.
-
-## Métricas derivadas
-
-```ts
-type MeasurementDerived = {
-  bmi: number | null;
-  bodyFatKg: number | null;
-  muscleKg: number | null;
-};
-```
-
-## Fórmulas
+### BMI
 
 ```txt
-IMC = peso / altura²
-BF kg = peso * BF% / 100
-Músculo kg = peso * músculo% / 100
+BMI = weightKg / (heightM * heightM)
 ```
 
-## Altura
+`heightM` should be configured outside the measurement record.
 
-A altura deve ser configurada inicialmente como constante/configuração.
+### Body Fat Mass
 
-Futuramente, pode virar configuração editável via UI.
-
-## Agregado semanal
-
-```ts
-type WeeklySummary = {
-  weekStartDate: string; // Monday, YYYY-MM-DD
-  weekEndDate: string;   // Sunday, YYYY-MM-DD
-  measurementCount: number;
-  isCurrentWeek: boolean;
-  isPartialWeek: boolean;
-
-  averages: {
-    weightKg: number | null;
-    bmi: number | null;
-    bodyFatPercentage: number | null;
-    bodyFatKg: number | null;
-    musclePercentage: number | null;
-    muscleKg: number | null;
-    restingMetabolismKcal: number | null;
-  };
-};
+```txt
+bodyFatKg = weightKg * bodyFatPercentage / 100
 ```
 
-## Comparação semanal
+Only available when `bodyFatPercentage` is present.
 
-```ts
-type WeeklyComparison = {
-  current: WeeklySummary;
-  previous: WeeklySummary | null;
-  deltas: {
-    weightKg: MetricDelta | null;
-    bmi: MetricDelta | null;
-    bodyFatPercentage: MetricDelta | null;
-    bodyFatKg: MetricDelta | null;
-    musclePercentage: MetricDelta | null;
-    muscleKg: MetricDelta | null;
-    restingMetabolismKcal: MetricDelta | null;
-  };
-};
+### Muscle Mass
+
+```txt
+muscleKg = weightKg * musclePercentage / 100
 ```
 
-```ts
-type MetricDelta = {
-  absolute: number;
-  percentage: number | null;
-  percentagePoints?: number;
-  direction: "up" | "down" | "stable";
-};
+Only available when `musclePercentage` is present.
+
+## Weekly Grouping
+
+Weeks start on Monday and end on Sunday.
+
+Each measurement belongs to exactly one week based on its `date`.
+
+## Weekly Average Rules
+
+- Only existing measurements are included.
+- Missing days are ignored.
+- Missing optional values are ignored for that specific metric.
+- A metric average should be `null` when no values are available for that metric.
+
+Example:
+
+```txt
+If a week has 4 weight values and 2 body fat values:
+- weight average uses 4 values;
+- body fat average uses 2 values.
 ```
 
-## Direção da variação
+## Weekly Comparison Rules
 
-A V1 deve indicar apenas direção:
+The V1 compares:
 
-- `up`: subiu.
-- `down`: desceu.
-- `stable`: estável.
+```txt
+partial current week vs previous full week
+```
 
-A definição exata de tolerância para "estável" deve ser tomada no plano técnico.
+The comparison should include:
 
-Sugestão inicial:
+- absolute variation;
+- relative percentage variation when a previous value exists;
+- direction: `up`, `down`, or `stable`.
 
-- considerar estável quando a diferença arredondada para a unidade exibida for 0.
+For percentage-based metrics such as body fat percentage and muscle percentage, absolute variation must be displayed as percentage points.
 
+Example:
 
-## Portabilidade futura para Postgres
+```txt
+16.20% → 14.46% = -1.74 percentage points
+```
 
-A V1 usa Cloudflare D1. Como a V2 planeja migração para Postgres serverless, a aplicação deve evitar acesso direto ao banco espalhado por handlers HTTP.
+## Direction Rule
 
-Recomendação:
+Initial rule:
 
-- handlers chamam services/use cases;
-- services chamam repositories;
-- repositories concentram SQL e detalhes do D1;
-- tipos de domínio não devem depender de tipos específicos do D1.
+- `up`: current value is greater than previous value;
+- `down`: current value is lower than previous value;
+- `stable`: displayed rounded difference is zero.
 
-## SQL inicial sugerido
+The exact tolerance for stable values may be refined during implementation.
+
+## Future Postgres Portability
+
+V1 uses Cloudflare D1. Because V2 plans a migration to serverless Postgres, the application should avoid direct database access scattered across HTTP handlers.
+
+Recommendation:
+
+- handlers call services/use cases;
+- services call repositories;
+- repositories contain SQL and D1 details;
+- domain types should not depend on D1-specific types.
+
+## Suggested Initial SQL
 
 ```sql
 CREATE TABLE measurements (
@@ -156,12 +128,12 @@ CREATE TABLE measurements (
 CREATE INDEX idx_measurements_date ON measurements(date);
 ```
 
-## Importação CSV
+## CSV Import
 
-Cabeçalhos esperados inicialmente:
+Initial expected headers:
 
 ```txt
 date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
 ```
 
-Cabeçalhos alternativos vindos da planilha atual podem ser mapeados posteriormente, se necessário.
+Alternative headers from the current spreadsheet can be mapped later if needed.

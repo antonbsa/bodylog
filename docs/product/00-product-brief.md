@@ -1,71 +1,90 @@
 # Product Brief
 
-## Nome provisório
+## Product Name
 
-Body Metrics Tracker
+BodyLog - Your body metrics tracker
 
-## Problema
+## Problem
 
-O usuário registra diariamente métricas corporais vindas de uma balança de bioimpedância em uma planilha Google.
+Daily body metrics are currently recorded in a Google Sheets spreadsheet. The workflow works, but it is not ideal for frequent mobile use.
 
-A planilha funciona para armazenar dados e calcular médias semanais, mas a experiência de uso é pouco amigável, especialmente no smartphone. O registro diário exige fricção manual e a leitura da evolução semanal poderia ser mais clara.
+The spreadsheet is good for storage and formulas, but it creates friction for daily logging and makes weekly progress harder to read quickly on a smartphone.
 
-## Objetivo da V1
+## Current Workflow
 
-Criar um app pessoal, mobile-first e instalável como PWA, para:
+The user records bioimpedance scale measurements under similar daily conditions.
 
-- registrar medições diárias;
-- listar registros existentes;
-- editar e excluir registros;
-- calcular métricas derivadas;
-- calcular médias semanais;
-- comparar a semana atual parcial contra a semana anterior completa;
-- exportar os dados;
-- importar dados históricos via CSV.
+Current tracked fields:
 
-## Usuário-alvo
+- weight;
+- BMI;
+- body fat percentage;
+- muscle percentage;
+- resting metabolism.
 
-Inicialmente, apenas o próprio usuário.
+The spreadsheet calculates:
 
-Não há objetivo de atender múltiplos usuários na V1.
+- body fat mass in kg;
+- muscle mass in kg;
+- weekly averages;
+- weekly variation compared with the previous week.
 
-## Contexto de uso
+## Target User
 
-O registro deve acontecer quase sempre pelo smartphone, logo após a medição na balança.
+The initial and only target user for V1 is the project owner.
 
-O desktop não é o foco da V1, mas a aplicação não deve ser inutilizável em telas maiores. Dashboards e análises desktop-friendly ficam para versões futuras.
+The app is not intended to support multiple users in V1.
 
-## Métricas registradas
+## Product Goal
 
-- Peso.
-- BF%.
-- Músculo%.
-- RM / metabolismo em repouso.
+Build a personal, mobile-first interface for daily body metrics logging and weekly progress tracking.
 
-## Métricas calculadas
+The app should reduce logging friction and make weekly evolution easier to understand than the current spreadsheet.
 
-- IMC.
-- BF em kg.
-- Músculo em kg.
-- Médias semanais.
-- Variações semanais absolutas.
-- Variações semanais percentuais.
-- Variações em pontos percentuais para BF% e músculo%.
+## V1 Objective
 
-## Critério de sucesso da V1
+Deliver a functional app that allows the user to:
 
-A V1 será considerada bem-sucedida se o usuário conseguir substituir o registro manual na planilha pelo app no dia a dia, mantendo a capacidade de:
+- register daily body measurements;
+- edit and delete measurements;
+- view measurement history;
+- view weekly averages;
+- compare the current partial week against the previous full week;
+- import existing historical data from CSV;
+- export records to CSV for backup;
+- use the app through a simple authenticated personal interface.
 
-- registrar dados rapidamente pelo celular;
-- revisar dados antigos;
-- corrigir erros;
-- excluir registros incorretos;
-- enxergar comparação semanal;
-- exportar os dados;
-- importar histórico inicial da planilha.
+## Non-Goals for V1
 
-## Não objetivo principal
+V1 is not intended to provide:
 
-O app não deve interpretar fisiologicamente os dados como verdade absoluta.
+- multi-user support;
+- advanced authentication;
+- Google Sheets integration;
+- advanced charts;
+- automatic recommendations;
+- health diagnosis;
+- training or diet tracking;
+- offline-first behavior;
+- desktop-optimized dashboards;
+- serverless Postgres migration.
 
-Exemplo: o sistema pode dizer que a massa muscular medida subiu, mas não deve afirmar categoricamente que o usuário ganhou músculo real naquela proporção.
+## Product Constraints
+
+- The app should be mobile-first.
+- The app should be simple enough to complete and maintain as a personal project.
+- V1 should prioritize delivery over completeness.
+- The project should be useful as a portfolio project.
+- The implementation should use TypeScript across frontend and backend.
+- Deployment should happen fully on Cloudflare for V1.
+
+## Success Criteria
+
+V1 is successful when:
+
+- the user can log a daily measurement faster than using the spreadsheet;
+- the user can review weekly progress without manually calculating averages;
+- historical spreadsheet data can be imported from CSV;
+- the user can export data as CSV backup;
+- the app is usable from a smartphone;
+- the app is deployed on Cloudflare and protected by simple authentication.

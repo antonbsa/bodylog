@@ -1,296 +1,287 @@
 # Technical Decisions
 
-## ADR-001 — Usar SDD leve
+## ADR-001 — Use Lightweight SDD
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-O projeto usará SDD leve, com spec-first e spec-anchored, sem spec-as-source rígido.
+The project will use lightweight SDD with spec-first and spec-anchored practices, without strict spec-as-source.
 
-### Motivo
+### Reason
 
-O objetivo é entregar uma V1 funcional e usar o projeto como aprendizado, sem transformar documentação em burocracia.
+The goal is to deliver a functional V1 and use the project for learning without turning documentation into bureaucracy.
 
 ---
 
-## ADR-002 — V1 mobile-first
+## ADR-002 — V1 Mobile-first
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-A V1 será desenhada principalmente para smartphone.
+V1 will be designed primarily for smartphone usage.
 
-### Motivo
+### Reason
 
-O registro acontece quase sempre logo após a medição na balança, e o celular é o dispositivo mais prático nesse contexto.
+Logging happens almost always right after a scale measurement, and the phone is the most practical device in that context.
 
 ---
 
-## ADR-003 — Desktop não é foco da V1
+## ADR-003 — Desktop Is Not a V1 Focus
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-Desktop deve funcionar minimamente, mas dashboards desktop-friendly ficam para versões futuras.
+Desktop should work minimally, but desktop-friendly dashboards are deferred to future versions.
 
-### Motivo
+### Reason
 
-O valor principal da V1 está no registro rápido e visualização semanal simples.
+The main value of V1 is quick logging and simple weekly visualization.
 
 ---
 
-## ADR-004 — Sem Google Sheets na V1
+## ADR-004 — No Google Sheets Integration in V1
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-A V1 não terá integração automática com Google Sheets.
+V1 will not include automatic Google Sheets integration.
 
-### Motivo
+### Reason
 
-Integração adicionaria complexidade e risco de atraso. Exportação CSV resolve backup inicial.
+The integration would add complexity and delay risk. CSV export is enough for initial backup.
 
 ---
 
-## ADR-005 — Exportação CSV na V1
+## ADR-005 — CSV Export in V1
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-A V1 terá exportação CSV.
+V1 will include CSV export.
 
-### Motivo
+### Reason
 
-Permite backup manual simples sem depender de integração externa.
+It provides simple manual backup without external integration.
 
 ---
 
-## ADR-006 — Importação CSV na V1
+## ADR-006 — CSV Import in V1
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-A V1 terá importação CSV como última feature, para popular dados históricos da planilha atual.
+V1 will include CSV import as the last feature, to populate historical data from the current spreadsheet.
 
-### Motivo
+### Reason
 
-Evita cadastrar histórico manualmente.
+This avoids manually entering historical data.
 
 ---
 
-## ADR-007 — Um registro por data
+## ADR-007 — One Record per Date
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-O sistema terá no máximo um registro por data.
+The system will allow at most one record per date.
 
-### Motivo
+### Reason
 
-O workflow atual é uma medição diária em condições semelhantes.
+The current workflow is based on one daily measurement under similar conditions.
 
 ---
 
-## ADR-008 — Formulário por data cria ou edita
+## ADR-008 — Date Form Creates or Edits
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-Ao selecionar uma data com registro existente, o formulário carrega os dados para edição. Ao selecionar data sem registro, o formulário fica vazio para criação.
+When a selected date already has a record, the form loads that record for editing. When the selected date has no record, the form is empty for creation.
 
-### Motivo
+### Reason
 
-Reduz duplicidade e simplifica UX.
+This reduces duplication and simplifies UX.
 
 ---
 
-## ADR-009 — Apenas peso obrigatório na V1
+## ADR-009 — Only Weight Is Required in V1
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-Na V1, apenas peso é obrigatório.
+Only weight is required in V1.
 
-### Motivo
+### Reason
 
-Permite registrar parcialmente quando a balança ou rotina não fornecer todos os dados.
+This allows partial logging when the scale or routine does not provide all data.
 
 ---
 
-## ADR-010 — Semana começa na segunda-feira
+## ADR-010 — Week Starts on Monday
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-Todas as médias semanais usam semana de segunda a domingo.
+All weekly averages use Monday-to-Sunday weeks.
 
-### Motivo
+### Reason
 
-Alinha o app com o modelo de acompanhamento semanal desejado.
+This matches the desired weekly tracking model.
 
 ---
 
-## ADR-011 — Comparar semana atual parcial contra semana anterior completa
+## ADR-011 — Compare Partial Current Week Against Previous Full Week
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-A V1 compara a semana atual, mesmo incompleta, contra a semana anterior completa.
+V1 compares the current week, even when incomplete, against the previous full week.
 
-### Motivo
+### Reason
 
-Fornece feedback contínuo durante a semana, mesmo que a comparação não seja perfeitamente equivalente.
+This provides continuous feedback during the week, even if the comparison is not perfectly equivalent.
 
 ---
 
-## ADR-012 — Interpretação neutra da variação
+## ADR-012 — Neutral Variation Interpretation
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-Na V1, o sistema mostra se subiu, desceu ou está estável, sem dizer se é bom ou ruim.
+In V1, the system shows whether a metric went up, down, or stayed stable, without saying whether that is good or bad.
 
-### Motivo
+### Reason
 
-A interpretação depende do objetivo atual, contexto fisiológico e fase de dieta/treino.
+Interpretation depends on the current goal, physiological context, and training/diet phase.
 
 ---
 
-## ADR-013 — TypeScript em tudo
+## ADR-013 — TypeScript Everywhere
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-Frontend e backend serão implementados em TypeScript.
+Frontend and backend will be implemented in TypeScript.
 
-### Motivo
+### Reason
 
-Melhora consistência, segurança de tipos e aprendizado técnico.
+This improves consistency, type safety, and technical learning.
 
 ---
 
-## ADR-014 — Hono como framework da API
+## ADR-014 — Hono as the API Framework
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-A V1 usará Hono + TypeScript como framework da API em Cloudflare Workers.
+V1 will use Hono + TypeScript as the API framework on Cloudflare Workers.
 
-### Motivo
+### Reason
 
-Hono é mais compatível com Cloudflare Workers e reduz risco técnico em comparação com frameworks Node tradicionais. A prioridade da V1 é entrega funcional dentro da Cloudflare.
-
-### Consequência
-
-Fastify não será usado na V1.
+Hono is well-suited for Workers and Web Standard runtimes, making it a better fit than Fastify for the Cloudflare-only V1.
 
 ---
 
-## ADR-015 — Cloudflare como alvo da V1
+## ADR-015 — Cloudflare-only Deployment for V1
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-A V1 deve ser planejada para deploy na Cloudflare dentro do plano gratuito.
+V1 will be deployed fully on Cloudflare.
 
-### Motivo
+### Reason
 
-Uso pessoal, baixo volume e alinhamento com interesse técnico do projeto.
+This keeps the deployment target simple and avoids cross-platform compatibility work.
 
 ---
 
-## ADR-016 — D1 como persistência da V1
+## ADR-016 — Cloudflare D1 as the V1 Database
 
 ### Status
 
-Aceita.
+Accepted.
 
-### Decisão
+### Decision
 
-Usar Cloudflare D1 como banco da V1.
+V1 will use Cloudflare D1 as the database.
 
-### Motivo
+### Reason
 
-Permite persistência SQL integrada ao ecossistema Cloudflare sem operar banco externo na V1.
+D1 is native to Cloudflare and fits a small personal app deployed on Workers.
 
 ---
 
-## ADR-017 — Autenticação simples com senha única
+## ADR-017 — Serverless Postgres Migration Planned for V2
 
 ### Status
 
-Aceita.
+Accepted for future version.
 
-### Decisão
+### Decision
 
-A V1 terá login simples com senha única salva como secret.
+V2 should migrate from D1 to serverless Postgres.
 
-### Motivo
+### Reason
 
-O app é pessoal, mas os dados não devem ficar publicamente acessíveis.
-
+Postgres is a stronger long-term option for portability, data modeling, and future growth. V1 should avoid coupling too much code to D1 so this migration remains manageable.
 
 ---
 
-## ADR-018 — Migração para Postgres serverless na V2
+## ADR-018 — Basic PWA in V1
 
 ### Status
 
-Planejada.
+Accepted.
 
-### Decisão
+### Decision
 
-A V2 deverá migrar de Cloudflare D1 para Postgres serverless.
+V1 will include basic PWA installability but not full offline-first behavior.
 
-### Motivo
+### Reason
 
-Postgres serverless tende a ser mais adequado para evolução futura do projeto, especialmente dashboards mais avançados, análises, integrações e maior portabilidade.
-
-### Consequência para V1
-
-A V1 deve isolar acesso ao banco em uma camada de repositório para facilitar a migração futura, mas não deve implementar Postgres agora.
+Installability improves mobile usage with limited complexity. Offline-first behavior is useful but should be deferred.

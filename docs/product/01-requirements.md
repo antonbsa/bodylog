@@ -2,255 +2,214 @@
 
 ## Functional Requirements
 
-### FR-001 — Registrar medição diária
+### FR-001 — Log a Daily Measurement
 
-O sistema deve permitir registrar uma medição corporal para uma data específica.
-
-#### Campos
-
-- Data.
-- Peso.
-- BF%.
-- Músculo%.
-- RM / metabolismo em repouso.
-
-#### Regras
-
-- Apenas peso é obrigatório na V1.
-- Data deve vir preenchida com o dia atual por padrão.
-- Não deve existir mais de um registro para a mesma data.
-- Se a data selecionada não tiver registro, o formulário deve ficar vazio para adição.
-- Se a data selecionada já tiver registro, o formulário deve carregar os dados existentes para edição.
+The system must allow the user to create a body measurement for a selected date.
 
 #### Acceptance Criteria
 
-- [ ] Ao abrir o formulário, a data padrão é hoje.
-- [ ] É possível salvar registro contendo apenas peso.
-- [ ] É possível salvar registro contendo peso, BF%, músculo% e RM.
-- [ ] Ao selecionar uma data sem registro, os campos editáveis ficam vazios.
-- [ ] Ao selecionar uma data com registro, os campos são preenchidos com os dados existentes.
-- [ ] Salvar novamente uma data existente atualiza o registro em vez de duplicar.
+- [ ] The date defaults to today.
+- [ ] The user can select a different date.
+- [ ] `weightKg` is required.
+- [ ] `bodyFatPercentage` is optional.
+- [ ] `musclePercentage` is optional.
+- [ ] `restingMetabolismKcal` is optional.
+- [ ] The system stores at most one measurement per date.
+- [ ] If the selected date has no record, the form is empty and creates a new measurement.
+- [ ] If the selected date already has a record, the form loads the existing data for editing.
 
 ---
 
-### FR-002 — Editar medição
+### FR-002 — Edit a Measurement
 
-O sistema deve permitir editar uma medição existente.
+The system must allow the user to update an existing measurement.
 
 #### Acceptance Criteria
 
-- [ ] O usuário consegue abrir um registro existente.
-- [ ] O usuário consegue alterar os campos.
-- [ ] O usuário consegue salvar alterações.
-- [ ] As médias semanais são recalculadas após edição.
-- [ ] A listagem reflete o dado atualizado.
+- [ ] Existing measurements can be opened for editing.
+- [ ] Updating a measurement preserves the same date.
+- [ ] Updated values are reflected in the history list.
+- [ ] Updated values are reflected in weekly averages and variations.
 
 ---
 
-### FR-003 — Excluir medição
+### FR-003 — Delete a Measurement
 
-O sistema deve permitir excluir uma medição existente.
+The system must allow the user to delete an existing measurement.
 
 #### Acceptance Criteria
 
-- [ ] O usuário consegue acionar exclusão a partir da listagem ou detalhe.
-- [ ] O sistema solicita confirmação antes de excluir.
-- [ ] Após exclusão, o registro deixa de aparecer na listagem.
-- [ ] Médias e variações são recalculadas após exclusão.
+- [ ] A measurement can be deleted from the history list or detail/form context.
+- [ ] The user must confirm deletion before it happens.
+- [ ] Deleted records no longer appear in history.
+- [ ] Weekly averages and variations are recalculated after deletion.
 
 ---
 
-### FR-004 — Listar medições
+### FR-004 — List Measurements
 
-O sistema deve exibir as medições registradas.
+The system must display recorded measurements.
 
 #### Acceptance Criteria
 
-- [ ] Registros aparecem em ordem decrescente por data.
-- [ ] Cada item mostra a data.
-- [ ] Cada item mostra o peso.
-- [ ] Quando disponíveis, BF%, músculo% e RM são exibidos.
-- [ ] BF kg e músculo kg são exibidos quando houver dados suficientes.
-- [ ] O usuário consegue acessar edição de um registro pela listagem.
+- [ ] Measurements are listed in descending date order.
+- [ ] Each item shows the original recorded fields.
+- [ ] Each item shows derived body fat mass when possible.
+- [ ] Each item shows derived muscle mass when possible.
+- [ ] Missing optional fields are displayed clearly.
+- [ ] The list is usable on mobile.
 
 ---
 
-### FR-005 — Calcular métricas derivadas
+### FR-005 — Calculate Derived Values
 
-O sistema deve calcular métricas derivadas a partir dos dados registrados.
+The system must calculate derived body metrics from the stored values.
 
-#### Fórmulas
+#### Acceptance Criteria
+
+- [ ] BMI is calculated from weight and configured height.
+- [ ] Body fat mass is calculated when weight and body fat percentage are available.
+- [ ] Muscle mass is calculated when weight and muscle percentage are available.
+- [ ] Derived values are not required to be stored in the database.
+
+#### Formulas
 
 ```txt
-IMC = peso / altura²
-BF kg = peso * BF% / 100
-Músculo kg = peso * músculo% / 100
+BMI = weightKg / (heightM * heightM)
+bodyFatKg = weightKg * bodyFatPercentage / 100
+muscleKg = weightKg * musclePercentage / 100
 ```
 
-#### Regras
+---
 
-- IMC deve ser calculado, não registrado manualmente.
-- BF kg só deve ser calculado quando peso e BF% existirem.
-- Músculo kg só deve ser calculado quando peso e músculo% existirem.
-- Altura deve ser configurável em constante/configuração inicial.
+### FR-006 — Weekly Averages
+
+The system must group measurements by week and calculate weekly averages.
 
 #### Acceptance Criteria
 
-- [ ] IMC é exibido a partir do peso e altura configurada.
-- [ ] BF kg é exibido quando peso e BF% existem.
-- [ ] Músculo kg é exibido quando peso e músculo% existem.
-- [ ] Campos derivados não são salvos como fonte primária obrigatória.
+- [ ] Weeks start on Monday.
+- [ ] Weeks end on Sunday.
+- [ ] Only days with measurements are included in averages.
+- [ ] Missing days are not counted as zero.
+- [ ] The system shows how many measurements were used in the current week.
+- [ ] Weekly averages include all available metrics and derived metrics.
 
 ---
 
-### FR-006 — Calcular médias semanais
+### FR-007 — Weekly Comparison
 
-O sistema deve agrupar registros por semana e calcular médias.
-
-#### Regras
-
-- Semana começa na segunda-feira.
-- Semana termina no domingo.
-- Dias sem registro não entram na média.
-- O sistema deve mostrar quantos registros foram usados na média.
+The system must compare the current week against the previous week.
 
 #### Acceptance Criteria
 
-- [ ] Registros são agrupados de segunda a domingo.
-- [ ] Média semanal usa apenas dias registrados.
-- [ ] O dashboard mostra a semana atual.
-- [ ] O dashboard indica quantas medições existem na semana atual.
-- [ ] Métricas opcionais são calculadas apenas com os registros que possuem o campo.
+- [ ] The current week is compared even when incomplete.
+- [ ] The comparison uses the partial current week against the previous full week.
+- [ ] The UI clearly indicates when the current week is partial.
+- [ ] Absolute variation is displayed.
+- [ ] Relative percentage variation is displayed when applicable.
+- [ ] Percentage-based metrics display absolute changes in percentage points.
+- [ ] The system indicates whether each metric moved up, down, or stayed stable.
+- [ ] The system does not classify changes as good or bad in V1.
 
 ---
 
-### FR-007 — Comparar semana atual com semana anterior
+### FR-008 — Weekly Dashboard
 
-O sistema deve comparar a média parcial da semana atual contra a média completa da semana anterior.
-
-#### Regras
-
-- A semana atual deve aparecer mesmo incompleta.
-- É esperado que alguns dias não tenham registro.
-- A comparação da V1 é contra a semana anterior completa, não contra os mesmos dias da semana anterior.
-- O sistema deve indicar que a semana atual está em andamento quando for o caso.
+The system must provide a dashboard as the main screen.
 
 #### Acceptance Criteria
 
-- [ ] Dashboard mostra médias da semana atual.
-- [ ] Dashboard mostra variação contra semana anterior.
-- [ ] Variações em kg são exibidas como diferença absoluta e percentual.
-- [ ] Variações de BF% e músculo% exibem pontos percentuais e variação percentual.
-- [ ] O sistema indica se a métrica subiu, desceu ou está estável.
-- [ ] O sistema pode usar ícone de seta para indicar direção.
-- [ ] A interpretação “bom” ou “ruim” não é feita na V1.
+- [ ] The dashboard is the initial authenticated screen.
+- [ ] The dashboard shows current week averages.
+- [ ] The dashboard shows comparison against the previous week.
+- [ ] The dashboard includes a button to open the measurement form.
+- [ ] The dashboard is mobile-first.
+- [ ] The dashboard uses cards and tables instead of charts in V1.
 
 ---
 
-### FR-008 — Exportar dados
+### FR-009 — CSV Export
 
-O sistema deve permitir exportar os registros.
-
-#### Regras
-
-- Exportação deve ser suficiente como backup manual da V1.
-- Formato inicial: CSV.
+The system must allow the user to export measurements as CSV.
 
 #### Acceptance Criteria
 
-- [ ] O usuário consegue exportar todos os registros.
-- [ ] O arquivo exportado contém os dados primários.
-- [ ] O arquivo exportado contém data em formato consistente.
-- [ ] O arquivo pode ser usado para backup manual.
+- [ ] The user can download a CSV file with all measurements.
+- [ ] The CSV includes raw stored fields.
+- [ ] The CSV format is documented.
+- [ ] Export works without Google Sheets integration.
 
 ---
 
-### FR-009 — Importar dados históricos via CSV
+### FR-010 — CSV Import
 
-O sistema deve permitir importar dados históricos vindos da planilha atual.
-
-#### Regras
-
-- Importação CSV é a última feature da V1.
-- O objetivo é popular o banco inicial sem cadastrar tudo manualmente.
-- Deve haver validação mínima de cabeçalhos e tipos.
-- Datas duplicadas devem atualizar ou ser rejeitadas de forma previsível.
-
-#### Decisão inicial
-
-Na V1, importar uma data já existente deve atualizar o registro existente, mantendo a regra de um registro por dia.
+The system must allow the user to import historical measurements from a CSV file.
 
 #### Acceptance Criteria
 
-- [ ] O usuário consegue fazer upload de um arquivo CSV.
-- [ ] O sistema valida cabeçalhos esperados.
-- [ ] O sistema importa registros válidos.
-- [ ] O sistema informa quantos registros foram importados.
-- [ ] O sistema informa quantos registros falharam.
-- [ ] Datas já existentes são atualizadas, não duplicadas.
+- [ ] The user can upload a CSV file.
+- [ ] The system validates headers.
+- [ ] The system validates rows.
+- [ ] The system upserts records by date.
+- [ ] The system returns an import summary.
+- [ ] Invalid rows are reported clearly.
+- [ ] Import is treated as the last V1 feature.
 
 ---
 
-### FR-010 — Autenticação simples
+### FR-011 — Simple Authentication
 
-O sistema deve ter autenticação simples para impedir acesso indevido básico.
-
-#### Regras
-
-- A V1 terá um único usuário.
-- A senha será armazenada como secret no ambiente de deploy.
-- Não haverá cadastro de usuários.
-- Não haverá recuperação de senha.
-- Todas as rotas de dados devem exigir autenticação.
+The system must protect the app with simple single-user authentication.
 
 #### Acceptance Criteria
 
-- [ ] Usuário precisa autenticar antes de acessar dashboard.
-- [ ] Senha não é exposta no frontend.
-- [ ] Rotas de API rejeitam requisições não autenticadas.
-- [ ] Sessão expira ou pode ser invalidada.
-- [ ] Segredos ficam fora do repositório.
+- [ ] The user must enter a password before accessing the app.
+- [ ] The password is stored as a Cloudflare secret or environment variable.
+- [ ] The password is not committed to the repository.
+- [ ] Authenticated state is stored using a secure session approach.
+- [ ] All data routes require authentication.
+- [ ] Logout is available.
 
 ---
 
-### FR-011 — PWA instalável
+### FR-012 — PWA Installability
 
-O sistema deve ser instalável como PWA.
+The system must be installable as a basic PWA.
 
 #### Acceptance Criteria
 
-- [ ] App possui manifest.
-- [ ] App possui ícones mínimos.
-- [ ] App pode ser instalado no smartphone.
-- [ ] App possui comportamento mobile-first.
-- [ ] Offline-first completo não entra na V1.
+- [ ] The app has a manifest.
+- [ ] The app has basic icons.
+- [ ] The app can be installed on a smartphone.
+- [ ] Full offline-first support is not required in V1.
 
-## Non-functional Requirements
+## Non-Functional Requirements
 
-### NFR-001 — Simplicidade
+### NFR-001 — Mobile-first
 
-A solução deve priorizar entrega da V1, evitando features não essenciais.
+The V1 interface must prioritize smartphone usage.
 
-### NFR-002 — TypeScript
+### NFR-002 — Simplicity
 
-Frontend e backend devem usar TypeScript.
+The implementation should favor a clear, maintainable solution over advanced abstractions.
 
-### NFR-003 — Mobile-first
+### NFR-003 — TypeScript
 
-A UI deve ser desenhada priorizando uso no smartphone.
+Frontend and backend must use TypeScript.
 
-### NFR-004 — Deploy gratuito
+### NFR-004 — Cloudflare Deployment
 
-A V1 deve ser planejada para rodar dentro dos limites do plano gratuito da Cloudflare, enquanto o uso for pessoal.
+V1 must be deployed fully on Cloudflare.
 
-### NFR-005 — Segurança mínima
+### NFR-005 — Personal Use
 
-A aplicação deve proteger dados pessoais contra acesso casual indevido, mas não precisa implementar segurança corporativa na V1.
+V1 is designed for a single user and does not need to support multiple accounts.
 
-### NFR-006 — Manutenibilidade
+### NFR-006 — Data Portability
 
-O código deve ser simples o suficiente para ser retomado, entendido e evoluído futuramente.
+The user must be able to export data in a portable CSV format.
 
-### NFR-007 — Dados confiáveis
+### NFR-007 — Future Migration Awareness
 
-O sistema deve preservar dados primários inseridos pelo usuário e calcular derivados de forma consistente.
+The data access layer should be isolated enough to support a future migration from Cloudflare D1 to serverless Postgres in V2.

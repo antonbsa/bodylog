@@ -1,38 +1,64 @@
-# Body Metrics Tracker — SDD Base
+# Body Metrics Tracker
 
-Este pacote contém a documentação-base para desenvolvimento da V1 do projeto pessoal de registro e análise de métricas corporais.
+A personal, mobile-first PWA for logging daily body metrics from a bioimpedance scale and tracking weekly progress through simple averages and comparisons.
 
-## Objetivo
+The V1 goal is not to build a generic fitness platform. The goal is to make daily logging faster than a spreadsheet while keeping weekly progress easier to read.
 
-Criar um app pessoal, mobile-first e instalável como PWA, para registrar medições diárias de bioimpedância, listar histórico, calcular médias semanais e comparar a semana atual parcial contra a semana anterior completa.
+## V1 Scope
 
-Stack definida para V1:
+- Daily body metrics logging
+- Weekly dashboard
+- Measurement history list
+- Edit and delete records
+- Weekly averages
+- Partial current week vs previous full week comparison
+- CSV import for existing spreadsheet data
+- CSV export for backup
+- Simple single-user authentication
+- Full deployment on Cloudflare
 
-- Frontend: React + Vite + TypeScript.
-- Backend: Hono + TypeScript em Cloudflare Workers.
-- Banco: Cloudflare D1.
-- Deploy: Cloudflare completo, sem compatibilidade com Vercel como requisito.
-- V2: migração planejada para Postgres serverless.
+## Tech Stack
 
-## Estrutura
+- **Frontend:** React + Vite + TypeScript
+- **Backend:** Hono + TypeScript
+- **Runtime:** Cloudflare Workers
+- **Database:** Cloudflare D1
+- **Deployment:** Cloudflare Pages / Workers
+- **Future V2 migration:** serverless Postgres
+
+## Core Metrics
+
+The app stores manually entered scale readings:
+
+- Weight
+- Body fat percentage
+- Muscle percentage
+- Resting metabolism
+
+Only weight is required in V1. Derived values such as BMI, body fat mass, muscle mass, weekly averages, and weekly variation are calculated by the app.
+
+## Documentation
+
+The project follows a lightweight Spec-Driven Development workflow.
 
 ```txt
 docs/
-  sdd/
-  product/
-  technical/
-  implementation/
+  sdd/              Process and documentation model
+  product/          Product definition, requirements, scope, backlog
+  technical/        Architecture, data model, API contract, deployment decisions
+  implementation/   Implementation plan, tasks, validation checklist
 ```
 
-## Como usar com agentes
+Start with:
 
-1. Leia `docs/sdd/00-sdd-guide.md`.
-2. Leia `docs/sdd/01-process.md`.
-3. Leia `docs/sdd/02-agent-rules.md`.
-4. Leia os documentos em `docs/product/`.
-5. Antes de implementar, leia `docs/technical/00-architecture.md`, `docs/technical/01-data-model.md` e `docs/implementation/01-tasks.md`.
+1. `docs/product/00-product-brief.md`
+2. `docs/product/01-requirements.md`
+3. `docs/product/03-scope.md`
+4. `docs/technical/00-architecture.md`
+5. `docs/implementation/01-tasks.md`
 
-## Estado
+Agent-specific instructions are in [`AGENTS.md`](./AGENTS.md).
 
-Base de especificação inicial para V1.  
-Ainda não é plano fechado de implementação detalhado por código.
+## Status
+
+Initial V1 specification base. Implementation has not started yet.

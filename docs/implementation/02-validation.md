@@ -1,155 +1,103 @@
-# Validation
+# Validation Checklist
 
-## Objetivo
+Use this checklist before considering V1 complete.
 
-Definir como validar se a V1 está pronta para uso pessoal diário.
+## Authentication
 
-## Checklist funcional
+- [ ] Unauthenticated user cannot access dashboard.
+- [ ] Unauthenticated user cannot access measurement API.
+- [ ] Valid password logs in successfully.
+- [ ] Invalid password shows an error.
+- [ ] Logout works.
 
-### Autenticação
+## Measurement Form
 
-- [ ] Usuário não autenticado não acessa dashboard.
-- [ ] Login com senha correta funciona.
-- [ ] Login com senha errada falha.
-- [ ] Logout funciona.
+- [ ] Date defaults to today.
+- [ ] Selecting a date with no record shows an empty form.
+- [ ] Selecting a date with a record loads existing data.
+- [ ] Weight is required.
+- [ ] Body fat percentage is optional.
+- [ ] Muscle percentage is optional.
+- [ ] Resting metabolism is optional.
+- [ ] Saving a new date creates a record.
+- [ ] Saving an existing date updates the record.
 
-### Registro
+## Measurement List
 
-- [ ] Formulário abre com data de hoje.
-- [ ] Registro com apenas peso funciona.
-- [ ] Registro com todos os campos funciona.
-- [ ] Selecionar data existente carrega dados.
-- [ ] Selecionar data sem registro limpa campos.
-- [ ] Salvar data existente atualiza, não duplica.
+- [ ] Records are ordered by date descending.
+- [ ] Raw values are displayed.
+- [ ] Derived values are displayed when possible.
+- [ ] Missing optional values are handled clearly.
+- [ ] Edit action works.
+- [ ] Delete action requires confirmation.
+- [ ] Deleted records disappear from the list.
 
-### Listagem
+## Derived Metrics
 
-- [ ] Registros aparecem em ordem decrescente.
-- [ ] Dados opcionais ausentes não quebram UI.
-- [ ] Derivados aparecem quando há dados suficientes.
-- [ ] Editar funciona.
-- [ ] Excluir pede confirmação.
-- [ ] Excluir remove registro.
+- [ ] BMI is calculated correctly.
+- [ ] Body fat mass is calculated correctly.
+- [ ] Muscle mass is calculated correctly.
+- [ ] Missing optional values do not break calculations.
 
-### Cálculos
+## Weekly Logic
 
-- [ ] IMC é calculado corretamente.
-- [ ] BF kg é calculado corretamente.
-- [ ] Músculo kg é calculado corretamente.
-- [ ] Semana começa na segunda.
-- [ ] Semana termina no domingo.
-- [ ] Dias sem registro são ignorados.
-- [ ] Semana parcial é indicada.
-- [ ] Semana atual parcial compara contra semana anterior completa.
-- [ ] BF% e músculo% mostram pontos percentuais.
-- [ ] Métricas mostram variação absoluta.
-- [ ] Métricas mostram variação percentual quando possível.
-- [ ] Direção up/down/stable funciona.
+- [ ] Week starts on Monday.
+- [ ] Week ends on Sunday.
+- [ ] Missing days are ignored in averages.
+- [ ] Optional metric averages ignore missing values.
+- [ ] Current partial week is compared with previous full week.
+- [ ] Measurement count is shown.
+- [ ] Partial week is indicated.
+- [ ] Percentage metrics show percentage-point variation.
+- [ ] Relative percentage variation is calculated when possible.
+- [ ] Direction is shown as up/down/stable.
+- [ ] No metric is labeled good or bad.
 
-### Exportação
+## Dashboard
 
-- [ ] CSV é baixado.
-- [ ] CSV contém todos os registros.
-- [ ] CSV preserva dados primários.
-- [ ] CSV pode ser aberto em planilha.
+- [ ] Dashboard is the main screen after login.
+- [ ] Weekly averages are visible.
+- [ ] Weekly variation is visible.
+- [ ] Register button is visible.
+- [ ] Layout works on smartphone width.
+- [ ] Cards/tables are readable.
 
-### Importação
+## CSV Export
 
-- [ ] CSV válido é importado.
-- [ ] CSV inválido reporta erros.
-- [ ] Datas duplicadas atualizam registros.
-- [ ] Resumo informa importados, atualizados e falhas.
+- [ ] Export downloads a CSV file.
+- [ ] CSV contains all records.
+- [ ] CSV headers match the documented format.
+- [ ] CSV can be opened in a spreadsheet.
 
-### PWA
+## CSV Import
 
-- [ ] Manifest existe.
-- [ ] App é instalável.
-- [ ] App abre corretamente no smartphone.
-- [ ] UI é usável no celular.
+- [ ] Valid CSV imports successfully.
+- [ ] Existing dates are updated.
+- [ ] New dates are created.
+- [ ] Invalid rows are reported.
+- [ ] Import summary is shown.
+- [ ] Imported data appears in list and dashboard.
 
-## Casos de teste importantes
+## PWA
 
-### CT-001 — Registro incompleto
+- [ ] Manifest exists.
+- [ ] Icons are configured.
+- [ ] App can be installed on smartphone.
+- [ ] App still behaves correctly when opened from installed shortcut.
 
-Entrada:
+## Deployment
 
-```txt
-Data: hoje
-Peso: 72.9
-BF%: vazio
-Músculo%: vazio
-RM: vazio
-```
+- [ ] App deploys to Cloudflare.
+- [ ] API works in production.
+- [ ] D1 remote database works.
+- [ ] Secrets are configured.
+- [ ] No secret is committed to the repository.
 
-Esperado:
+## Documentation
 
-- Registro salvo.
-- IMC calculado.
-- BF kg nulo.
-- Músculo kg nulo.
-- RM nulo.
-
-### CT-002 — Data duplicada
-
-1. Criar registro para uma data.
-2. Selecionar a mesma data no formulário.
-3. Alterar peso.
-4. Salvar.
-
-Esperado:
-
-- Mesmo registro atualizado.
-- Nenhuma duplicidade criada.
-
-### CT-003 — Semana parcial
-
-Cenário:
-
-- Semana atual tem registros segunda, terça e quarta.
-- Semana anterior tem registros de segunda a domingo.
-
-Esperado:
-
-- Semana atual aparece.
-- Sistema indica semana parcial.
-- Comparação usa média parcial atual contra média completa anterior.
-
-### CT-004 — Pontos percentuais
-
-Entrada:
-
-```txt
-Semana anterior BF%: 16.20
-Semana atual BF%: 14.46
-```
-
-Esperado:
-
-```txt
-Diferença: -1.74 pontos percentuais
-```
-
-### CT-005 — Export/import
-
-1. Criar registros.
-2. Exportar CSV.
-3. Limpar banco local de teste.
-4. Importar CSV.
-
-Esperado:
-
-- Registros restaurados.
-- Datas preservadas.
-- Valores preservados.
-
-## Critério de pronto da V1
-
-A V1 está pronta quando:
-
-- todos os fluxos principais funcionam;
-- o app pode ser usado no smartphone;
-- dados ficam persistidos;
-- dashboard semanal substitui a leitura da planilha;
-- exportação CSV permite backup;
-- importação CSV permite carregar histórico inicial;
-- documentação reflete as decisões implementadas.
+- [ ] README describes the actual project.
+- [ ] AGENTS.md reflects the implementation rules.
+- [ ] Requirements match implemented behavior.
+- [ ] API contract matches implemented routes.
+- [ ] Data model matches migrations.
+- [ ] Backlog contains deferred ideas.

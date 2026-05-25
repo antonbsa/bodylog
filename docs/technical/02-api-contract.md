@@ -1,14 +1,14 @@
 # API Contract
 
-## Base
+## Base Rules
 
-Todas as rotas de dados exigem autenticação.
+All data routes require authentication.
 
 ## Auth
 
 ### POST /api/auth/login
 
-Autentica o usuário único.
+Authenticates the single user.
 
 #### Request
 
@@ -39,7 +39,7 @@ Autentica o usuário único.
 
 ### POST /api/auth/logout
 
-Encerra sessão.
+Ends the session.
 
 #### Response 200
 
@@ -53,7 +53,7 @@ Encerra sessão.
 
 ### GET /api/auth/session
 
-Verifica sessão.
+Checks the current session.
 
 #### Response 200
 
@@ -75,9 +75,9 @@ Verifica sessão.
 
 ### GET /api/measurements
 
-Lista medições.
+Lists measurements.
 
-#### Query params opcionais
+#### Optional query params
 
 ```txt
 from=YYYY-MM-DD
@@ -114,7 +114,7 @@ offset=number
 
 ### GET /api/measurements/by-date/:date
 
-Busca registro por data.
+Finds a measurement by date.
 
 #### Response 200
 
@@ -145,7 +145,7 @@ Busca registro por data.
 
 ### PUT /api/measurements/by-date/:date
 
-Cria ou atualiza medição da data.
+Creates or updates the measurement for a date.
 
 #### Request
 
@@ -158,12 +158,12 @@ Cria ou atualiza medição da data.
 }
 ```
 
-#### Regras
+#### Rules
 
-- `weightKg` é obrigatório.
-- Demais campos aceitam `number` ou `null`.
-- Se a data já existir, atualizar.
-- Se a data não existir, criar.
+- `weightKg` is required.
+- Other fields accept `number` or `null`.
+- If the date already exists, update it.
+- If the date does not exist, create it.
 
 #### Response 200
 
@@ -186,7 +186,7 @@ Cria ou atualiza medição da data.
 
 ### DELETE /api/measurements/:id
 
-Exclui medição.
+Deletes a measurement.
 
 #### Response 200
 
@@ -200,7 +200,7 @@ Exclui medição.
 
 ### GET /api/dashboard/weekly
 
-Retorna resumo semanal da semana atual e comparação contra semana anterior.
+Returns the weekly summary for the current week and comparison against the previous week.
 
 #### Response 200
 
@@ -226,71 +226,80 @@ Retorna resumo semanal da semana atual e comparação contra semana anterior.
     "weekStartDate": "YYYY-MM-DD",
     "weekEndDate": "YYYY-MM-DD",
     "measurementCount": 7,
-    "isCurrentWeek": false,
-    "isPartialWeek": false,
-    "averages": {}
+    "averages": {
+      "weightKg": 71.75,
+      "bmi": 24.82,
+      "bodyFatPercentage": 16.2,
+      "bodyFatKg": 11.62,
+      "musclePercentage": 42.75,
+      "muscleKg": 30.67,
+      "restingMetabolismKcal": 1680
+    }
   },
-  "deltas": {
+  "variation": {
     "weightKg": {
       "absolute": 1.15,
-      "percentage": 1.6,
+      "relativePercentage": 1.6,
       "direction": "up"
     },
     "bodyFatPercentage": {
-      "absolute": -1.74,
-      "percentage": -10.74,
-      "percentagePoints": -1.74,
+      "absolutePercentagePoints": -1.74,
+      "relativePercentage": -10.74,
       "direction": "down"
     }
   }
 }
 ```
 
-## Import/export
+## CSV
 
-### GET /api/export/measurements.csv
+### GET /api/export/csv
 
-Exporta todos os registros em CSV.
+Exports all measurements as CSV.
+
+#### Response 200
+
+Content type:
+
+```txt
+text/csv
+```
+
+Initial columns:
+
+```txt
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
+```
 
 ---
 
-### POST /api/import/measurements.csv
+### POST /api/import/csv
 
-Importa CSV.
+Imports measurements from CSV.
+
+#### Request
+
+Multipart upload containing a CSV file.
+
+#### Rules
+
+- Validate headers.
+- Validate each row.
+- Upsert by date.
+- Return import summary.
 
 #### Response 200
 
 ```json
 {
-  "imported": 30,
+  "created": 10,
   "updated": 5,
-  "failed": 2,
+  "skipped": 1,
   "errors": [
     {
-      "row": 10,
-      "error": "INVALID_DATE"
+      "row": 7,
+      "message": "Invalid weight value"
     }
   ]
-}
-```
-
-## Erros comuns
-
-```json
-{
-  "error": "VALIDATION_ERROR",
-  "message": "weightKg is required"
-}
-```
-
-```json
-{
-  "error": "UNAUTHORIZED"
-}
-```
-
-```json
-{
-  "error": "NOT_FOUND"
 }
 ```

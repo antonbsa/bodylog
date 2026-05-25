@@ -1,306 +1,282 @@
 # Tasks
 
-## Fase 0 — Validação técnica
+## Phase 0 — Technical Validation
 
-### T-001 — Criar base da API Hono em Cloudflare Workers
+### T-001 — Create Hono API Base on Cloudflare Workers
 
-Relacionado: ADR-014.
+Related: ADR-014.
 
 #### Acceptance Criteria
 
-- [ ] Criar app mínimo com Hono.
-- [ ] Rodar localmente via Wrangler.
-- [ ] Fazer deploy em Cloudflare Workers.
-- [ ] Criar rota `/api/health`.
-- [ ] Confirmar que middleware básico funciona.
-- [ ] Confirmar que a estrutura suporta rotas `/api/*`.
-- [ ] Registrar comandos mínimos de desenvolvimento e deploy.
+- [ ] Create a minimal Hono app.
+- [ ] Run locally through Wrangler.
+- [ ] Deploy to Cloudflare Workers.
+- [ ] Create `/api/health` route.
+- [ ] Confirm basic middleware works.
+- [ ] Confirm the structure supports `/api/*` routes.
+- [ ] Document minimum development and deployment commands.
 
 ---
 
-### T-002 — Validar D1
+### T-002 — Validate D1
 
-Relacionado: ADR-016.
+Related: ADR-016.
 
 #### Acceptance Criteria
 
-- [ ] Criar banco D1 local.
-- [ ] Criar banco D1 remoto.
-- [ ] Rodar migration inicial.
-- [ ] Executar query simples pela API.
-- [ ] Documentar comando de migration.
+- [ ] Create local D1 database.
+- [ ] Create remote D1 database.
+- [ ] Run initial migration.
+- [ ] Execute a simple query through the API.
+- [ ] Document migration command.
 
 ---
 
-### T-003 — Definir estratégia de deploy
+### T-003 — Define Deployment Strategy
 
-Relacionado: `docs/technical/03-deployment.md`.
+Related: `docs/technical/03-deployment.md`.
 
 #### Acceptance Criteria
 
-- [ ] Escolher Pages + Worker separado ou Worker único com assets.
-- [ ] Registrar decisão.
-- [ ] Criar deploy mínimo.
+- [ ] Choose Pages + separate Worker or single Worker with assets.
+- [ ] Record the decision.
+- [ ] Create minimal deployment.
 
 ---
 
-## Fase 1 — Base
+## Phase 1 — Base
 
-### T-004 — Criar estrutura do projeto
+### T-004 — Create Project Structure
 
 #### Acceptance Criteria
 
-- [ ] Criar estrutura frontend/backend.
-- [ ] Configurar TypeScript.
-- [ ] Configurar scripts principais.
-- [ ] Adicionar README técnico inicial.
+- [ ] Create frontend/backend structure.
+- [ ] Configure TypeScript.
+- [ ] Configure main scripts.
+- [ ] Add initial technical README notes if needed.
 
 ---
 
-### T-005 — Configurar frontend
+### T-005 — Configure Frontend
 
 #### Acceptance Criteria
 
-- [ ] React + Vite funcionando.
-- [ ] TypeScript funcionando.
-- [ ] Build funcionando.
-- [ ] Página inicial renderiza.
+- [ ] React + Vite working.
+- [ ] TypeScript working.
+- [ ] Build working.
+- [ ] Initial page renders.
 
 ---
 
-### T-006 — Configurar PWA básico
+### T-006 — Configure Basic PWA
 
 #### Acceptance Criteria
 
-- [ ] Manifest criado.
-- [ ] Ícones mínimos configurados.
-- [ ] App instalável no smartphone.
-- [ ] Offline-first completo não implementado.
+- [ ] Manifest created.
+- [ ] Minimum icons configured.
+- [ ] App installable on smartphone.
+- [ ] Full offline-first behavior not implemented.
 
 ---
 
-## Fase 2 — Banco e domínio
+## Phase 2 — Database and Domain
 
-### T-007 — Criar migration de measurements
+### T-007 — Create Measurements Migration
 
 #### Acceptance Criteria
 
-- [ ] Tabela `measurements` criada.
-- [ ] Campo `date` único.
-- [ ] Índice por data criado.
-- [ ] Migration versionada.
+- [ ] `measurements` table created.
+- [ ] `date` field is unique.
+- [ ] `weight_kg` is required.
+- [ ] Optional fields are nullable.
+- [ ] Migration works locally and remotely.
 
 ---
 
-### T-008 — Implementar cálculos derivados
+### T-008 — Implement Measurement Repository
 
 #### Acceptance Criteria
 
-- [ ] Função calcula IMC.
-- [ ] Função calcula BF kg.
-- [ ] Função calcula músculo kg.
-- [ ] Campos ausentes retornam `null`.
-- [ ] Testes unitários criados.
+- [ ] Create measurement.
+- [ ] Update measurement by date.
+- [ ] Get measurement by date.
+- [ ] List measurements by date descending.
+- [ ] Delete measurement.
+- [ ] SQL is contained in repository layer.
 
 ---
 
-### T-009 — Implementar cálculo semanal
+### T-009 — Implement Derived Calculations
 
 #### Acceptance Criteria
 
-- [ ] Semana começa na segunda.
-- [ ] Semana termina no domingo.
-- [ ] Dias sem registro são ignorados.
-- [ ] Contagem de registros é retornada.
-- [ ] Testes cobrem semanas parciais.
+- [ ] BMI calculated from configured height.
+- [ ] Body fat mass calculated when possible.
+- [ ] Muscle mass calculated when possible.
+- [ ] Missing optional fields return `null` derived values.
+- [ ] Tests or clear validation examples added.
 
 ---
 
-### T-010 — Implementar comparação semanal
+### T-010 — Implement Weekly Logic
 
 #### Acceptance Criteria
 
-- [ ] Semana atual parcial é comparada contra semana anterior completa.
-- [ ] Diferença absoluta é calculada.
-- [ ] Diferença percentual é calculada quando possível.
-- [ ] Pontos percentuais são calculados para BF% e músculo%.
-- [ ] Direção `up/down/stable` é retornada.
+- [ ] Week starts on Monday.
+- [ ] Week ends on Sunday.
+- [ ] Missing days are ignored.
+- [ ] Missing metric values are ignored per metric.
+- [ ] Weekly averages are calculated correctly.
+- [ ] Current partial week is compared against previous full week.
+- [ ] Percentage metrics use percentage points for absolute difference.
 
 ---
 
-## Fase 3 — Autenticação
+## Phase 3 — Authentication
 
-### T-011 — Implementar login
+### T-011 — Implement Login
 
 #### Acceptance Criteria
 
-- [ ] Endpoint de login criado.
-- [ ] Senha validada contra secret.
-- [ ] Sessão criada com segurança mínima.
-- [ ] Senha não aparece no frontend nem logs.
+- [ ] Login screen created.
+- [ ] Login endpoint created.
+- [ ] Password read from secret/environment.
+- [ ] Invalid password returns clear error.
+- [ ] Valid login creates session.
 
 ---
 
-### T-012 — Proteger rotas
+### T-012 — Protect Routes
 
 #### Acceptance Criteria
 
-- [ ] Rotas de dados exigem sessão válida.
-- [ ] Requisições sem sessão retornam 401.
-- [ ] Logout remove sessão.
+- [ ] Measurement API requires authentication.
+- [ ] Dashboard API requires authentication.
+- [ ] CSV import/export require authentication.
+- [ ] Unauthenticated users are redirected or receive 401.
 
 ---
 
-## Fase 4 — CRUD
-
-### T-013 — Implementar listagem de medições na API
+### T-013 — Implement Logout
 
 #### Acceptance Criteria
 
-- [ ] Endpoint retorna registros ordenados por data desc.
-- [ ] Resposta inclui derivados disponíveis.
-- [ ] Filtros básicos por data são aceitos ou planejados.
+- [ ] Logout endpoint created.
+- [ ] Logout clears session.
+- [ ] User returns to login screen.
 
 ---
 
-### T-014 — Implementar busca por data
+## Phase 4 — Measurement CRUD
+
+### T-014 — Implement Measurement Form
 
 #### Acceptance Criteria
 
-- [ ] Endpoint retorna registro quando data existe.
-- [ ] Endpoint retorna item nulo ou 404 controlado quando data não existe.
+- [ ] Form opens from dashboard.
+- [ ] Date defaults to today.
+- [ ] User can change date.
+- [ ] Existing date loads existing record.
+- [ ] Empty date shows empty fields.
+- [ ] Only weight is required.
+- [ ] Save creates or updates by date.
 
 ---
 
-### T-015 — Implementar upsert por data
+### T-015 — Implement Measurement List
 
 #### Acceptance Criteria
 
-- [ ] Data nova cria registro.
-- [ ] Data existente atualiza registro.
-- [ ] Apenas peso é obrigatório.
-- [ ] Validação rejeita valores inválidos.
+- [ ] Measurements listed by date descending.
+- [ ] Raw values shown.
+- [ ] Derived values shown when possible.
+- [ ] Missing optional values handled clearly.
+- [ ] Edit action available.
+- [ ] Delete action available.
 
 ---
 
-### T-016 — Implementar exclusão
+### T-016 — Implement Delete Confirmation
 
 #### Acceptance Criteria
 
-- [ ] Endpoint exclui registro por id.
-- [ ] UI pede confirmação.
-- [ ] Dashboard/listagem atualizam após exclusão.
+- [ ] User must confirm before deletion.
+- [ ] Deleted record disappears from list.
+- [ ] Dashboard recalculates after deletion.
 
 ---
 
-### T-017 — Criar formulário de registro/edição
+## Phase 5 — Weekly Dashboard
+
+### T-017 — Implement Weekly Dashboard API
 
 #### Acceptance Criteria
 
-- [ ] Data padrão é hoje.
-- [ ] Selecionar data existente carrega dados.
-- [ ] Selecionar data vazia limpa campos.
-- [ ] Peso é obrigatório.
-- [ ] BF%, músculo% e RM são opcionais.
-- [ ] Salvar chama upsert.
+- [ ] Returns current week summary.
+- [ ] Returns previous week summary.
+- [ ] Returns variation object.
+- [ ] Includes measurement counts.
+- [ ] Indicates partial current week.
 
 ---
 
-### T-018 — Criar listagem
+### T-018 — Implement Dashboard UI
 
 #### Acceptance Criteria
 
-- [ ] Registros aparecem por data desc.
-- [ ] Dados principais são exibidos.
-- [ ] Derivados são exibidos quando possíveis.
-- [ ] Editar e excluir estão disponíveis.
+- [ ] Dashboard is initial authenticated screen.
+- [ ] Shows weekly average cards.
+- [ ] Shows variation cards.
+- [ ] Shows up/down/stable indicators.
+- [ ] Shows partial week notice.
+- [ ] Has button to register measurement.
+- [ ] Mobile-first layout.
 
 ---
 
-## Fase 5 — Dashboard
+## Phase 6 — CSV Export
 
-### T-019 — Criar endpoint de dashboard semanal
+### T-019 — Implement CSV Export
 
 #### Acceptance Criteria
 
-- [ ] Retorna semana atual.
-- [ ] Retorna semana anterior.
-- [ ] Retorna deltas.
-- [ ] Indica semana parcial.
-- [ ] Indica quantidade de medições.
+- [ ] Export endpoint returns CSV.
+- [ ] CSV includes all records.
+- [ ] CSV uses documented headers.
+- [ ] UI has export action.
 
 ---
 
-### T-020 — Criar UI de dashboard
+## Phase 7 — CSV Import
+
+### T-020 — Implement CSV Import
 
 #### Acceptance Criteria
 
-- [ ] Dashboard é tela principal.
-- [ ] Cards exibem médias.
-- [ ] Cards exibem variações.
-- [ ] Direção aparece como texto.
-- [ ] Direção pode usar seta/ícone.
-- [ ] Botão de registrar medição é visível.
+- [ ] Upload endpoint accepts CSV file.
+- [ ] Headers are validated.
+- [ ] Rows are validated.
+- [ ] Records are upserted by date.
+- [ ] Import summary is returned.
+- [ ] Invalid rows are reported.
+- [ ] UI has import action.
 
 ---
 
-## Fase 6 — Exportação
+## Phase 8 — Final Validation
 
-### T-021 — Implementar exportação CSV
-
-#### Acceptance Criteria
-
-- [ ] Endpoint gera CSV.
-- [ ] CSV contém dados primários.
-- [ ] Datas usam formato consistente.
-- [ ] Botão de download funciona.
-
----
-
-## Fase 7 — Importação
-
-### T-022 — Implementar importação CSV
+### T-021 — Validate V1 End-to-End
 
 #### Acceptance Criteria
 
-- [ ] Upload CSV funciona.
-- [ ] Cabeçalhos são validados.
-- [ ] Linhas inválidas são reportadas.
-- [ ] Registros são criados ou atualizados por data.
-- [ ] Resumo da importação é exibido.
-
----
-
-## Fase 8 — Fechamento
-
-### T-023 — Validar PWA no smartphone
-
-#### Acceptance Criteria
-
-- [ ] App pode ser instalado.
-- [ ] App abre em modo standalone.
-- [ ] Fluxo de registro funciona no celular.
-
----
-
-### T-024 — Validar fluxo completo
-
-#### Acceptance Criteria
-
-- [ ] Login funciona.
-- [ ] Registro funciona.
-- [ ] Edição funciona.
-- [ ] Exclusão funciona.
-- [ ] Dashboard atualiza.
-- [ ] Exportação funciona.
-- [ ] Importação funciona.
-
----
-
-### T-025 — Atualizar documentação final da V1
-
-#### Acceptance Criteria
-
-- [ ] Decisões técnicas finais registradas.
-- [ ] Backlog atualizado.
-- [ ] Pendências conhecidas registradas.
+- [ ] Login works.
+- [ ] Create measurement works.
+- [ ] Edit measurement works.
+- [ ] Delete measurement works.
+- [ ] List works.
+- [ ] Dashboard works.
+- [ ] CSV export works.
+- [ ] CSV import works.
+- [ ] PWA installability works.
+- [ ] Production deployment works.
+- [ ] Docs reflect final behavior.

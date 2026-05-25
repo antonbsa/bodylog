@@ -1,176 +1,176 @@
 # Implementation Plan
 
-## Objetivo
+## Goal
 
-Implementar a V1 do Body Metrics Tracker com foco em entrega funcional, mobile-first e deploy simples na Cloudflare.
+Implement V1 of Body Metrics Tracker with a functional, mobile-first experience and simple Cloudflare deployment.
 
-## Fases
+## Phases
 
-### Fase 0 — Validação técnica
+### Phase 0 — Technical Validation
 
-Objetivo: remover riscos que poderiam inviabilizar arquitetura.
+Goal: remove risks that could block the architecture.
 
-Tarefas principais:
+Main tasks:
 
-- Criar base da API com Hono em Cloudflare Workers.
-- Validar D1 local e remoto.
-- Validar autenticação simples com cookie.
-- Definir estratégia final de deploy: Pages + Worker ou Worker único com assets.
+- Create the API base with Hono on Cloudflare Workers.
+- Validate local and remote D1 usage.
+- Validate simple authentication with cookies.
+- Choose the final deployment strategy: Pages + Worker or a single Worker with assets.
 
-Resultado esperado:
+Expected result:
 
-- API Hono mínima funcionando.
-- Projeto base inicial criado.
-- Deploy mínimo funcionando.
-
----
-
-### Fase 1 — Base do projeto
-
-Objetivo: criar estrutura mínima de app.
-
-Tarefas principais:
-
-- Criar monorepo ou estrutura simples.
-- Configurar TypeScript.
-- Configurar frontend React/Vite.
-- Configurar backend Hono.
-- Configurar lint/typecheck.
-- Configurar PWA básico.
-- Configurar variáveis/secrets esperados.
-
-Resultado esperado:
-
-- App abre.
-- API responde healthcheck.
-- Typecheck passa.
+- Minimal Hono API working.
+- Initial project base created.
+- Minimal deployment working.
 
 ---
 
-### Fase 2 — Banco e domínio
+### Phase 1 — Project Base
 
-Objetivo: implementar persistência e regras centrais.
+Goal: create the minimum app structure.
 
-Tarefas principais:
+Main tasks:
 
-- Criar migration de measurements.
-- Implementar repositório de measurements.
-- Implementar cálculos derivados.
-- Implementar agrupamento semanal.
-- Implementar comparação semanal.
-- Criar testes para fórmulas e semanas.
+- Create a monorepo or simple project structure.
+- Configure TypeScript.
+- Configure React/Vite frontend.
+- Configure Hono backend.
+- Configure lint/typecheck.
+- Configure basic PWA setup.
+- Configure expected variables/secrets.
 
-Resultado esperado:
+Expected result:
 
-- Cálculos centrais funcionam independentemente da UI.
-
----
-
-### Fase 3 — Autenticação
-
-Objetivo: proteger dados.
-
-Tarefas principais:
-
-- Criar tela de login.
-- Criar endpoint de login.
-- Criar sessão assinada.
-- Proteger rotas de API.
-- Criar logout.
-
-Resultado esperado:
-
-- Usuário só acessa dashboard autenticado.
+- App opens.
+- API responds to healthcheck.
+- Typecheck passes.
 
 ---
 
-### Fase 4 — CRUD de medições
+### Phase 2 — Database and Domain
 
-Objetivo: permitir uso diário.
+Goal: implement persistence and core rules.
 
-Tarefas principais:
+Main tasks:
 
-- Criar endpoint para listar registros.
-- Criar endpoint para buscar por data.
-- Criar endpoint para upsert por data.
-- Criar endpoint para excluir.
-- Criar formulário mobile-first.
-- Implementar comportamento de data existente vs data vazia.
-- Criar listagem.
+- Create the `measurements` migration.
+- Implement the measurement repository.
+- Implement derived calculations.
+- Implement weekly grouping.
+- Implement weekly comparison.
+- Create tests for formulas and week logic.
 
-Resultado esperado:
+Expected result:
 
-- Usuário registra, edita, exclui e lista medições.
-
----
-
-### Fase 5 — Dashboard semanal
-
-Objetivo: entregar o principal valor analítico da V1.
-
-Tarefas principais:
-
-- Criar endpoint de dashboard semanal.
-- Criar cards de médias.
-- Criar cards de variação.
-- Exibir direção com texto e ícone.
-- Indicar semana parcial.
-- Indicar quantidade de registros usados.
-
-Resultado esperado:
-
-- Usuário entende evolução semanal sem abrir planilha.
+- Core calculations work independently from the UI.
 
 ---
 
-### Fase 6 — Exportação CSV
+### Phase 3 — Authentication
 
-Objetivo: oferecer backup manual.
+Goal: protect personal data.
 
-Tarefas principais:
+Main tasks:
 
-- Criar endpoint de exportação CSV.
-- Criar botão de exportação.
-- Validar formato exportado.
+- Create login screen.
+- Create login endpoint.
+- Create signed session.
+- Protect API routes.
+- Create logout.
 
-Resultado esperado:
+Expected result:
 
-- Usuário baixa CSV com registros.
-
----
-
-### Fase 7 — Importação CSV
-
-Objetivo: popular histórico da planilha atual.
-
-Tarefas principais:
-
-- Criar endpoint de upload CSV.
-- Validar cabeçalhos.
-- Validar linhas.
-- Fazer upsert por data.
-- Retornar resumo da importação.
-- Criar UI de importação.
-
-Resultado esperado:
-
-- Usuário importa histórico sem cadastrar manualmente.
+- The user can access the dashboard only when authenticated.
 
 ---
 
-### Fase 8 — Ajuste final e validação
+### Phase 4 — Measurement CRUD
 
-Objetivo: fechar V1 usável.
+Goal: enable daily usage.
 
-Tarefas principais:
+Main tasks:
 
-- Revisar UX mobile.
-- Testar instalação PWA.
-- Testar deploy.
-- Testar fluxos completos.
-- Atualizar documentação.
-- Registrar pendências para V1.1/V2.
+- Create endpoint to list records.
+- Create endpoint to fetch by date.
+- Create endpoint to upsert by date.
+- Create endpoint to delete.
+- Create mobile-first form.
+- Implement existing-date vs empty-date behavior.
+- Create measurement list.
 
-Resultado esperado:
+Expected result:
 
-- V1 pronta para uso pessoal diário.
+- The user can create, edit, delete, and list measurements.
+
+---
+
+### Phase 5 — Weekly Dashboard
+
+Goal: deliver the main analytical value of V1.
+
+Main tasks:
+
+- Create weekly dashboard endpoint.
+- Create average cards.
+- Create variation cards.
+- Show direction with text and icon.
+- Indicate partial week.
+- Indicate measurement count.
+
+Expected result:
+
+- The user can understand weekly evolution without opening a spreadsheet.
+
+---
+
+### Phase 6 — CSV Export
+
+Goal: provide manual backup.
+
+Main tasks:
+
+- Create CSV export endpoint.
+- Create export button.
+- Validate exported format.
+
+Expected result:
+
+- The user can download a CSV with records.
+
+---
+
+### Phase 7 — CSV Import
+
+Goal: populate historical spreadsheet data.
+
+Main tasks:
+
+- Create CSV upload endpoint.
+- Validate headers.
+- Validate rows.
+- Upsert by date.
+- Return import summary.
+- Create import UI.
+
+Expected result:
+
+- The user can import history without manual entry.
+
+---
+
+### Phase 8 — Final Polish and Validation
+
+Goal: close a usable V1.
+
+Main tasks:
+
+- Review mobile UX.
+- Test PWA installability.
+- Test deployment.
+- Test full flows.
+- Update documentation.
+- Register V1.1/V2 pending items.
+
+Expected result:
+
+- V1 is ready for daily personal use.
