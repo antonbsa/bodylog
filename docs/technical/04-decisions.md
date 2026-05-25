@@ -285,3 +285,30 @@ V1 will include basic PWA installability but not full offline-first behavior.
 ### Reason
 
 Installability improves mobile usage with limited complexity. Offline-first behavior is useful but should be deferred.
+
+---
+
+## ADR-019 — Cloudflare Pages and Separate Worker Deployment
+
+### Status
+
+Accepted.
+
+### Decision
+
+V1 will deploy the React/Vite frontend to Cloudflare Pages and the Hono API to a separate Cloudflare Worker.
+
+Local development will also use separate processes:
+
+- Vite for the frontend.
+- Wrangler for the API Worker.
+
+### Reason
+
+The app is expected to have a full API separate from the frontend. Keeping the frontend and API as separate deployment targets makes each side easier to reason about, test, and evolve while staying fully on Cloudflare.
+
+### Consequences
+
+- The frontend needs an environment-configured API base URL.
+- The API needs CORS and cookie/session settings compatible with the Pages frontend origin.
+- Deployment automation needs to handle both Cloudflare Pages and the Worker.

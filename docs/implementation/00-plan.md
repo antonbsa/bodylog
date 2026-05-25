@@ -15,13 +15,14 @@ Main tasks:
 - Create the API base with Hono on Cloudflare Workers.
 - Validate local and remote D1 usage.
 - Validate simple authentication with cookies.
-- Choose the final deployment strategy: Pages + Worker or a single Worker with assets.
+- Choose the final deployment strategy: Cloudflare Pages + separate Worker.
 
 Expected result:
 
 - Minimal Hono API working.
 - Initial project base created.
-- Minimal deployment working.
+- Minimal Worker deployment working.
+- Deployment strategy recorded.
 
 ---
 
