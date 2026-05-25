@@ -42,6 +42,7 @@ Do:
 - Keep the implementation small and understandable.
 - Preserve TypeScript across frontend and backend.
 - Implement one requirement at a time.
+- Add automated tests together with implemented behavior.
 - Keep data access isolated behind a repository/service layer.
 - Update docs when implementation decisions change.
 - Prefer boring, explicit code over unnecessary abstraction.
@@ -79,5 +80,15 @@ If ambiguity does not block implementation, choose the simplest option that sati
 1. Read the relevant specs.
 2. Identify the requirement/task being implemented.
 3. Make the smallest useful change.
-4. Validate against acceptance criteria.
-5. Update docs if behavior changed.
+4. Add or update automated tests that cover the behavior.
+5. Run the relevant automated checks.
+6. Validate against acceptance criteria.
+7. Update docs if behavior changed.
+
+## Testing Expectations
+
+- Unit-test domain logic such as derived calculations, validation, weekly grouping, weekly averages, and weekly comparison.
+- Test repository and API behavior where persistence, authentication, routing, or serialization rules are implemented.
+- Add E2E coverage for complete user-facing flows once the frontend route exists.
+- Keep tests focused on V1 behavior and acceptance criteria.
+- If a task cannot reasonably have automated coverage yet, document the reason and perform a manual validation.

@@ -35,6 +35,7 @@ Main tasks:
 - Configure TypeScript.
 - Configure React/Vite frontend.
 - Configure Hono backend.
+- Configure unit and E2E test tooling.
 - Configure lint/typecheck.
 - Configure basic PWA setup.
 - Configure expected variables/secrets.
@@ -43,7 +44,7 @@ Expected result:
 
 - App opens.
 - API responds to healthcheck.
-- Typecheck passes.
+- Typecheck and baseline tests pass.
 
 ---
 

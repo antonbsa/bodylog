@@ -52,6 +52,8 @@ Related: `docs/technical/03-deployment.md`.
 
 - [ ] Create frontend/backend structure.
 - [ ] Configure TypeScript.
+- [ ] Configure unit test tooling.
+- [ ] Configure E2E test tooling.
 - [ ] Configure main scripts.
 - [ ] Add initial technical README notes if needed.
 
@@ -103,6 +105,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] List measurements by date descending.
 - [ ] Delete measurement.
 - [ ] SQL is contained in repository layer.
+- [ ] Repository behavior is covered by automated tests or documented local D1 validation.
 
 ---
 
@@ -114,7 +117,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Body fat mass calculated when possible.
 - [ ] Muscle mass calculated when possible.
 - [ ] Missing optional fields return `null` derived values.
-- [ ] Tests or clear validation examples added.
+- [ ] Unit tests cover derived calculation behavior.
 
 ---
 
@@ -129,6 +132,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Weekly averages are calculated correctly.
 - [ ] Current partial week is compared against previous full week.
 - [ ] Percentage metrics use percentage points for absolute difference.
+- [ ] Unit tests cover week boundaries, missing values, averages, and comparison rules.
 
 ---
 
@@ -143,6 +147,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Password read from secret/environment.
 - [ ] Invalid password returns clear error.
 - [ ] Valid login creates session.
+- [ ] Login behavior is covered by backend tests and E2E coverage for the screen flow.
 
 ---
 
@@ -154,6 +159,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Dashboard API requires authentication.
 - [ ] CSV import/export require authentication.
 - [ ] Unauthenticated users are redirected or receive 401.
+- [ ] Protected route behavior is covered by automated tests.
 
 ---
 
@@ -180,6 +186,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Empty date shows empty fields.
 - [ ] Only weight is required.
 - [ ] Save creates or updates by date.
+- [ ] E2E tests cover create and existing-date edit behavior.
 
 ---
 
@@ -193,6 +200,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Missing optional values handled clearly.
 - [ ] Edit action available.
 - [ ] Delete action available.
+- [ ] E2E or component-level tests cover list rendering states.
 
 ---
 
@@ -203,6 +211,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] User must confirm before deletion.
 - [ ] Deleted record disappears from list.
 - [ ] Dashboard recalculates after deletion.
+- [ ] E2E tests cover delete confirmation and resulting UI update.
 
 ---
 
@@ -217,6 +226,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Returns variation object.
 - [ ] Includes measurement counts.
 - [ ] Indicates partial current week.
+- [ ] API or service tests cover dashboard summary and variation output.
 
 ---
 
@@ -231,6 +241,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Shows partial week notice.
 - [ ] Has button to register measurement.
 - [ ] Mobile-first layout.
+- [ ] E2E tests cover the authenticated dashboard display.
 
 ---
 
@@ -244,6 +255,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] CSV includes all records.
 - [ ] CSV uses documented headers.
 - [ ] UI has export action.
+- [ ] Automated tests cover exported headers and row values.
 
 ---
 
@@ -260,6 +272,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] Import summary is returned.
 - [ ] Invalid rows are reported.
 - [ ] UI has import action.
+- [ ] Automated tests cover valid import, invalid rows, and upsert by date.
 
 ---
 
@@ -279,4 +292,7 @@ Related: `docs/technical/03-deployment.md`.
 - [ ] CSV import works.
 - [ ] PWA installability works.
 - [ ] Production deployment works.
+- [ ] Unit tests pass.
+- [ ] API/backend tests pass.
+- [ ] E2E tests pass.
 - [ ] Docs reflect final behavior.

@@ -50,9 +50,19 @@ For each task:
 
 1. Read the relevant requirement and acceptance criteria.
 2. Implement the smallest useful change.
-3. Run checks/tests when available.
-4. Manually validate the behavior if tests do not exist yet.
-5. Mark the task as complete or record what remains.
+3. Add or update automated tests for the implemented behavior.
+4. Run the relevant checks/tests.
+5. Manually validate behavior that cannot reasonably be automated yet.
+6. Mark the task as complete or record what remains.
+
+## Testing Rule
+
+Automated tests are expected to be implemented together with features, not postponed to final validation.
+
+- Domain rules should have unit tests.
+- API, repository, and authentication behavior should have backend tests.
+- Completed browser flows should have E2E tests.
+- Final validation should confirm the full V1 path still works, but it should not be the first time a feature is tested.
 
 ## Ambiguity Rule
 
