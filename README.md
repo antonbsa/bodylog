@@ -88,7 +88,14 @@ Deploy the Worker to Cloudflare:
 npm run deploy
 ```
 
-In non-interactive environments, Wrangler requires `CLOUDFLARE_API_TOKEN` to be set before deployment.
+For local interactive deployment, authenticate Wrangler once through the browser:
+
+```sh
+npx wrangler login
+npm run deploy
+```
+
+For non-interactive deployment, such as CI or an agent environment, Wrangler requires `CLOUDFLARE_API_TOKEN` to be set before deployment.
 Use `.env.example` as the template for a local `.env` file, then load it before deploying:
 
 ```sh
