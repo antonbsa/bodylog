@@ -10,13 +10,13 @@ Related: ADR-014.
 
 - [x] Create a minimal Hono app.
 - [x] Run locally through Wrangler.
-- [ ] Deploy to Cloudflare Workers.
+- [x] Deploy to Cloudflare Workers.
 - [x] Create `/api/health` route.
 - [x] Confirm basic middleware works.
 - [x] Confirm the structure supports `/api/*` routes.
 - [x] Document minimum development and deployment commands.
 
-Deployment note: `npm run deploy` is configured, but deployment from this environment requires `CLOUDFLARE_API_TOKEN`.
+Deployment URL: `https://bodylog-api.antonbsa.workers.dev/`
 
 ---
 
