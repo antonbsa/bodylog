@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Use specifications as the main source of context to turn an idea into working software, reducing ambiguity between intent, implementation, and validation.
+Use specifications and small markdown tasks as the main source of context to turn an idea into working software, reducing ambiguity between intent, implementation, and validation.
 
 This project uses SDD as a lightweight delivery tool, not as bureaucracy.
 
@@ -51,14 +51,14 @@ Use the specs to:
 
 Do not use specs as an excuse to avoid building.
 
-The project is personal and V1-focused. If a detail does not affect the current implementation, it can be postponed to the backlog.
+The project is personal and V1-focused. If a detail does not affect the current implementation, it can be postponed to a later task or future-ideas note.
 
 ## Documentation Categories
 
 - `docs/product`: product definition, requirements, user flows, scope, and future ideas.
 - `docs/technical`: architecture, data model, API contract, deployment, and ADR-style decisions.
-- `docs/implementation`: high-level implementation plan and validation context.
-- `backlog`: executable implementation tasks, task progress, and delivery tracking.
+- `docs/guides`: durable workflow and development guides.
+- `specs`: version-level specifications, acceptance criteria, implementation strategy, open questions, and executable task files.
 - `AGENTS.md`: operating instructions for AI coding agents.
 
 ## Rule of Thumb

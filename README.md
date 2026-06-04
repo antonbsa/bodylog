@@ -39,6 +39,11 @@ Only weight is required in V1. Derived values such as BMI, body fat mass, muscle
 
 ## Documentation
 
+This repository uses a lightweight Spec-Driven Development workflow.
+
+- `docs/` contains stable product, technical, decision, and general documentation.
+- `specs/` contains version-level specifications, acceptance criteria, implementation strategy, open questions, and executable tasks.
+
 Project documentation is stored under `docs/`.
 
 - Product overview: `docs/product/overview.md`
@@ -46,13 +51,15 @@ Project documentation is stored under `docs/`.
 - User flows: `docs/product/user-flows.md`
 - V1 scope: `docs/product/scope.md`
 - Future ideas: `docs/product/future-ideas.md`
-- Implementation plan: `docs/implementation/plan.md`
 - Technical architecture: `docs/technical/architecture.md`
 - API contract: `docs/technical/api.md`
 - Database model: `docs/technical/database.md`
 - Technical decisions: `docs/technical/decisions/`
+- Development guide: `docs/guides/development.md`
 
-Executable implementation tasks are tracked separately under `backlog/`.
+V1 spec files are stored under `specs/v1/`.
+
+Executable V1 tasks are tracked as plain markdown files under `specs/v1/tasks/`.
 
 Agent-specific instructions are in [`AGENTS.md`](./AGENTS.md).
 
@@ -128,4 +135,4 @@ GET /api/health/d1
 
 ## Status
 
-T-002 D1 validation implemented.
+Initial V1 validation tasks are marked `Done`; remaining V1 work is tracked under `specs/v1/tasks/`.

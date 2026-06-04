@@ -1,4 +1,4 @@
-# Backlog
+# Future Ideas
 
 This file stores useful ideas that are explicitly outside the current V1 scope unless selected later.
 

@@ -2,16 +2,16 @@
 
 ## Status
 
-Accepted
+Superseded by `0021-use-markdown-tasks-under-specs.md`
 
 ## Context
 
-The project uses lightweight SDD. Long-term docs and execution-level task tracking had started to mix under `docs/implementation`, which makes the documentation harder to maintain and review.
+The project uses lightweight SDD. Earlier structure experiments separated durable documentation from executable task tracking.
 
 ## Decision
 
-Use `docs/` for product, technical, architectural, and planning knowledge. Use `backlog/` for executable implementation tasks, task progress, and delivery tracking.
+This historical decision chose a separate backlog directory for executable implementation tasks.
 
 ## Consequences
 
-Implementation task files live under `backlog/`. `docs/implementation` keeps high-level planning and validation context, but detailed task tracking should not be added back there.
+This decision is no longer current. It was superseded because the project is small and does not need a separate backlog tool or directory. Executable V1 task files now live under `specs/v1/tasks/`.

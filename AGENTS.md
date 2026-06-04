@@ -18,18 +18,39 @@ Before implementing any task, read these files:
 4. `docs/technical/architecture.md`
 5. `docs/technical/database.md`
 6. `docs/technical/api.md`
-7. `docs/implementation/plan.md`
-8. The selected task file under `backlog/`
+7. `specs/v1/spec.md`
+8. `specs/v1/implementation-plan.md`
+9. `specs/v1/acceptance-criteria.md`
+10. The selected task file under `specs/v1/tasks/`
 
 Use `docs/product/future-ideas.md` only to understand future ideas. Do not implement future ideas unless explicitly requested.
 
-## Documentation and Backlog Conventions
+## Documentation and Task Conventions
 
 - Use `docs/` for stable product, technical, architectural, and planning knowledge.
-- Use `backlog/` for executable work, implementation tasks, task progress, and delivery tracking.
+- Use `specs/` for version-level specifications, acceptance criteria, implementation strategy, open questions, and executable task files.
 - Keep requirements and architecture as current-state living documents.
 - Capture important decisions as ADR-style files under `docs/technical/decisions/`.
-- Do not add execution task tracking back into `docs/implementation/`.
+- Do not add execution task tracking under `docs/`.
+
+## Task Workflow
+
+This project uses plain markdown task files under `specs/v1/tasks/`.
+
+Before implementing a task:
+
+1. Read the related docs/specs.
+2. Read the selected task file under `specs/v1/tasks/`.
+3. Update the task with an implementation plan when the task is not clear enough.
+4. Implement only the selected task.
+5. Update the task with validation notes and modified files.
+6. Do not introduce unrelated changes.
+
+When creating new work:
+
+1. Add stable knowledge to `docs/`.
+2. Add feature/version scope to `specs/`.
+3. Add executable work as a markdown task under `specs/v1/tasks/`.
 
 ## V1 Technical Decisions
 
@@ -108,7 +129,7 @@ Preferred prefixes:
 - `chore:` for tooling, dependency, formatting, or repository maintenance.
 - `refactor:` for code restructuring with no behavior change.
 
-Use `docs:` for changes under `docs/`, `backlog/`, and `AGENTS.md`, including spec changes and task status updates.
+Use `docs:` for documentation-only changes under `docs/`, `specs/`, and `AGENTS.md`, including spec changes and task status updates. Use `chore:` when the change also updates tooling, dependencies, or package scripts.
 
 When completing work that actually changed project files, include a suggested commit message at the end of the final response.
 Do not include a commit message suggestion for planning, explanation, review, or advice-only responses with no file changes.
