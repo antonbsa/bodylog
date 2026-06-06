@@ -20,6 +20,7 @@ Run the relevant automated checks for the changed area. If automated coverage is
 ## Acceptance Criteria
 
 - [ ] Form opens from dashboard.
+- [ ] Form opens as a full-viewport modal on mobile and a constrained modal on larger screens.
 - [ ] Date defaults to today.
 - [ ] User can change date.
 - [ ] Existing date loads existing record.

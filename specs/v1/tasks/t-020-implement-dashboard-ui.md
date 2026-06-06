@@ -23,6 +23,8 @@ Run the relevant automated checks for the changed area. If automated coverage is
 - [ ] Shows weekly average cards.
 - [ ] Shows variation cards.
 - [ ] Shows up/down/stable indicators.
+- [ ] Uses V1 expected-outcome color semantics.
+- [ ] Shows registration reliability.
 - [ ] Shows partial week notice.
 - [ ] Has button to register measurement.
 - [ ] Mobile-first layout.

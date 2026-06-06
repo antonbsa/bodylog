@@ -16,13 +16,15 @@
 3. The dashboard displays current week averages.
 4. The dashboard displays variation against the previous full week.
 5. The dashboard indicates that the current week may be partial.
-6. The dashboard shows direction indicators for metrics.
-7. The user can open the measurement form from the dashboard.
+6. The dashboard shows registration reliability for the current week.
+7. The dashboard shows direction indicators and V1 expected-outcome colors for summary metrics.
+8. The dashboard displays recent measurement history on the same page.
+9. The user can open the measurement form from the dashboard.
 
 ## Flow 3 — Create a Daily Measurement
 
 1. The user taps the register button.
-2. The measurement form opens with today's date selected.
+2. The measurement form opens as a mobile full-viewport modal or desktop constrained modal with today's date selected.
 3. The system checks whether a record already exists for the selected date.
 4. If no record exists, the form is empty.
 5. The user enters at least weight.
@@ -33,7 +35,7 @@
 
 ## Flow 4 — Edit a Daily Measurement by Date
 
-1. The user opens the measurement form.
+1. The user opens the measurement form from the dashboard.
 2. The user selects a date.
 3. The system checks whether a record exists for that date.
 4. If a record exists, the form is populated with existing values.
@@ -53,10 +55,11 @@
 
 ## Flow 6 — View Measurement History
 
-1. The user opens the history/list section.
+1. The user opens the dashboard history section.
 2. The system displays measurements ordered by date descending.
-3. The user reviews raw and derived metrics.
-4. The user can select a record for editing or deletion.
+3. The system displays 20 records by default and offers loading 20 more when more records exist.
+4. The user reviews raw and derived metrics.
+5. The user can select a record for editing or deletion.
 
 ## Flow 7 — Export CSV
 

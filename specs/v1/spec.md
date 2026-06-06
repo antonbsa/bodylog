@@ -33,6 +33,7 @@ V1 excludes:
 - Requirements: `docs/product/requirements.md`
 - Scope: `docs/product/scope.md`
 - User flows: `docs/product/user-flows.md`
+- UI direction: `docs/product/ui-direction.md`
 - Architecture: `docs/technical/architecture.md`
 - API contract: `docs/technical/api.md`
 - Database model: `docs/technical/database.md`
@@ -43,7 +44,7 @@ V1 excludes:
 
 - The user can log a daily measurement faster than using the spreadsheet.
 - Existing records load when their date is selected for editing.
-- The dashboard shows weekly averages and neutral movement direction.
+- The dashboard shows weekly averages, registration reliability, and V1 expected-outcome movement colors.
 - CSV import can populate historical records.
 - CSV export provides a portable backup.
 - The app is usable from a smartphone.

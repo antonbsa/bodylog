@@ -49,6 +49,7 @@ Project documentation is stored under `docs/`.
 - Product overview: `docs/product/overview.md`
 - Product requirements: `docs/product/requirements.md`
 - User flows: `docs/product/user-flows.md`
+- UI direction: `docs/product/ui-direction.md`
 - V1 scope: `docs/product/scope.md`
 - Future ideas: `docs/product/future-ideas.md`
 - Technical architecture: `docs/technical/architecture.md`

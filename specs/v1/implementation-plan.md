@@ -18,6 +18,10 @@ Completed validation:
 
 Goal: create the minimum app structure.
 
+Completed planning:
+
+- V1 UI direction for the single dashboard page, modal measurement form, visual language, and UI constraints.
+
 Focus areas:
 
 - frontend/backend project structure;
@@ -72,7 +76,7 @@ Focus areas:
 - weekly dashboard API;
 - current week and previous week summaries;
 - variation display;
-- neutral up/down/stable direction indicators;
+- V1 expected-outcome up/down/stable direction indicators;
 - partial week and measurement count display.
 
 ## Phase 6 — CSV Export

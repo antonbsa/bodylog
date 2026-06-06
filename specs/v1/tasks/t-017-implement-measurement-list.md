@@ -20,6 +20,7 @@ Run the relevant automated checks for the changed area. If automated coverage is
 ## Acceptance Criteria
 
 - [ ] Measurements listed by date descending.
+- [ ] Initial history view shows 20 records and can load 20 more when more exist.
 - [ ] Raw values shown.
 - [ ] Derived values shown when possible.
 - [ ] Missing optional values handled clearly.

@@ -26,7 +26,8 @@ Run the relevant automated checks for the changed area. If automated coverage is
 - [ ] Weekly averages are calculated correctly.
 - [ ] Current partial week is compared against previous full week.
 - [ ] Percentage metrics use percentage points for absolute difference.
-- [ ] Unit tests cover week boundaries, missing values, averages, and comparison rules.
+- [ ] Direction uses documented stable thresholds for weight, body fat mass, and muscle mass.
+- [ ] Unit tests cover week boundaries, missing values, averages, stable thresholds, and comparison rules.
 
 
 ## Definition of Done

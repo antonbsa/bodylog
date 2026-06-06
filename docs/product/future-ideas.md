@@ -93,11 +93,27 @@ Allow the user to mark periods as:
 
 This would help interpret variations later.
 
+### Configurable Metric Goals
+
+Allow the user to configure whether weight increase, decrease, or maintenance should be visually treated as the desired direction.
+
+V1 assumes weight increase is visually positive because explicit goals are not configured yet.
+
+### Internationalization
+
+Add i18n after V1.
+
+V1 interface labels and copy are `pt-BR` only.
+
+### Separate Authenticated Pages
+
+Split the single V1 dashboard into separate authenticated views when history, import/export, settings, or deeper analysis need more space.
+
 ### Automatic Interpretation
 
 Add optional interpretation of trends only after enough context exists.
 
-This should not be added in V1 because direction alone is safer and less misleading.
+This should not be added in V1 because basic direction and color cues are enough for the initial workflow.
 
 ### Serverless Postgres Migration
 

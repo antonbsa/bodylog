@@ -37,7 +37,7 @@ Guidelines:
 - Avoid logging passwords, session tokens, CSV contents, or measurement values.
 - Treat CSV import/export as sensitive data movement.
 - Do not commit real personal data, exported CSV backups, secrets, or production database files.
-- Avoid health interpretation, recommendations, or value judgments in V1.
+- Avoid health interpretation, diagnosis, recommendations, or motivational value judgments in V1.
 - Do not design V1 code in a way that assumes future multi-user authorization is already solved.
 
 ## Data Correctness
@@ -51,6 +51,7 @@ Guidelines:
 - Keep week calculations aligned with Monday-start weeks.
 - Compare partial current week against the previous full week.
 - Display percentage metric changes in percentage points.
+- Use the documented stable thresholds for weekly direction.
 - Ignore missing optional values when calculating averages for that metric.
 - Keep derived calculations covered by focused automated tests.
 - Document assumptions when date, rounding, tolerance, or import behavior is ambiguous but not blocking.
@@ -75,7 +76,8 @@ V1 is a personal body metrics tracker, not a generic fitness platform.
 Guidelines:
 
 - Prefer small, explicit implementation over broad frameworks or speculative architecture.
-- Do not add multi-user support, account registration, OAuth, charts, offline-first behavior, Google Sheets integration, recommendations, or health classification in V1 unless scope changes explicitly.
+- Do not add multi-user support, account registration, OAuth, charts, offline-first behavior, Google Sheets integration, recommendations, or health interpretation in V1 unless scope changes explicitly.
+- Do not add user-configurable goals in V1; weight variation color uses the documented V1 assumption until goal settings exist.
 - Keep future ideas in `docs/product/future-ideas.md` or future version specs, not in executable V1 tasks.
 - Let automated tests scale with the risk of the behavior being implemented.
 
@@ -90,6 +92,8 @@ Guidelines:
 - Load an existing record when its date is selected.
 - Make missing optional values clear without blocking the workflow.
 - Favor readable cards and tables over charts in V1.
+- Use the single dashboard page as the authenticated V1 app surface.
+- Open measurement creation/editing in a mobile full-viewport modal or equivalent.
 - Validate mobile usability before considering desktop-specific polish.
 
 ## Operational Safety

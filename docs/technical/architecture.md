@@ -26,25 +26,25 @@ The application is designed for one user, mobile-first usage, and simple weekly 
 ### Responsibilities
 
 - Render the authenticated app.
-- Show the weekly dashboard.
-- Open the measurement form.
-- List measurements.
+- Show the single-page weekly dashboard.
+- Open the measurement form as a modal from the dashboard.
+- List recent measurements on the dashboard.
 - Call API endpoints.
 - Handle CSV import/export UI.
 - Keep the UX mobile-first.
 
 ### V1 UI Structure
 
-Suggested screens/routes:
+V1 authenticated UI structure:
 
 ```txt
 /login
 /dashboard
-/measurements
-/import-export
 ```
 
-The dashboard should be the main authenticated screen.
+The dashboard is the main authenticated screen and contains weekly summary, measurement history, and relevant actions as sections. The measurement form opens from the dashboard as a full-viewport mobile modal or a constrained desktop modal.
+
+Separate authenticated pages for history, settings, import/export, or deeper dashboard analysis are deferred.
 
 ## Backend
 
@@ -154,6 +154,8 @@ The architecture does not need to support:
 - complex authorization;
 - offline-first behavior;
 - native mobile deployment;
+- desktop-optimized dashboards;
+- separate authenticated history/settings pages for V1;
 - advanced analytics pipelines.
 
 ## Key Risks

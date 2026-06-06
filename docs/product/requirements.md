@@ -93,6 +93,7 @@ The system must group measurements by week and calculate weekly averages.
 - [ ] Only days with measurements are included in averages.
 - [ ] Missing days are not counted as zero.
 - [ ] The system shows how many measurements were used in the current week.
+- [ ] The UI shows current week registration reliability based on absolute weekly record count.
 - [ ] Weekly averages include all available metrics and derived metrics.
 
 ---
@@ -110,7 +111,8 @@ The system must compare the current week against the previous week.
 - [ ] Relative percentage variation is displayed when applicable.
 - [ ] Percentage-based metrics display absolute changes in percentage points.
 - [ ] The system indicates whether each metric moved up, down, or stayed stable.
-- [ ] The system does not classify changes as good or bad in V1.
+- [ ] Stable direction uses the documented V1 thresholds for weight, body fat mass, and muscle mass.
+- [ ] The UI uses V1 expected-outcome color semantics without showing health advice, diagnosis, recommendations, or motivational interpretation.
 
 ---
 
@@ -125,6 +127,8 @@ The system must provide a dashboard as the main screen.
 - [ ] The dashboard shows comparison against the previous week.
 - [ ] The dashboard includes a button to open the measurement form.
 - [ ] The dashboard is mobile-first.
+- [ ] The authenticated V1 app uses one dashboard page with sections instead of separate dashboard/history pages.
+- [ ] The measurement form opens as a full-viewport modal on mobile and a constrained modal on larger screens.
 - [ ] The dashboard uses cards and tables instead of charts in V1.
 
 ---
@@ -183,6 +187,22 @@ The system must be installable as a basic PWA.
 - [ ] The app has basic icons.
 - [ ] The app can be installed on a smartphone.
 - [ ] Full offline-first support is not required in V1.
+
+---
+
+### FR-013 — UI Language and Presentation
+
+The system must present the V1 interface using the documented UI direction.
+
+#### Acceptance Criteria
+
+- [ ] All visible labels and interface copy are in `pt-BR`.
+- [ ] The UI uses dark mode only in V1.
+- [ ] Values use `pt-BR` display formatting.
+- [ ] Empty summary values display `-`.
+- [ ] The history table displays a plain empty placeholder when no records exist.
+- [ ] The UI includes loading, empty, error, disabled, and submitting states where applicable.
+- [ ] The UI avoids strong gradients, heavy glassmorphism, gamified fitness visuals, floating AI assistant patterns, and generic motivational copy.
 
 ## Non-Functional Requirements
 

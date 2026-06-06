@@ -202,6 +202,8 @@ Deletes a measurement.
 
 Returns the weekly summary for the current week and comparison against the previous week.
 
+The response must include week date ranges and measurement counts so the UI can derive current and previous week registration reliability.
+
 #### Response 200
 
 ```json

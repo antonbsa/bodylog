@@ -12,9 +12,9 @@
 
 ### UI Direction
 
-The detailed UI/design direction is intentionally pending.
+The V1 UI direction is documented in `docs/product/ui-direction.md`.
 
-Before implementing frontend UI screens, decide and document the basic visual direction, navigation pattern, and any design references. This should happen before building the dashboard, measurement form, history list, or import/export screens.
+V1 uses a single authenticated dashboard page with sections for weekly summary, measurement history, and actions. The measurement form opens from that dashboard as a full-viewport mobile modal or a constrained desktop modal.
 
 ### Measurements
 
@@ -40,7 +40,8 @@ Before implementing frontend UI screens, decide and document the basic visual di
 - Show relative percentage variation.
 - Show percentage-point variation for percentage metrics.
 - Show metric direction as up/down/stable.
-- Do not classify changes as good or bad.
+- Use V1 expected-outcome color semantics for summary variation, without adding health advice, diagnosis, recommendations, or motivational interpretation.
+- Show registration reliability based on weekly record count.
 
 ### Data Management
 
@@ -91,6 +92,8 @@ Before implementing frontend UI screens, decide and document the basic visual di
 - Google Sheets automatic backup.
 - Advanced charts.
 - Desktop-friendly dashboards.
+- User-configurable weight goal semantics.
+- Internationalization.
 - Trend analysis.
 - Moving averages.
 - Goal phases such as bulking, cutting, or maintenance.

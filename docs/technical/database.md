@@ -92,13 +92,19 @@ Example:
 
 ## Direction Rule
 
-Initial rule:
+V1 stable thresholds:
 
-- `up`: current value is greater than previous value;
-- `down`: current value is lower than previous value;
-- `stable`: displayed rounded difference is zero.
+- weight: less than `0.5 kg`;
+- body fat mass: less than `0.4 kg`;
+- muscle mass: less than `0.3 kg`.
 
-The exact tolerance for stable values may be refined during implementation.
+Direction rules:
+
+- `up`: current value is greater than previous value by at least the relevant threshold;
+- `down`: current value is lower than previous value by at least the relevant threshold;
+- `stable`: absolute change is below the relevant threshold.
+
+Weight direction uses average weight in kg. Body fat and muscle direction use derived mass in kg for threshold evaluation, while percentage values still display percentage-point variation.
 
 ## Future Postgres Portability
 

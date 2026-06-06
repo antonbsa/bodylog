@@ -15,7 +15,10 @@
 - Optional metric averages ignore missing values for that metric.
 - Current partial week is compared against the previous full week.
 - Percentage metrics show absolute variation in percentage points.
-- The UI indicates up, down, or stable without saying good or bad.
+- Stable direction uses the documented V1 thresholds.
+- The UI indicates up, down, or stable using V1 expected-outcome color semantics.
+- The UI avoids health advice, diagnosis, recommendations, and motivational interpretation.
+- Registration reliability is displayed from weekly record counts.
 
 ## Data Management
 
@@ -34,6 +37,7 @@
 ## Technical
 
 - Frontend uses React, Vite, and TypeScript.
+- V1 UI direction is documented before frontend screens are implemented.
 - Backend uses Hono and TypeScript on Cloudflare Workers.
 - Persistence uses Cloudflare D1 in V1.
 - Data access remains isolated behind repository/service boundaries.

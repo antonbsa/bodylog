@@ -24,6 +24,7 @@ Run the relevant automated checks for the changed area. If automated coverage is
 - [ ] Returns variation object.
 - [ ] Includes measurement counts.
 - [ ] Indicates partial current week.
+- [ ] Provides enough week date and count data for the UI to derive registration reliability.
 - [ ] API or service tests cover dashboard summary and variation output.
 
 
