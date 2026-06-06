@@ -40,6 +40,18 @@
 - Relevant automated tests are added with implemented behavior.
 - Deployment targets Cloudflare only.
 
+## Production Readiness
+
+- The production frontend is reachable on Cloudflare Pages.
+- The production API is reachable on Cloudflare Workers.
+- The production frontend can call the production API.
+- The production API has the production D1 binding configured.
+- Production D1 migrations have been applied.
+- Required production secrets and configuration are set without committing values.
+- Authentication and secure session behavior work in production.
+- Core V1 flows work against production data.
+- Deployment automation can deploy the frontend and API from `main`.
+
 ## Final Validation
 
 - README describes the actual project structure.
@@ -47,5 +59,6 @@
 - Requirements match implemented behavior.
 - API contract matches implemented routes.
 - Data model matches migrations.
+- Production readiness was validated through `specs/v1/tasks/t-025-validate-production-state.md`.
 - Future ideas are documented separately from executable V1 tasks.
 - V1 tasks live under `specs/v1/tasks/`.

@@ -107,4 +107,5 @@ Focus areas:
 - mobile UX review;
 - PWA installability;
 - Cloudflare deployment automation;
+- deployed production state validation;
 - final docs/spec updates.
