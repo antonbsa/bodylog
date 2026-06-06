@@ -8,7 +8,6 @@
 ## Technical
 
 - Should `USER_HEIGHT_M` start as an environment variable or a versioned constant?
-- Should frontend and backend remain in one package initially or move to a workspace structure during the project base task?
 - Which component library should be selected during frontend setup or first UI implementation?
 
 ## Deployment

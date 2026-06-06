@@ -21,6 +21,7 @@ Goal: create the minimum app structure.
 Completed planning:
 
 - V1 UI direction for the single dashboard page, modal measurement form, visual language, and UI constraints.
+- npm workspace structure with `apps/api`, `apps/web`, `tests/api`, and `tests/e2e`.
 
 Focus areas:
 

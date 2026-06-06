@@ -1,5 +1,5 @@
 name = "bodylog-api"
-main = "src/index.ts"
+main = "apps/api/src/index.ts"
 compatibility_date = "2026-05-25"
 
 [observability]

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { app } from "../src/index";
+import { app } from "../../apps/api/src/index";
 
 describe("api base", () => {
   it("responds to the health route", async () => {

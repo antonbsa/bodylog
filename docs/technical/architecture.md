@@ -14,6 +14,22 @@ Cloudflare D1
 
 The application is designed for one user, mobile-first usage, and simple weekly analysis of body metrics.
 
+## Repository Structure
+
+The repository uses npm workspaces.
+
+```txt
+apps/
+  api/      Hono Worker API
+  web/      React/Vite frontend
+tests/
+  api/      API and backend behavior tests
+  e2e/      Playwright E2E tests
+migrations/ Cloudflare D1 migrations
+```
+
+The root package owns shared scripts for installation, typechecking, tests, D1 commands, and deployment entry points.
+
 ## Frontend
 
 ### Stack

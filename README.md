@@ -72,17 +72,29 @@ Install dependencies:
 npm install
 ```
 
+Repository structure:
+
+```txt
+apps/api   Hono Worker API
+apps/web   React/Vite frontend package
+tests/api  API and backend tests
+tests/e2e  Playwright E2E tests
+```
+
 Run the Worker locally through Wrangler:
 
 ```sh
 npm run dev
 ```
 
+The default `dev` command runs the API Worker. The React/Vite frontend will be configured in T-006.
+
 Validate the current backend base:
 
 ```sh
 npm run typecheck
 npm test
+npm run test:e2e
 ```
 
 Automated tests live in the root `tests/` directory.
