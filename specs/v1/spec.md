@@ -36,6 +36,7 @@ V1 excludes:
 - Architecture: `docs/technical/architecture.md`
 - API contract: `docs/technical/api.md`
 - Database model: `docs/technical/database.md`
+- Cross-cutting concerns: `docs/technical/cross-cutting-concerns.md`
 - Technical decisions: `docs/technical/decisions/`
 
 ## Success Criteria
