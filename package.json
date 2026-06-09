@@ -12,6 +12,7 @@
     "dev:web": "npm --workspace @bodylog/web run dev --",
     "build": "npm run build:web",
     "build:web": "npm --workspace @bodylog/web run build",
+    "lint": "eslint .",
     "deploy": "npm run deploy:api",
     "deploy:api": "npm --workspace @bodylog/api run deploy",
     "db:migrate:local": "wrangler d1 migrations apply body_metrics_tracker --local",
@@ -30,6 +31,9 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250525.0",
     "@playwright/test": "^1.53.0",
+    "@rocketseat/eslint-config": "^2.2.2",
+    "eslint": "^8.57.1",
+    "prettier": "^3.8.3",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4",
     "wrangler": "^4.15.2"

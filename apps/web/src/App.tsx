@@ -14,7 +14,7 @@ const metricPlaceholders = [
     value: "-",
     detail: "Comparação semanal",
   },
-];
+]
 
 export function App() {
   return (
@@ -23,7 +23,8 @@ export function App() {
         <p className="eyebrow">BodyLog</p>
         <h1 id="page-title">Registro diário de medidas corporais</h1>
         <p className="intro">
-          Uma base simples para acompanhar medidas e revisar a semana no celular.
+          Uma base simples para acompanhar medidas e revisar a semana no
+          celular.
         </p>
       </section>
 
@@ -37,5 +38,5 @@ export function App() {
         ))}
       </section>
     </main>
-  );
+  )
 }
