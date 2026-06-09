@@ -31,7 +31,7 @@ Do not select or install a UI component library in this task.
 Automated checks:
 
 - `npm run typecheck`
-- `npm test`
+- `npm run test:api`
 - `npm run test:e2e`
 - `npm --workspace @bodylog/api run deploy -- --dry-run --outdir /tmp/bodylog-wrangler-dry-run`
 

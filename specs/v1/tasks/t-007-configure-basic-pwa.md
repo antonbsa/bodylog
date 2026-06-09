@@ -31,7 +31,7 @@ Automated checks:
 - `npm run build:web`
 - `npm run typecheck`
 - `npm run lint`
-- `npm test`
+- `npm run test:api`
 - `npm run test:e2e`
 
 Browser validation:
