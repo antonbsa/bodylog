@@ -94,7 +94,7 @@ jobs:
         run: npm run lint
 
       - name: Unit and API tests
-        run: npm run test
+        run: npm run test:api
 
       - name: Build frontend
         run: npm run build

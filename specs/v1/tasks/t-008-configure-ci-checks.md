@@ -21,14 +21,14 @@ Automated checks:
 - `npm ci`
 - `npm run typecheck`
 - `npm run lint`
-- `npm run test`
+- `npm run test:api`
 - `npm run build`
 - `npm run test:e2e`
 
 Local validation notes:
 
 - Initial `npm run typecheck` failed before dependencies were installed because React packages were missing from `node_modules`.
-- Ran `npm ci`, then `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build` successfully.
+- Ran `npm ci`, then `npm run typecheck`, `npm run lint`, `npm run test:api`, and `npm run build` successfully.
 - Initial `npm run test:e2e` failed because the local Playwright Chromium binary was missing.
 - Ran `npx playwright install chromium`, then reran `npm run test:e2e` successfully.
 
@@ -38,12 +38,19 @@ Local validation notes:
 - The workflow runs for pull requests targeting `main`.
 - The workflow runs for direct pushes to `main`.
 - Push events on `main` that are associated with a pull request are skipped by a scope guard job.
-- The CI job installs dependencies with `npm ci`, installs Playwright Chromium dependencies, then runs typecheck, lint, unit/API tests, frontend build, and E2E tests.
+- The CI job installs dependencies with `npm ci`, installs Playwright Chromium dependencies, then runs typecheck, lint, API tests, frontend build, and E2E tests.
 - CI does not require repository secrets.
 
 ## Modified Files
 
 - `.github/workflows/ci.yml`
+- `README.md`
+- `package-lock.json`
+- `package.json`
+- `specs/v1/tasks/t-004-decide-ui-direction.md`
+- `specs/v1/tasks/t-005-create-project-structure.md`
+- `specs/v1/tasks/t-006-configure-frontend.md`
+- `specs/v1/tasks/t-007-configure-basic-pwa.md`
 - `specs/v1/tasks/README.md`
 - `specs/v1/tasks/t-008-configure-ci-checks.md`
 

@@ -81,31 +81,35 @@ tests/api  API and backend tests
 tests/e2e  Playwright E2E tests
 ```
 
-Run the Worker locally through Wrangler:
+Run the API Worker and React/Vite frontend together:
 
 ```sh
 npm run dev
 ```
 
-The default `dev` command runs the API Worker.
+Run only the Worker locally through Wrangler:
 
-Run the React/Vite frontend locally:
+```sh
+npm run dev:api
+```
+
+Run only the React/Vite frontend locally:
 
 ```sh
 npm run dev:web
 ```
 
-Build the frontend:
+Build the project:
 
 ```sh
-npm run build:web
+npm run build
 ```
 
 Validate the current backend base:
 
 ```sh
 npm run typecheck
-npm test
+npm run test:api
 npm run test:e2e
 ```
 
@@ -129,14 +133,14 @@ npm run db:query:remote -- "SELECT COUNT(*) AS count FROM measurements"
 Deploy the Worker to Cloudflare:
 
 ```sh
-npm run deploy
+npm run deploy:api
 ```
 
 For local interactive deployment, authenticate Wrangler once through the browser:
 
 ```sh
 npx wrangler login
-npm run deploy
+npm run deploy:api
 ```
 
 For non-interactive deployment, such as CI or an agent environment, Wrangler requires `CLOUDFLARE_API_TOKEN` to be set before deployment.
@@ -148,7 +152,7 @@ cp .env.example .env
 set -a
 source .env
 set +a
-npm run deploy
+npm run deploy:api
 ```
 
 Current API base:

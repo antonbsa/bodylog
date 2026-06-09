@@ -31,7 +31,7 @@ Automated checks:
 
 - `npm run build:web`
 - `npm run typecheck`
-- `npm test`
+- `npm run test:api`
 - `npm run test:e2e`
 
 The first E2E run failed because the local Playwright Chromium binary was missing. Ran `npx playwright install chromium`, then reran `npm run test:e2e` successfully.

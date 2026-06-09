@@ -31,7 +31,7 @@ Validated the supplied UI definition against the current product and technical d
 Automated checks:
 
 - `npm run typecheck`
-- `npm test`
+- `npm run test:api`
 
 ## Acceptance Criteria
 
