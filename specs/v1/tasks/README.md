@@ -11,11 +11,11 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-003 — Define Deployment Strategy](./t-003-define-deployment-strategy.md)
 - [T-004 — Decide UI Direction](./t-004-decide-ui-direction.md)
 - [T-005 — Create Project Structure](./t-005-create-project-structure.md)
+- [T-006 — Configure Frontend](./t-006-configure-frontend.md)
 - [T-009 — Create Measurements Migration](./t-009-create-measurements-migration.md)
 
 ## Remaining
 
-- [T-006 — Configure Frontend](./t-006-configure-frontend.md)
 - [T-007 — Configure Basic PWA](./t-007-configure-basic-pwa.md)
 - [T-008 — Configure CI Checks](./t-008-configure-ci-checks.md)
 - [T-010 — Implement Measurement Repository](./t-010-implement-measurement-repository.md)

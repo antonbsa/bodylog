@@ -1,0 +1,125 @@
+:root {
+  color: #f0f6fc;
+  background: #0d1117;
+  font-family:
+    Geist,
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: #0d1117;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(100%, 760px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.hero {
+  display: grid;
+  gap: 12px;
+  padding: 20px 0 28px;
+}
+
+.eyebrow,
+.hero h1,
+.intro,
+.metric-card p,
+.metric-card strong,
+.metric-card span {
+  margin: 0;
+}
+
+.eyebrow {
+  color: #58a6ff;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.hero h1 {
+  max-width: 11ch;
+  color: #f0f6fc;
+  font-size: 2.5rem;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.intro {
+  max-width: 32rem;
+  color: #8b949e;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.metric-card {
+  display: grid;
+  gap: 10px;
+  min-height: 136px;
+  padding: 18px;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  background: #161b22;
+}
+
+.metric-card p {
+  color: #8b949e;
+  font-size: 0.875rem;
+}
+
+.metric-card strong {
+  color: #f0f6fc;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.metric-card span {
+  align-self: end;
+  color: #8b949e;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 680px) {
+  .app-shell {
+    padding: 56px 28px;
+  }
+
+  .hero h1 {
+    max-width: 18ch;
+    font-size: 3rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

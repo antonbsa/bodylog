@@ -9,6 +9,9 @@
   "scripts": {
     "dev": "npm run dev:api",
     "dev:api": "npm --workspace @bodylog/api run dev",
+    "dev:web": "npm --workspace @bodylog/web run dev --",
+    "build": "npm run build:web",
+    "build:web": "npm --workspace @bodylog/web run build",
     "deploy": "npm run deploy:api",
     "deploy:api": "npm --workspace @bodylog/api run deploy",
     "db:migrate:local": "wrangler d1 migrations apply body_metrics_tracker --local",

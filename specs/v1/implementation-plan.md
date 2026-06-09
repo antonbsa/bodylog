@@ -13,6 +13,7 @@ Completed validation:
 - Hono API base on Cloudflare Workers.
 - Local and remote D1 validation.
 - Initial deployment strategy: Cloudflare Pages frontend with a separate Worker API.
+- React/Vite frontend base.
 
 ## Phase 1 — Project Base
 
@@ -26,7 +27,6 @@ Completed planning:
 Focus areas:
 
 - frontend/backend project structure;
-- React/Vite frontend base;
 - TypeScript and test tooling;
 - CI checks;
 - basic PWA setup;

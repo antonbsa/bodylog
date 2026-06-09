@@ -87,7 +87,19 @@ Run the Worker locally through Wrangler:
 npm run dev
 ```
 
-The default `dev` command runs the API Worker. The React/Vite frontend will be configured in T-006.
+The default `dev` command runs the API Worker.
+
+Run the React/Vite frontend locally:
+
+```sh
+npm run dev:web
+```
+
+Build the frontend:
+
+```sh
+npm run build:web
+```
 
 Validate the current backend base:
 
