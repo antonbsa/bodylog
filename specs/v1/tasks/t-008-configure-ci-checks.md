@@ -38,7 +38,9 @@ Local validation notes:
 - The workflow runs for pull requests targeting `main`.
 - The workflow runs for direct pushes to `main`.
 - Push events on `main` that are associated with a pull request are skipped by a scope guard job.
-- The CI job installs dependencies with `npm ci`, installs Playwright Chromium dependencies, then runs typecheck, lint, API tests, frontend build, and E2E tests.
+- The workflow splits checks into a lint/typecheck job and a tests job.
+- The lint/typecheck job installs dependencies with `npm ci`, then runs typecheck and lint.
+- The tests job installs dependencies with `npm ci`, installs Playwright Chromium dependencies, then runs API tests, frontend build, and E2E tests.
 - CI does not require repository secrets.
 
 ## Modified Files
