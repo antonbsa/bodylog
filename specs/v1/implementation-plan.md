@@ -14,6 +14,7 @@ Completed validation:
 - Local and remote D1 validation.
 - Initial deployment strategy: Cloudflare Pages frontend with a separate Worker API.
 - React/Vite frontend base.
+- Basic PWA manifest and icons.
 
 ## Phase 1 — Project Base
 
@@ -29,7 +30,6 @@ Focus areas:
 - frontend/backend project structure;
 - TypeScript and test tooling;
 - CI checks;
-- basic PWA setup;
 - documented environment variables and secrets.
 
 ## Phase 2 — Database and Domain
