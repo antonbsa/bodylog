@@ -1,0 +1,4 @@
+interface:
+  display_name: "Next Task Readiness"
+  short_description: "Validate the next task before implementation."
+  default_prompt: "Check the next project task, validate readiness, and summarize expected changes before implementation."

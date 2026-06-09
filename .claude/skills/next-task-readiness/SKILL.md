@@ -1,0 +1,1 @@
+../../../.codex/skills/next-task-readiness/SKILL.md
