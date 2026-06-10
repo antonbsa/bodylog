@@ -1,10 +1,8 @@
 import { Hono } from "hono"
 
-type Bindings = {
-  DB: D1Database
-}
+import type { AppBindings } from "./config"
 
-export const app = new Hono<{ Bindings: Bindings }>()
+export const app = new Hono<{ Bindings: AppBindings }>()
 
 app.use("/api/*", async (c, next) => {
   await next()

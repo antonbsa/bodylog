@@ -37,10 +37,10 @@ SESSION_SECRET
 ### Configuration
 
 ```txt
-USER_HEIGHT_M
+USER_HEIGHT_CM=168
 ```
 
-`USER_HEIGHT_M` can start as an environment variable or versioned constant, as long as it is not treated as a secret.
+`USER_HEIGHT_CM` configures the single user's height in centimeters for BMI calculations. The API converts this value to meters before applying the BMI formula. Height is not a secret and should be configured as a Worker variable, not as a Cloudflare secret.
 
 ## D1
 

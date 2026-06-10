@@ -99,7 +99,7 @@ offset=number
       "musclePercentage": 43.72,
       "restingMetabolismKcal": 1700,
       "derived": {
-        "bmi": 25.22,
+        "bmi": 25.83,
         "bodyFatKg": 10.54,
         "muscleKg": 31.87
       },
@@ -216,7 +216,7 @@ The response must include week date ranges and measurement counts so the UI can 
     "isPartialWeek": true,
     "averages": {
       "weightKg": 72.9,
-      "bmi": 25.22,
+      "bmi": 25.83,
       "bodyFatPercentage": 14.46,
       "bodyFatKg": 10.54,
       "musclePercentage": 43.72,
@@ -230,7 +230,7 @@ The response must include week date ranges and measurement counts so the UI can 
     "measurementCount": 7,
     "averages": {
       "weightKg": 71.75,
-      "bmi": 24.82,
+      "bmi": 25.42,
       "bodyFatPercentage": 16.2,
       "bodyFatKg": 11.62,
       "musclePercentage": 42.75,

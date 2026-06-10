@@ -16,11 +16,11 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-008 — Configure CI Checks](./t-008-configure-ci-checks.md)
 - [T-009 — Create Measurements Migration](./t-009-create-measurements-migration.md)
 - [T-010 — Implement Measurement Repository](./t-010-implement-measurement-repository.md)
+- [T-011 — Implement Derived Calculations](./t-011-implement-derived-calculations.md)
+- [T-012 — Implement Weekly Logic](./t-012-implement-weekly-logic.md)
 
 ## Remaining
 
-- [T-011 — Implement Derived Calculations](./t-011-implement-derived-calculations.md)
-- [T-012 — Implement Weekly Logic](./t-012-implement-weekly-logic.md)
 - [T-013 — Implement Login](./t-013-implement-login.md)
 - [T-014 — Protect Routes](./t-014-protect-routes.md)
 - [T-015 — Implement Logout](./t-015-implement-logout.md)
