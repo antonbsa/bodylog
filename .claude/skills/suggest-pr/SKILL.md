@@ -1,0 +1,1 @@
+.codex/skills/suggest-pr/SKILL.md
