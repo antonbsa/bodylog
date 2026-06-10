@@ -37,10 +37,10 @@ SESSION_SECRET
 ### Configuration
 
 ```txt
-USER_HEIGHT_M
+No deployment-time height variable is required for the current V1 implementation.
 ```
 
-`USER_HEIGHT_M` can start as an environment variable or versioned constant, as long as it is not treated as a secret.
+User height starts as a versioned API constant for V1 derived calculations. A `USER_HEIGHT_M` environment variable can be introduced later if runtime configuration becomes useful. Height must not be treated as a secret.
 
 ## D1
 

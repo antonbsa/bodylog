@@ -7,7 +7,6 @@
 
 ## Technical
 
-- Should `USER_HEIGHT_M` start as an environment variable or a versioned constant?
 - Which component library should be selected during frontend setup or first UI implementation?
 
 ## Deployment
