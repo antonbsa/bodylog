@@ -45,18 +45,22 @@ Notes:
 - Backend tests cover invalid password handling and valid login session cookie creation.
 - E2E tests cover the login screen, invalid password error, and opening the app after a valid login response.
 - Local proxy smoke checks confirmed `POST /api/auth/login` through Vite returns `401` for an invalid password and `200` plus a session cookie for the local `dev-password`.
+- Local API dev uses `wrangler dev --env development` to load committed non-production values from `.env.development`.
 - The login screen uses the existing CSS direction without selecting a component library.
 
 ## Modified Files
 
-- `.env.example`
+- `.env.development`
+- `.gitignore`
 - `README.md`
+- `apps/api/package.json`
 - `apps/api/src/auth/session.ts`
 - `apps/api/src/config.ts`
 - `apps/api/src/index.ts`
 - `apps/web/src/App.tsx`
 - `apps/web/src/env.d.ts`
 - `apps/web/src/styles.css`
+- `apps/web/package.json`
 - `apps/web/vite.config.ts`
 - `docs/technical/deployment.md`
 - `eslint.config.mjs`
