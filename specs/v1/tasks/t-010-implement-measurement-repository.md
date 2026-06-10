@@ -2,10 +2,19 @@
 
 ## Status
 
-To Do
+Done
 
 ## Description
 
+Implement the D1-backed repository for persisted measurement records.
+
+## Implementation Plan
+
+- Add measurement domain types for stored records and repository inputs.
+- Add a D1 repository that owns SQL queries, parameter binding, and row-to-domain mapping.
+- Support create, update by date, get by date, list by date descending, and delete by id.
+- Add focused repository tests with an in-memory D1-compatible fake.
+- Run API tests and typecheck.
 
 ## Why
 This task advances BodyLog V1 during the Database and Domain phase.
@@ -14,25 +23,35 @@ Complete the implementation work described by the task title and acceptance crit
 ## Out of Scope
 Do not add multi-user behavior, advanced analytics, Google Sheets integration, offline-first behavior, or Vercel compatibility for this task.
 ## Validation
-Run the relevant automated checks for the changed area. If automated coverage is not practical yet, record the manual validation performed in this task.
+
+- `npm run test:api`
+- `npm run typecheck`
 
 
 ## Acceptance Criteria
 
-- [ ] Create measurement.
-- [ ] Update measurement by date.
-- [ ] Get measurement by date.
-- [ ] List measurements by date descending.
-- [ ] Delete measurement.
-- [ ] SQL is contained in repository layer.
-- [ ] Repository behavior is covered by automated tests or documented local D1 validation.
+- [x] Create measurement.
+- [x] Update measurement by date.
+- [x] Get measurement by date.
+- [x] List measurements by date descending.
+- [x] Delete measurement.
+- [x] SQL is contained in repository layer.
+- [x] Repository behavior is covered by automated tests or documented local D1 validation.
+
+## Modified Files
+
+- `apps/api/src/measurements/measurement-repository.ts`
+- `apps/api/src/measurements/types.ts`
+- `specs/v1/tasks/README.md`
+- `specs/v1/tasks/t-010-implement-measurement-repository.md`
+- `tests/api/measurement-repository.test.ts`
 
 
 ## Definition of Done
 
-- [ ] Acceptance criteria are met
-- [ ] Implementation matches the approved spec or plan
-- [ ] Relevant docs or specs were updated when needed
-- [ ] Tests or manual validation were completed
-- [ ] No unrelated changes were introduced
-- [ ] Task notes include validation results
+- [x] Acceptance criteria are met
+- [x] Implementation matches the approved spec or plan
+- [x] Relevant docs or specs were updated when needed
+- [x] Tests or manual validation were completed
+- [x] No unrelated changes were introduced
+- [x] Task notes include validation results

@@ -15,10 +15,10 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-007 — Configure Basic PWA](./t-007-configure-basic-pwa.md)
 - [T-008 — Configure CI Checks](./t-008-configure-ci-checks.md)
 - [T-009 — Create Measurements Migration](./t-009-create-measurements-migration.md)
+- [T-010 — Implement Measurement Repository](./t-010-implement-measurement-repository.md)
 
 ## Remaining
 
-- [T-010 — Implement Measurement Repository](./t-010-implement-measurement-repository.md)
 - [T-011 — Implement Derived Calculations](./t-011-implement-derived-calculations.md)
 - [T-012 — Implement Weekly Logic](./t-012-implement-weekly-logic.md)
 - [T-013 — Implement Login](./t-013-implement-login.md)
