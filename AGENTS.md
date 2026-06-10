@@ -131,7 +131,9 @@ Preferred prefixes:
 
 Use `docs:` for documentation-only changes under `docs/`, `specs/`, and `AGENTS.md`, including spec changes and task status updates. Use `chore:` when the change also updates tooling, dependencies, or package scripts.
 
-When completing work that actually changed project files, include a suggested commit message at the end of the final response.
+When completing work that actually changed project files, include one suggested commit message at the end of the final response.
+While iterating on the same uncommitted work, update that single suggestion so it reflects the full accumulated change set. Do not replace it with a different message that only describes the latest iteration.
+Suggest a new separate commit message only after a commit has been made, or when the user explicitly starts separate work that should be committed independently.
 Do not include a commit message suggestion for planning, explanation, review, or advice-only responses with no file changes.
 The suggestion must follow these commit message rules.
 
