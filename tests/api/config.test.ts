@@ -1,6 +1,36 @@
 import { describe, expect, it } from "vitest"
 
-import { getUserHeightCm } from "../../apps/api/src/config"
+import {
+  getAppPassword,
+  getSessionSecret,
+  getUserHeightCm,
+} from "../../apps/api/src/config"
+
+describe("auth config", () => {
+  it("reads the app password from the environment", () => {
+    expect(getAppPassword({ APP_PASSWORD: "secret-password" })).toBe(
+      "secret-password",
+    )
+  })
+
+  it("rejects a missing app password", () => {
+    expect(() => getAppPassword({ APP_PASSWORD: "" })).toThrow(
+      "APP_PASSWORD must be configured",
+    )
+  })
+
+  it("reads the session secret from the environment", () => {
+    expect(getSessionSecret({ SESSION_SECRET: "session-secret" })).toBe(
+      "session-secret",
+    )
+  })
+
+  it("rejects a missing session secret", () => {
+    expect(() => getSessionSecret({ SESSION_SECRET: "" })).toThrow(
+      "SESSION_SECRET must be configured",
+    )
+  })
+})
 
 describe("getUserHeightCm", () => {
   it("reads the user height from the environment in centimeters", () => {

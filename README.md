@@ -148,7 +148,8 @@ Use `.env.example` as the template for a local `.env` file, then load it before 
 
 ```sh
 cp .env.example .env
-# edit .env and set CLOUDFLARE_API_TOKEN
+# edit .env and set CLOUDFLARE_API_TOKEN for deploys
+# set APP_PASSWORD and SESSION_SECRET as Worker secrets in production
 set -a
 source .env
 set +a
@@ -160,6 +161,7 @@ Current API base:
 ```txt
 GET /api/health
 GET /api/health/d1
+POST /api/auth/login
 ```
 
 ## Status

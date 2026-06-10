@@ -38,9 +38,12 @@ SESSION_SECRET
 
 ```txt
 USER_HEIGHT_CM=168
+VITE_API_BASE_URL=https://bodylog-api.antonbsa.workers.dev
 ```
 
 `USER_HEIGHT_CM` configures the single user's height in centimeters for BMI calculations. The API converts this value to meters before applying the BMI formula. Height is not a secret and should be configured as a Worker variable, not as a Cloudflare secret.
+
+`VITE_API_BASE_URL` configures the frontend API origin. It is not a secret because Vite exposes `VITE_*` values to the browser.
 
 ## D1
 

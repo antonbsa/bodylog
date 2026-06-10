@@ -1,7 +1,54 @@
 import { expect, test } from "@playwright/test"
 
-test("initial frontend page renders", async ({ page }) => {
+test("login screen renders first", async ({ page }) => {
   await page.goto("/")
+
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+  await expect(page.getByLabel("Senha")).toBeVisible()
+})
+
+test("login screen shows invalid password errors", async ({ page }) => {
+  await page.route("**/api/auth/login", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        error: "INVALID_PASSWORD",
+        ok: false,
+      }),
+      contentType: "application/json",
+      status: 401,
+    })
+  })
+
+  await page.goto("/")
+  await page.getByLabel("Senha").fill("senha-errada")
+  await page.getByRole("button", { name: "Entrar" }).click()
+
+  await expect(page.getByRole("alert")).toHaveText(
+    "Senha inválida. Tente novamente.",
+  )
+})
+
+test("login screen opens the app after a valid password", async ({ page }) => {
+  await page.route("**/api/auth/login", async (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      password: "senha-correta",
+    })
+
+    await route.fulfill({
+      body: JSON.stringify({
+        ok: true,
+      }),
+      contentType: "application/json",
+      headers: {
+        "set-cookie": "bodylog_session=test-session; HttpOnly; SameSite=Lax",
+      },
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+  await page.getByLabel("Senha").fill("senha-correta")
+  await page.getByRole("button", { name: "Entrar" }).click()
 
   await expect(
     page.getByRole("heading", { name: "Registro diário de medidas corporais" }),
