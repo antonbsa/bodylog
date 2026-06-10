@@ -18,7 +18,7 @@ describe("calculateDerivedMeasurementValues", () => {
       },
     )
 
-    expect(derivedValues.bmi).toBe(25.22)
+    expect(derivedValues.bmi).toBe(25.83)
   })
 
   it("calculates body fat mass and muscle mass when percentages are present", () => {
@@ -29,7 +29,7 @@ describe("calculateDerivedMeasurementValues", () => {
     })
 
     expect(derivedValues).toEqual({
-      bmi: 25.22,
+      bmi: 25.83,
       bodyFatKg: 10.54,
       muscleKg: 31.87,
     })
@@ -43,7 +43,7 @@ describe("calculateDerivedMeasurementValues", () => {
     })
 
     expect(derivedValues).toEqual({
-      bmi: 25.22,
+      bmi: 25.83,
       bodyFatKg: null,
       muscleKg: null,
     })

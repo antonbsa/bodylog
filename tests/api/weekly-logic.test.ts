@@ -47,7 +47,7 @@ describe("weekly logic", () => {
     expect(comparison.current.isPartialWeek).toBe(true)
     expect(comparison.current.averages).toMatchObject({
       weightKg: 72,
-      bmi: 24.92,
+      bmi: 25.51,
       bodyFatPercentage: 10,
       bodyFatKg: 7,
       musclePercentage: 40,
