@@ -16,6 +16,7 @@ Implement pure domain logic for V1 week ranges, weekly averages, and weekly comp
 - Calculate weekly averages from existing measurements while ignoring missing days.
 - Ignore missing optional metric values per metric.
 - Include derived values in weekly averages.
+- Pass configured user height in centimeters to derived value calculations.
 - Compare the partial current week against the previous full week.
 - Calculate absolute, relative, and percentage-point differences.
 - Apply the documented V1 stable thresholds for weight, body fat mass, and muscle mass.
@@ -52,18 +53,30 @@ Run the relevant automated checks for the changed area. If automated coverage is
 ## Modified Files
 
 - `apps/api/src/measurements/derived-calculations.ts`
+- `.env.example`
+- `apps/api/src/config.ts`
 - `apps/api/src/measurements/weekly-logic.ts`
 - `docs/technical/deployment.md`
 - `docs/technical/decisions/0024-use-versioned-height-constant.md`
+- `docs/technical/decisions/0025-use-user-height-environment-variable.md`
+- `docs/technical/api.md`
+- `docs/technical/database.md`
 - `specs/v1/open-questions.md`
 - `tests/api/derived-calculations.test.ts`
+- `tests/api/config.test.ts`
 - `tests/api/weekly-logic.test.ts`
+- `wrangler.toml`
 - `specs/v1/tasks/README.md`
 - `specs/v1/tasks/t-011-implement-derived-calculations.md`
 - `specs/v1/tasks/t-012-implement-weekly-logic.md`
 
 ## Validation Notes
 
+- Updated after replacing the versioned height constant with `USER_HEIGHT_CM`:
+  - `npm run test:api` passed.
+  - `npm run typecheck:api` passed.
+  - `npm run typecheck:tests` passed.
+  - `npx eslint apps/api/src/config.ts apps/api/src/index.ts apps/api/src/measurements/derived-calculations.ts apps/api/src/measurements/weekly-logic.ts tests/api/config.test.ts tests/api/derived-calculations.test.ts tests/api/weekly-logic.test.ts` passed.
 - `npm run test:api` passed.
 - `npm run typecheck` passed.
 - `npx eslint apps/api/src/measurements/derived-calculations.ts apps/api/src/measurements/weekly-logic.ts tests/api/derived-calculations.test.ts tests/api/weekly-logic.test.ts` passed.

@@ -1,7 +1,5 @@
 import type { Measurement } from "./types"
 
-export const DEFAULT_USER_HEIGHT_M = 1.68
-
 export type DerivedMeasurementValues = {
   bmi: number
   bodyFatKg: number | null
@@ -9,7 +7,7 @@ export type DerivedMeasurementValues = {
 }
 
 export type DerivedCalculationConfig = {
-  heightM?: number
+  heightCm: number
 }
 
 export function calculateDerivedMeasurementValues(
@@ -17,9 +15,9 @@ export function calculateDerivedMeasurementValues(
     Measurement,
     "weightKg" | "bodyFatPercentage" | "musclePercentage"
   >,
-  config: DerivedCalculationConfig = {},
+  config: DerivedCalculationConfig,
 ): DerivedMeasurementValues {
-  const heightM = config.heightM ?? DEFAULT_USER_HEIGHT_M
+  const heightM = heightCmToM(config.heightCm)
 
   return {
     bmi: roundToTwoDecimals(measurement.weightKg / (heightM * heightM)),
@@ -36,6 +34,10 @@ export function calculateDerivedMeasurementValues(
             (measurement.weightKg * measurement.musclePercentage) / 100,
           ),
   }
+}
+
+export function heightCmToM(heightCm: number): number {
+  return heightCm / 100
 }
 
 export function roundToTwoDecimals(value: number): number {

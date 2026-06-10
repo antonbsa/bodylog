@@ -37,10 +37,10 @@ SESSION_SECRET
 ### Configuration
 
 ```txt
-No deployment-time height variable is required for the current V1 implementation.
+USER_HEIGHT_CM=168
 ```
 
-User height starts as a versioned API constant for V1 derived calculations. A `USER_HEIGHT_M` environment variable can be introduced later if runtime configuration becomes useful. Height must not be treated as a secret.
+`USER_HEIGHT_CM` configures the single user's height in centimeters for BMI calculations. The API converts this value to meters before applying the BMI formula. Height is not a secret and should be configured as a Worker variable, not as a Cloudflare secret.
 
 ## D1
 

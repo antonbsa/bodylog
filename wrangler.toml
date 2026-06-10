@@ -2,6 +2,9 @@ name = "bodylog-api"
 main = "apps/api/src/index.ts"
 compatibility_date = "2026-05-25"
 
+[vars]
+USER_HEIGHT_CM = "168"
+
 [observability]
 enabled = true
 

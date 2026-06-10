@@ -1,6 +1,5 @@
 import {
   calculateDerivedMeasurementValues,
-  DEFAULT_USER_HEIGHT_M,
   roundToTwoDecimals,
 } from "./derived-calculations"
 import type { Measurement } from "./types"
@@ -45,7 +44,7 @@ export type WeeklyComparison = {
 
 export type WeeklyComparisonConfig = {
   currentDate: string
-  heightM?: number
+  heightCm: number
 }
 
 type WeekRange = {
@@ -76,20 +75,19 @@ export function createWeeklyComparison(
   measurements: Measurement[],
   config: WeeklyComparisonConfig,
 ): WeeklyComparison {
-  const heightM = config.heightM ?? DEFAULT_USER_HEIGHT_M
   const currentRange = getWeekRange(config.currentDate)
   const previousRange = getPreviousWeekRange(currentRange.weekStartDate)
 
   const current = summarizeWeek(measurements, {
     ...currentRange,
     currentDate: config.currentDate,
-    heightM,
+    heightCm: config.heightCm,
     isCurrentWeek: true,
   })
   const previous = summarizeWeek(measurements, {
     ...previousRange,
     currentDate: config.currentDate,
-    heightM,
+    heightCm: config.heightCm,
     isCurrentWeek: false,
   })
 
@@ -152,7 +150,7 @@ function summarizeWeek(
   measurements: Measurement[],
   options: WeekRange & {
     currentDate: string
-    heightM: number
+    heightCm: number
     isCurrentWeek: boolean
   },
 ): WeekSummary {
@@ -169,19 +167,19 @@ function summarizeWeek(
     isCurrentWeek: options.isCurrentWeek,
     isPartialWeek:
       options.isCurrentWeek && options.currentDate < options.weekEndDate,
-    averages: calculateWeeklyAverages(weeklyMeasurements, options.heightM),
+    averages: calculateWeeklyAverages(weeklyMeasurements, options.heightCm),
   }
 }
 
 function calculateWeeklyAverages(
   measurements: Measurement[],
-  heightM: number,
+  heightCm: number,
 ): WeeklyAverages {
   const accumulators = createMetricAccumulators()
 
   for (const measurement of measurements) {
     const derivedValues = calculateDerivedMeasurementValues(measurement, {
-      heightM,
+      heightCm,
     })
 
     accumulators.weightKg.values.push(measurement.weightKg)

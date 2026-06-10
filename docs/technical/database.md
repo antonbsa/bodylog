@@ -29,7 +29,7 @@ Derived values should be calculated by the application and do not need to be sto
 BMI = weightKg / (heightM * heightM)
 ```
 
-`heightM` should be configured outside the measurement record.
+`heightM` is derived from the API `USER_HEIGHT_CM` environment variable by converting centimeters to meters. Height should be configured outside the measurement record.
 
 ### Body Fat Mass
 

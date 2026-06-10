@@ -6,6 +6,8 @@ import {
 } from "../../apps/api/src/measurements/weekly-logic"
 import type { Measurement } from "../../apps/api/src/measurements/types"
 
+const USER_HEIGHT_CM = 168
+
 describe("weekly logic", () => {
   it("uses Monday-to-Sunday week boundaries", () => {
     expect(getWeekRange("2026-06-10")).toEqual({
@@ -40,6 +42,7 @@ describe("weekly logic", () => {
       ],
       {
         currentDate: "2026-06-10",
+        heightCm: USER_HEIGHT_CM,
       },
     )
 
@@ -74,6 +77,7 @@ describe("weekly logic", () => {
       ],
       {
         currentDate: "2026-06-10",
+        heightCm: USER_HEIGHT_CM,
       },
     )
 
@@ -109,6 +113,7 @@ describe("weekly logic", () => {
       ],
       {
         currentDate: "2026-06-10",
+        heightCm: USER_HEIGHT_CM,
       },
     )
 
@@ -137,6 +142,7 @@ describe("weekly logic", () => {
       ],
       {
         currentDate: "2026-06-10",
+        heightCm: USER_HEIGHT_CM,
       },
     )
 
