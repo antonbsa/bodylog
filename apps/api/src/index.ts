@@ -1,16 +1,48 @@
 import { Hono } from "hono"
-import { setCookie } from "hono/cookie"
+import { getCookie, setCookie } from "hono/cookie"
 
 import { getAppPassword, getSessionSecret, type AppBindings } from "./config"
 import {
   createSessionCookieValue,
+  isValidSessionCookieValue,
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
 } from "./auth/session"
 
 export const app = new Hono<{ Bindings: AppBindings }>()
 
+const protectedApiRoutePrefixes = [
+  "/api/measurements",
+  "/api/dashboard",
+  "/api/export",
+  "/api/import",
+]
+
+function isProtectedApiRoute(path: string): boolean {
+  return protectedApiRoutePrefixes.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+  )
+}
+
 app.use("/api/*", async (c, next) => {
+  if (isProtectedApiRoute(c.req.path)) {
+    const sessionCookieValue = getCookie(c, SESSION_COOKIE_NAME)
+    const hasValidSession = await isValidSessionCookieValue(
+      sessionCookieValue,
+      getSessionSecret(c.env),
+    )
+
+    if (!hasValidSession) {
+      return c.json(
+        {
+          error: "UNAUTHENTICATED",
+          ok: false,
+        },
+        401,
+      )
+    }
+  }
+
   await next()
   c.header("x-bodylog-api", "ok")
 })

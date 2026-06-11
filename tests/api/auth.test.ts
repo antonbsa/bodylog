@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { app } from "../../apps/api/src/index"
 import {
+  createSessionCookieValue,
   isValidSessionCookieValue,
   SESSION_COOKIE_NAME,
 } from "../../apps/api/src/auth/session"
@@ -66,5 +67,68 @@ describe("auth login", () => {
     expect(
       await isValidSessionCookieValue(cookieValue, env.SESSION_SECRET),
     ).toBe(true)
+  })
+})
+
+describe("protected api routes", () => {
+  const protectedRoutes = [
+    "/api/measurements",
+    "/api/measurements/by-date/2026-06-11",
+    "/api/dashboard/weekly",
+    "/api/export/csv",
+    "/api/import/csv",
+  ]
+
+  it("rejects unauthenticated data-route requests", async () => {
+    for (const path of protectedRoutes) {
+      const response = await app.request(path, {}, env)
+
+      expect(response.status).toBe(401)
+      expect(await response.json()).toEqual({
+        error: "UNAUTHENTICATED",
+        ok: false,
+      })
+    }
+  })
+
+  it("rejects data-route requests with an invalid session cookie", async () => {
+    const response = await app.request(
+      "/api/measurements",
+      {
+        headers: {
+          cookie: `${SESSION_COOKIE_NAME}=invalid-session`,
+        },
+      },
+      env,
+    )
+
+    expect(response.status).toBe(401)
+    expect(await response.json()).toEqual({
+      error: "UNAUTHENTICATED",
+      ok: false,
+    })
+  })
+
+  it("allows authenticated data-route requests to continue to route handlers", async () => {
+    const sessionCookieValue = await createSessionCookieValue(
+      env.SESSION_SECRET,
+    )
+    const response = await app.request(
+      "/api/measurements",
+      {
+        headers: {
+          cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}`,
+        },
+      },
+      env,
+    )
+
+    expect(response.status).toBe(404)
+  })
+
+  it("keeps public api routes accessible without a session", async () => {
+    const response = await app.request("/api/health")
+
+    expect(response.status).toBe(200)
   })
 })
