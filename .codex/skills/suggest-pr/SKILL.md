@@ -5,7 +5,9 @@ description: Suggest a pull request title and description from the current repos
 
 # Suggest PR
 
-Use this skill to draft PR text from the current worktree and branch history. Do not create commits, push branches, open PRs, or edit files unless the user explicitly asks.
+Use this skill to draft PR text from the current worktree and branch history. Do not create commits, push branches, or open PRs.
+
+Write the suggested PR output to `PR_DESCRIPTION.md` at the repository root every time this skill is used. Overwrite the file when it already exists.
 
 ## Workflow
 
@@ -51,9 +53,14 @@ Use this skill to draft PR text from the current worktree and branch history. Do
    - For spec references, include changed or relevant docs/spec/task files when present; otherwise write `- N/A`.
    - Do not add extra sections unless the user asks.
 
+6. Write the output file.
+   - Create or replace `PR_DESCRIPTION.md` in the repository root.
+   - The file must contain the warning when present, then the title and description in the same format shown below.
+   - Do not write the PR suggestion anywhere outside the repository root unless the user explicitly asks.
+
 ## Output
 
-Return:
+Write `PR_DESCRIPTION.md` with:
 
 ```md
 Warning: ... (only when local main is ahead of origin/main)
@@ -64,5 +71,7 @@ type(scope): subject
 Description:
 <PR body following .github/pull_request_template.md>
 ```
+
+Then respond with the generated file path and the title. Do not paste the full PR description in chat unless the user asks for it.
 
 If the worktree has no commits or file changes to describe, say that no PR suggestion can be made from the current repository state.
