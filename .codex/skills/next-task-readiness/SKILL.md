@@ -35,7 +35,8 @@ Read files and run harmless inspection commands as needed. Prefer `rg`, `rg --fi
      - Whether previous prerequisite tasks appear complete.
      - Whether unresolved open questions or decisions directly affect the selected task.
      - Whether the requested task overlaps another task's explicit scope.
-   - For each check, return PASS/FAIL/UNKNOWN with a one-line reason.
+   - Use these checks to decide readiness, but do not list every passing check in the response.
+   - Report only findings that affect readiness or implementation confidence: blockers, failures, warnings, conflicts, unresolved decisions, risky assumptions, or notable missing context.
    - Do not treat nice-to-have polish as a blocker.
 
 4. Decide the readiness result.
@@ -47,10 +48,9 @@ Read files and run harmless inspection commands as needed. Prefer `rg`, `rg --fi
    - Selected task and how it was identified.
    - Current project state relevant to the task.
    - Whether everything needed is present.
-   - Blockers or decisions needed, if any.
+   - Blockers, warnings, conflicts, risky assumptions, or decisions needed, if any.
    - Intended implementation approach.
    - Expected files or areas likely to change.
-   - Validation plan.
    - Explicitly state that implementation is waiting for confirmation.
 
 ## When Direction Is Needed
@@ -76,17 +76,14 @@ T-000 — Task title
 **Readiness**
 Ready / Needs direction / Blocked
 
-**What I Checked**
-Short bullets.
+**Relevant Findings**
+Only include blockers, warnings, conflicts, risky assumptions, unresolved decisions, or notable missing context. Omit this section when there are no findings.
 
 **Decisions Needed**
 Only include if needed.
 
 **Intended Changes**
 Short bullets with likely files/areas.
-
-**Validation Plan**
-Commands or manual checks.
 
 Waiting for confirmation before implementation.
 ```
