@@ -9,6 +9,19 @@ export type LoginResult =
       ok: false
     }
 
+export async function checkSession(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
+      credentials: "include",
+      method: "GET",
+    })
+
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
 export async function login(password: string): Promise<LoginResult> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {

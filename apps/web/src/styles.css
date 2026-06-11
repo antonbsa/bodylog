@@ -83,6 +83,12 @@ input {
   align-items: center;
 }
 
+.auth-check {
+  display: grid;
+  place-items: center;
+  color: #8b949e;
+}
+
 .login-panel {
   display: grid;
   gap: 18px;

@@ -100,6 +100,27 @@ app.post("/api/auth/login", async (c) => {
   })
 })
 
+app.get("/api/auth/session", async (c) => {
+  const sessionCookieValue = getCookie(c, SESSION_COOKIE_NAME)
+  const hasValidSession = await isValidSessionCookieValue(
+    sessionCookieValue,
+    getSessionSecret(c.env),
+  )
+
+  if (!hasValidSession) {
+    return c.json(
+      {
+        authenticated: false,
+      },
+      401,
+    )
+  }
+
+  return c.json({
+    authenticated: true,
+  })
+})
+
 app.post("/api/auth/logout", (c) => {
   const requestUrl = new URL(c.req.url)
   const isLocalRequest =

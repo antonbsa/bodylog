@@ -94,6 +94,37 @@ describe("auth logout", () => {
   })
 })
 
+describe("auth session", () => {
+  it("rejects requests without a valid session", async () => {
+    const response = await app.request("/api/auth/session", {}, env)
+
+    expect(response.status).toBe(401)
+    expect(await response.json()).toEqual({
+      authenticated: false,
+    })
+  })
+
+  it("confirms requests with a valid session", async () => {
+    const sessionCookieValue = await createSessionCookieValue(
+      env.SESSION_SECRET,
+    )
+    const response = await app.request(
+      "/api/auth/session",
+      {
+        headers: {
+          cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}`,
+        },
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      authenticated: true,
+    })
+  })
+})
+
 describe("protected api routes", () => {
   const protectedRoutes = [
     "/api/measurements",
