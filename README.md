@@ -144,14 +144,11 @@ npm run deploy:api
 ```
 
 For non-interactive deployment, such as CI or an agent environment, Wrangler requires `CLOUDFLARE_API_TOKEN` to be set before deployment.
-Use `.env.example` as the template for a local `.env` file, then load it before deploying:
+Local development uses the committed `.env.development` file with non-production auth defaults through `wrangler dev --env development`. Production secrets must be configured through Cloudflare, not committed.
 
 ```sh
-cp .env.example .env
-# edit .env and set CLOUDFLARE_API_TOKEN
-set -a
-source .env
-set +a
+npx wrangler secret put APP_PASSWORD --config wrangler.toml
+npx wrangler secret put SESSION_SECRET --config wrangler.toml
 npm run deploy:api
 ```
 
@@ -160,6 +157,7 @@ Current API base:
 ```txt
 GET /api/health
 GET /api/health/d1
+POST /api/auth/login
 ```
 
 ## Status

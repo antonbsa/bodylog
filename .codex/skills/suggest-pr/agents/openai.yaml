@@ -1,4 +1,4 @@
 interface:
   display_name: "Suggest PR"
-  short_description: "Draft PR titles and descriptions"
-  default_prompt: "Use $suggest-pr to suggest a PR title and description for the current changes."
+  short_description: "Draft PR text into a root Markdown file"
+  default_prompt: "Use $suggest-pr to write a suggested PR title and description for the current changes into PR_DESCRIPTION.md."

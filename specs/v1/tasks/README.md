@@ -18,12 +18,12 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-010 — Implement Measurement Repository](./t-010-implement-measurement-repository.md)
 - [T-011 — Implement Derived Calculations](./t-011-implement-derived-calculations.md)
 - [T-012 — Implement Weekly Logic](./t-012-implement-weekly-logic.md)
-
-## Remaining
-
 - [T-013 — Implement Login](./t-013-implement-login.md)
 - [T-014 — Protect Routes](./t-014-protect-routes.md)
 - [T-015 — Implement Logout](./t-015-implement-logout.md)
+
+## Remaining
+
 - [T-016 — Implement Measurement Form](./t-016-implement-measurement-form.md)
 - [T-017 — Implement Measurement List](./t-017-implement-measurement-list.md)
 - [T-018 — Implement Delete Confirmation](./t-018-implement-delete-confirmation.md)

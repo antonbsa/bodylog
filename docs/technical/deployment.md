@@ -38,9 +38,12 @@ SESSION_SECRET
 
 ```txt
 USER_HEIGHT_CM=168
+VITE_API_BASE_URL=https://bodylog-api.antonbsa.workers.dev
 ```
 
 `USER_HEIGHT_CM` configures the single user's height in centimeters for BMI calculations. The API converts this value to meters before applying the BMI formula. Height is not a secret and should be configured as a Worker variable, not as a Cloudflare secret.
+
+`VITE_API_BASE_URL` configures the frontend API origin. It is not a secret because Vite exposes `VITE_*` values to the browser.
 
 ## D1
 
@@ -70,6 +73,9 @@ migrations/
 - Frontend running through Vite.
 - Hono API running through Wrangler local/dev.
 - Local or preview D1 database.
+- Non-production defaults loaded from the committed `.env.development` file through `wrangler dev --env development`.
+- `npm run dev` starts the API on `http://localhost:8787` and the frontend on `http://localhost:5173`.
+- The repository does not define `[env.development]` yet, so Wrangler may warn about the missing named environment while still loading `.env.development` for local dev.
 
 Local development uses separate processes:
 
@@ -79,6 +85,7 @@ Wrangler API dev server from apps/api
 ```
 
 The frontend should call the API through an environment-configured base URL.
+In local development, `VITE_API_BASE_URL` is empty and Vite proxies `/api` requests to the local Worker.
 
 ### Production
 

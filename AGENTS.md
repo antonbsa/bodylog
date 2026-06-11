@@ -116,6 +116,22 @@ If ambiguity does not block implementation, choose the simplest option that sati
 6. Validate against acceptance criteria.
 7. Update docs if behavior changed.
 
+## Local Development Servers
+
+Do not start long-running development servers or watchers unless the user explicitly asks for them.
+
+Agents must not run commands such as:
+
+- `npm run dev`
+- `npm run dev:api`
+- `npm run dev:web`
+- `wrangler dev`
+- `vite --watch` or similar watcher/server commands
+
+The project owner handles local dev servers manually.
+
+Agents may still run finite validation commands such as typecheck, lint, tests, builds, migrations, and one-off CLI checks when they are relevant to the task.
+
 ## Commit Message Rules
 
 Use Conventional Commits.

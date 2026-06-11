@@ -1,42 +1,48 @@
-const metricPlaceholders = [
-  {
-    label: "Peso médio",
-    value: "-",
-    detail: "Semana atual",
-  },
-  {
-    label: "Gordura corporal",
-    value: "-",
-    detail: "Comparação semanal",
-  },
-  {
-    label: "Massa muscular",
-    value: "-",
-    detail: "Comparação semanal",
-  },
-]
+import { useEffect, useState } from "react"
+
+import { checkSession, logout } from "./api/auth"
+import { AuthenticatedApp } from "./screens/AuthenticatedApp"
+import { LoginScreen } from "./screens/LoginScreen"
+
+type AuthState = "checking" | "authenticated" | "unauthenticated"
 
 export function App() {
-  return (
-    <main className="app-shell">
-      <section className="hero" aria-labelledby="page-title">
-        <p className="eyebrow">BodyLog</p>
-        <h1 id="page-title">Registro diário de medidas corporais</h1>
-        <p className="intro">
-          Uma base simples para acompanhar medidas e revisar a semana no
-          celular.
-        </p>
-      </section>
+  const [authState, setAuthState] = useState<AuthState>("checking")
 
-      <section className="summary-grid" aria-label="Resumo inicial">
-        {metricPlaceholders.map((metric) => (
-          <article className="metric-card" key={metric.label}>
-            <p>{metric.label}</p>
-            <strong>{metric.value}</strong>
-            <span>{metric.detail}</span>
-          </article>
-        ))}
-      </section>
-    </main>
+  useEffect(() => {
+    let isMounted = true
+
+    async function hydrateSession() {
+      const hasSession = await checkSession()
+
+      if (isMounted) {
+        setAuthState(hasSession ? "authenticated" : "unauthenticated")
+      }
+    }
+
+    hydrateSession()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  async function handleLogout() {
+    await logout()
+    setAuthState("unauthenticated")
+  }
+
+  if (authState === "checking") {
+    return (
+      <main className="app-shell auth-check">
+        <p>Carregando...</p>
+      </main>
+    )
+  }
+
+  return authState === "authenticated" ? (
+    <AuthenticatedApp onLogout={handleLogout} />
+  ) : (
+    <LoginScreen onLoginSuccess={() => setAuthState("authenticated")} />
   )
 }

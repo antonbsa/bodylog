@@ -1,7 +1,69 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 
-test("initial frontend page renders", async ({ page }) => {
+async function mockSession(page: Page, authenticated: boolean) {
+  await page.route("**/api/auth/session", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        authenticated,
+      }),
+      contentType: "application/json",
+      status: authenticated ? 200 : 401,
+    })
+  })
+}
+
+test("login screen renders first", async ({ page }) => {
+  await mockSession(page, false)
   await page.goto("/")
+
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+  await expect(page.getByLabel("Senha")).toBeVisible()
+})
+
+test("login screen shows invalid password errors", async ({ page }) => {
+  await mockSession(page, false)
+  await page.route("**/api/auth/login", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        error: "INVALID_PASSWORD",
+        ok: false,
+      }),
+      contentType: "application/json",
+      status: 401,
+    })
+  })
+
+  await page.goto("/")
+  await page.getByLabel("Senha").fill("senha-errada")
+  await page.getByRole("button", { name: "Entrar" }).click()
+
+  await expect(page.getByRole("alert")).toHaveText(
+    "Senha inválida. Tente novamente.",
+  )
+})
+
+test("login screen opens the app after a valid password", async ({ page }) => {
+  await mockSession(page, false)
+  await page.route("**/api/auth/login", async (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      password: "senha-correta",
+    })
+
+    await route.fulfill({
+      body: JSON.stringify({
+        ok: true,
+      }),
+      contentType: "application/json",
+      headers: {
+        "set-cookie": "bodylog_session=test-session; HttpOnly; SameSite=Lax",
+      },
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+  await page.getByLabel("Senha").fill("senha-correta")
+  await page.getByRole("button", { name: "Entrar" }).click()
 
   await expect(
     page.getByRole("heading", { name: "Registro diário de medidas corporais" }),
@@ -9,10 +71,85 @@ test("initial frontend page renders", async ({ page }) => {
   await expect(page.getByText("Peso médio")).toBeVisible()
 })
 
+test("authenticated session survives a page reload", async ({ page }) => {
+  let isAuthenticated = false
+
+  await page.route("**/api/auth/session", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        authenticated: isAuthenticated,
+      }),
+      contentType: "application/json",
+      status: isAuthenticated ? 200 : 401,
+    })
+  })
+  await page.route("**/api/auth/login", async (route) => {
+    isAuthenticated = true
+
+    await route.fulfill({
+      body: JSON.stringify({
+        ok: true,
+      }),
+      contentType: "application/json",
+      headers: {
+        "set-cookie": "bodylog_session=test-session; HttpOnly; SameSite=Lax",
+      },
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+  await page.getByLabel("Senha").fill("senha-correta")
+  await page.getByRole("button", { name: "Entrar" }).click()
+  await page.reload()
+
+  await expect(
+    page.getByRole("heading", { name: "Registro diário de medidas corporais" }),
+  ).toBeVisible()
+  await expect(page.getByText("Peso médio")).toBeVisible()
+})
+
+test("logout returns to the login screen", async ({ page }) => {
+  await mockSession(page, false)
+  await page.route("**/api/auth/login", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        ok: true,
+      }),
+      contentType: "application/json",
+      headers: {
+        "set-cookie": "bodylog_session=test-session; HttpOnly; SameSite=Lax",
+      },
+      status: 200,
+    })
+  })
+  await page.route("**/api/auth/logout", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        ok: true,
+      }),
+      contentType: "application/json",
+      headers: {
+        "set-cookie":
+          "bodylog_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax",
+      },
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+  await page.getByLabel("Senha").fill("senha-correta")
+  await page.getByRole("button", { name: "Entrar" }).click()
+  await page.getByRole("button", { name: "Sair" }).click()
+
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+})
+
 test("basic PWA manifest and icons are reachable", async ({
   page,
   request,
 }) => {
+  await mockSession(page, false)
   await page.goto("/")
 
   const manifestPath = await page
