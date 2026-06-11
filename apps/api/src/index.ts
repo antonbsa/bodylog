@@ -86,6 +86,7 @@ app.post("/api/auth/login", async (c) => {
     requestUrl.hostname === "localhost" || requestUrl.hostname === "127.0.0.1"
   const sessionValue = await createSessionCookieValue(getSessionSecret(c.env))
 
+  // Local dev runs over plain HTTP; production cross-origin cookies need Secure + SameSite=None.
   setCookie(c, SESSION_COOKIE_NAME, sessionValue, {
     httpOnly: true,
     maxAge: SESSION_MAX_AGE_SECONDS,
@@ -104,6 +105,7 @@ app.post("/api/auth/logout", (c) => {
   const isLocalRequest =
     requestUrl.hostname === "localhost" || requestUrl.hostname === "127.0.0.1"
 
+  // Local dev runs over plain HTTP; production cross-origin cookies need Secure + SameSite=None.
   deleteCookie(c, SESSION_COOKIE_NAME, {
     httpOnly: true,
     path: "/",
