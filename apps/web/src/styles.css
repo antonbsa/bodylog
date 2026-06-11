@@ -52,6 +52,32 @@ input {
   padding: 20px 0 28px;
 }
 
+.app-header {
+  display: grid;
+  gap: 8px;
+  padding: 20px 0 28px;
+}
+
+.app-header .hero {
+  padding: 0;
+}
+
+.secondary-action {
+  justify-self: start;
+  min-height: 40px;
+  border: 1px solid #30363d;
+  background: #161b22;
+  color: #c9d1d9;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0 14px;
+}
+
+.secondary-action:hover {
+  border-color: #8b949e;
+  color: #f0f6fc;
+}
+
 .login-shell {
   display: grid;
   align-items: center;

@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { getCookie, setCookie } from "hono/cookie"
+import { deleteCookie, getCookie, setCookie } from "hono/cookie"
 
 import { getAppPassword, getSessionSecret, type AppBindings } from "./config"
 import {
@@ -89,6 +89,23 @@ app.post("/api/auth/login", async (c) => {
   setCookie(c, SESSION_COOKIE_NAME, sessionValue, {
     httpOnly: true,
     maxAge: SESSION_MAX_AGE_SECONDS,
+    path: "/",
+    sameSite: isLocalRequest ? "Lax" : "None",
+    secure: !isLocalRequest,
+  })
+
+  return c.json({
+    ok: true,
+  })
+})
+
+app.post("/api/auth/logout", (c) => {
+  const requestUrl = new URL(c.req.url)
+  const isLocalRequest =
+    requestUrl.hostname === "localhost" || requestUrl.hostname === "127.0.0.1"
+
+  deleteCookie(c, SESSION_COOKIE_NAME, {
+    httpOnly: true,
     path: "/",
     sameSite: isLocalRequest ? "Lax" : "None",
     secure: !isLocalRequest,

@@ -42,3 +42,14 @@ export async function login(password: string): Promise<LoginResult> {
     }
   }
 }
+
+export async function logout(): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+    credentials: "include",
+    method: "POST",
+  })
+
+  if (!response.ok) {
+    throw new Error("Logout request failed")
+  }
+}

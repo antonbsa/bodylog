@@ -56,6 +56,41 @@ test("login screen opens the app after a valid password", async ({ page }) => {
   await expect(page.getByText("Peso médio")).toBeVisible()
 })
 
+test("logout returns to the login screen", async ({ page }) => {
+  await page.route("**/api/auth/login", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        ok: true,
+      }),
+      contentType: "application/json",
+      headers: {
+        "set-cookie": "bodylog_session=test-session; HttpOnly; SameSite=Lax",
+      },
+      status: 200,
+    })
+  })
+  await page.route("**/api/auth/logout", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        ok: true,
+      }),
+      contentType: "application/json",
+      headers: {
+        "set-cookie":
+          "bodylog_session=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax",
+      },
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+  await page.getByLabel("Senha").fill("senha-correta")
+  await page.getByRole("button", { name: "Entrar" }).click()
+  await page.getByRole("button", { name: "Sair" }).click()
+
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+})
+
 test("basic PWA manifest and icons are reachable", async ({
   page,
   request,

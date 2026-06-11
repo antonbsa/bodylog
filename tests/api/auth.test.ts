@@ -70,6 +70,30 @@ describe("auth login", () => {
   })
 })
 
+describe("auth logout", () => {
+  it("clears the session cookie", async () => {
+    const response = await app.request(
+      "/api/auth/logout",
+      {
+        method: "POST",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      ok: true,
+    })
+
+    const setCookieHeader = response.headers.get("set-cookie")
+
+    expect(setCookieHeader).toContain(`${SESSION_COOKIE_NAME}=`)
+    expect(setCookieHeader).toContain("Max-Age=0")
+    expect(setCookieHeader).toContain("HttpOnly")
+    expect(setCookieHeader).toContain("SameSite=Lax")
+  })
+})
+
 describe("protected api routes", () => {
   const protectedRoutes = [
     "/api/measurements",

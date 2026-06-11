@@ -16,17 +16,27 @@ const metricPlaceholders = [
   },
 ]
 
-export function AuthenticatedApp() {
+type AuthenticatedAppProps = {
+  onLogout: () => void
+}
+
+export function AuthenticatedApp({ onLogout }: AuthenticatedAppProps) {
   return (
     <main className="app-shell">
-      <section className="hero" aria-labelledby="page-title">
-        <p className="eyebrow">BodyLog</p>
-        <h1 id="page-title">Registro diário de medidas corporais</h1>
-        <p className="intro">
-          Uma base simples para acompanhar medidas e revisar a semana no
-          celular.
-        </p>
-      </section>
+      <header className="app-header">
+        <section className="hero" aria-labelledby="page-title">
+          <p className="eyebrow">BodyLog</p>
+          <h1 id="page-title">Registro diário de medidas corporais</h1>
+          <p className="intro">
+            Uma base simples para acompanhar medidas e revisar a semana no
+            celular.
+          </p>
+        </section>
+
+        <button className="secondary-action" onClick={onLogout} type="button">
+          Sair
+        </button>
+      </header>
 
       <section className="summary-grid" aria-label="Resumo inicial">
         {metricPlaceholders.map((metric) => (
