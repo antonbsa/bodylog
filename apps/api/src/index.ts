@@ -1,13 +1,23 @@
 import { Hono } from "hono"
 import { deleteCookie, getCookie, setCookie } from "hono/cookie"
 
-import { getAppPassword, getSessionSecret, type AppBindings } from "./config"
+import {
+  getAppPassword,
+  getSessionSecret,
+  getUserHeightCm,
+  type AppBindings,
+} from "./config"
 import {
   createSessionCookieValue,
   isValidSessionCookieValue,
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
 } from "./auth/session"
+import {
+  getCurrentDateOnly,
+  getWeeklyDashboard,
+} from "./dashboard/weekly-dashboard-service"
+import { MeasurementRepository } from "./measurements/measurement-repository"
 
 export const app = new Hono<{ Bindings: AppBindings }>()
 
@@ -64,6 +74,16 @@ app.get("/api/health/d1", async (c) => {
     database: "body_metrics_tracker",
     result: row?.result ?? null,
   })
+})
+
+app.get("/api/dashboard/weekly", async (c) => {
+  const repository = new MeasurementRepository(c.env.DB)
+  const dashboard = await getWeeklyDashboard(repository, {
+    currentDate: getCurrentDateOnly(),
+    heightCm: getUserHeightCm(c.env),
+  })
+
+  return c.json(dashboard)
 })
 
 app.post("/api/auth/login", async (c) => {
