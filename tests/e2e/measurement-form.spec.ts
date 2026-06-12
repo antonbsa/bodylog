@@ -63,6 +63,8 @@ test("creates a measurement from the dashboard form", async ({ page }) => {
   const dialog = page.getByRole("dialog", { name: "Medida corporal" })
 
   await expect(dialog).toBeVisible()
+  await expect(dialog.getByText("Criando")).toBeVisible()
+  await expect(page.getByLabel("Fechar formulário")).toHaveCount(0)
   await expect(page.getByLabel("Data")).toHaveValue(todayDisplay)
   await expect(page.getByLabel("Peso (kg)")).toHaveValue("")
   await expect(page.getByLabel("Peso (kg)")).not.toHaveAttribute("placeholder")
@@ -140,6 +142,8 @@ test("loads an existing date into the form before saving", async ({ page }) => {
   await page.getByRole("button", { name: "Registrar medida" }).click()
   await page.getByLabel("Data").fill(existingDisplayDate)
 
+  await expect(page.getByRole("dialog").getByText("Editando")).toBeVisible()
+  await expect(page.getByLabel("Fechar formulário")).toHaveCount(0)
   await expect(page.getByLabel("Peso (kg)")).toHaveValue("72,9")
   await expect(page.getByLabel("Gordura corporal (%)")).toHaveValue("14,46")
   await expect(page.getByLabel("Músculo (%)")).toHaveValue("")

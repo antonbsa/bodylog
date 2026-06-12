@@ -118,7 +118,10 @@ export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
     }
   }
 
-  const modeLabel = existingMeasurement ? "Editando medida" : "Nova medida"
+  const modeLabel = existingMeasurement ? "Editando" : "Criando"
+  const modeClassName = existingMeasurement
+    ? "mode-badge mode-badge-editing"
+    : "mode-badge mode-badge-creating"
 
   return (
     <div className="modal-backdrop">
@@ -130,17 +133,9 @@ export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
       >
         <header className="modal-header">
           <div>
-            <p className="eyebrow">{modeLabel}</p>
             <h2 id="measurement-form-title">Medida corporal</h2>
           </div>
-          <button
-            aria-label="Fechar formulário"
-            className="icon-action"
-            onClick={onClose}
-            type="button"
-          >
-            ×
-          </button>
+          <span className={modeClassName}>{modeLabel}</span>
         </header>
 
         <form className="measurement-form" onSubmit={handleSubmit}>
