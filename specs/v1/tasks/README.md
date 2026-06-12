@@ -21,6 +21,7 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-013 — Implement Login](./t-013-implement-login.md)
 - [T-014 — Protect Routes](./t-014-protect-routes.md)
 - [T-015 — Implement Logout](./t-015-implement-logout.md)
+- [T-026 — Prepare Local Development Data Setup](./t-026-prepare-local-development-data-setup.md)
 
 ## Remaining
 
