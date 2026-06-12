@@ -87,6 +87,14 @@ Run the API Worker and React/Vite frontend together:
 npm run dev
 ```
 
+`npm run dev` does not run migrations or seed local data. Prepare the local D1 database separately when needed:
+
+```sh
+npm run db:setup:local
+```
+
+This applies local migrations and seeds default mock measurements only when the local database is empty.
+
 Run only the Worker locally through Wrangler:
 
 ```sh
@@ -122,6 +130,16 @@ npx wrangler d1 create body_metrics_tracker
 npm run db:migrate:local
 npm run db:migrate:remote
 ```
+
+Prepare and populate local D1 data:
+
+```sh
+npm run db:setup:local
+npm run db:seed:local -- --today 2026-06-11
+npm run db:reset:local -- --today 2026-06-11
+```
+
+Local seed data is development-only. It generates measurement dates relative to the current date so weekly dashboard development remains useful over time. See `scripts/local-db/README.md` for details.
 
 Run ad hoc (manual) D1 queries:
 
