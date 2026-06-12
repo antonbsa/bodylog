@@ -170,7 +170,7 @@ Required fields:
 
 The form should use mobile-friendly inputs:
 
-- date input must prevent future dates;
+- date input should use `DD/MM/YYYY` in the UI and prevent future dates;
 - numeric inputs should use decimal keyboards where supported;
 - the user should be able to move quickly to the next input;
 - weight accepts comma or period as decimal separator;

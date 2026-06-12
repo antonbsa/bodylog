@@ -23,6 +23,10 @@ Add an optional time field to measurements.
 
 The field should not be required. It may help identify outliers later.
 
+### Measurement Form Date Picker
+
+Replace the V1 text date field with a dedicated date picker component that preserves the `DD/MM/YYYY` display format and keeps API/database values as ISO dates.
+
 ### Better CSV Mapping
 
 Support alternative CSV headers from the existing spreadsheet export.

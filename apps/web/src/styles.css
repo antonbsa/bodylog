@@ -39,6 +39,12 @@ input {
   border-radius: 8px;
 }
 
+button:disabled,
+input:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
 .app-shell {
   width: min(100%, 760px);
   min-height: 100vh;
@@ -62,10 +68,32 @@ input {
   padding: 0;
 }
 
+.header-actions,
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.primary-action {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: #238636;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0 14px;
+}
+
+.primary-action:hover:not(:disabled) {
+  background: #2ea043;
+}
+
 .secondary-action {
-  justify-self: start;
   min-height: 40px;
   border: 1px solid #30363d;
+  border-radius: 8px;
   background: #161b22;
   color: #c9d1d9;
   cursor: pointer;
@@ -96,13 +124,17 @@ input {
 
 .eyebrow,
 .hero h1,
+.modal-header h2,
 .login-panel h1,
 .intro,
 .metric-card p,
 .metric-card strong,
 .metric-card span,
 .login-form label,
-.form-error {
+.measurement-form label,
+.field-note,
+.form-error,
+.form-success {
   margin: 0;
 }
 
@@ -140,13 +172,17 @@ input {
   margin-top: 8px;
 }
 
-.login-form label {
+.login-form label,
+.measurement-form label {
+  display: grid;
+  gap: 8px;
   color: #c9d1d9;
   font-size: 0.875rem;
   font-weight: 700;
 }
 
-.login-form input {
+.login-form input,
+.measurement-form input {
   width: 100%;
   min-height: 48px;
   border: 1px solid #30363d;
@@ -155,7 +191,8 @@ input {
   padding: 0 14px;
 }
 
-.login-form input:focus {
+.login-form input:focus,
+.measurement-form input:focus {
   border-color: #58a6ff;
   outline: 3px solid rgb(88 166 255 / 24%);
 }
@@ -168,6 +205,17 @@ input {
   color: #ff7b72;
   font-size: 0.875rem;
   line-height: 1.4;
+}
+
+.form-success {
+  margin-bottom: 16px;
+  border: 1px solid rgb(63 185 80 / 42%);
+  border-radius: 8px;
+  background: rgb(63 185 80 / 10%);
+  color: #7ee787;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  padding: 12px 14px;
 }
 
 .login-form button {
@@ -220,6 +268,83 @@ input {
   font-size: 0.875rem;
 }
 
+.modal-backdrop {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  background: rgb(1 4 9 / 84%);
+}
+
+.measurement-modal {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  width: 100%;
+  min-height: 100vh;
+  border: 0;
+  background: #0d1117;
+}
+
+.modal-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid #30363d;
+}
+
+.modal-header h2 {
+  margin-top: 6px;
+  color: #f0f6fc;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.icon-action {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  background: #161b22;
+  color: #c9d1d9;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.icon-action:hover {
+  border-color: #8b949e;
+  color: #f0f6fc;
+}
+
+.measurement-form {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  overflow: auto;
+  padding: 20px;
+}
+
+.field-note {
+  color: #8b949e;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  margin-top: 4px;
+}
+
+.modal-actions .primary-action,
+.modal-actions .secondary-action {
+  flex: 1 1 150px;
+  min-height: 48px;
+}
+
 @media (min-width: 680px) {
   .app-shell {
     padding: 56px 28px;
@@ -232,5 +357,24 @@ input {
 
   .summary-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .modal-backdrop {
+    place-items: center;
+    padding: 32px;
+  }
+
+  .measurement-modal {
+    width: min(100%, 520px);
+    min-height: 0;
+    max-height: min(760px, calc(100vh - 64px));
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    background: #161b22;
+    overflow: hidden;
+  }
+
+  .measurement-form {
+    background: #161b22;
   }
 }

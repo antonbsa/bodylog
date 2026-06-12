@@ -86,6 +86,75 @@ app.get("/api/dashboard/weekly", async (c) => {
   return c.json(dashboard)
 })
 
+app.get("/api/measurements/by-date/:date", async (c) => {
+  const date = c.req.param("date")
+
+  if (!isDateOnly(date)) {
+    return c.json(
+      {
+        error: "INVALID_DATE",
+        ok: false,
+      },
+      400,
+    )
+  }
+
+  const repository = new MeasurementRepository(c.env.DB)
+  const measurement = await repository.getByDate(date)
+
+  if (!measurement) {
+    return c.json(
+      {
+        item: null,
+      },
+      404,
+    )
+  }
+
+  return c.json({
+    item: measurement,
+  })
+})
+
+app.put("/api/measurements/by-date/:date", async (c) => {
+  const date = c.req.param("date")
+
+  if (!isDateOnly(date)) {
+    return c.json(
+      {
+        error: "INVALID_DATE",
+        ok: false,
+      },
+      400,
+    )
+  }
+
+  const input = await parseMeasurementInput(c.req.json())
+
+  if (!input.ok) {
+    return c.json(
+      {
+        error: input.error,
+        ok: false,
+      },
+      400,
+    )
+  }
+
+  const repository = new MeasurementRepository(c.env.DB)
+  const existingMeasurement = await repository.getByDate(date)
+  const measurement = existingMeasurement
+    ? await repository.updateByDate(date, input.value)
+    : await repository.create({
+        date,
+        ...input.value,
+      })
+
+  return c.json({
+    item: measurement,
+  })
+})
+
 app.post("/api/auth/login", async (c) => {
   const body = (await c.req.json().catch(() => null)) as {
     password?: unknown
@@ -160,3 +229,83 @@ app.post("/api/auth/logout", (c) => {
 })
 
 export default app
+
+type MeasurementInput = {
+  bodyFatPercentage: number | null
+  musclePercentage: number | null
+  restingMetabolismKcal: number | null
+  weightKg: number
+}
+
+type MeasurementInputResult =
+  | {
+      ok: true
+      value: MeasurementInput
+    }
+  | {
+      error: "INVALID_MEASUREMENT_INPUT"
+      ok: false
+    }
+
+async function parseMeasurementInput(
+  bodyPromise: Promise<unknown>,
+): Promise<MeasurementInputResult> {
+  const body = (await bodyPromise.catch(() => null)) as Record<
+    string,
+    unknown
+  > | null
+
+  if (!body || !isFiniteNumber(body.weightKg)) {
+    return {
+      error: "INVALID_MEASUREMENT_INPUT",
+      ok: false,
+    }
+  }
+
+  const bodyFatPercentage = parseOptionalFiniteNumber(body.bodyFatPercentage)
+  const musclePercentage = parseOptionalFiniteNumber(body.musclePercentage)
+  const restingMetabolismKcal = parseOptionalFiniteNumber(
+    body.restingMetabolismKcal,
+  )
+
+  if (
+    bodyFatPercentage === undefined ||
+    musclePercentage === undefined ||
+    restingMetabolismKcal === undefined
+  ) {
+    return {
+      error: "INVALID_MEASUREMENT_INPUT",
+      ok: false,
+    }
+  }
+
+  return {
+    ok: true,
+    value: {
+      bodyFatPercentage,
+      musclePercentage,
+      restingMetabolismKcal,
+      weightKg: body.weightKg,
+    },
+  }
+}
+
+function isDateOnly(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value)
+}
+
+function parseOptionalFiniteNumber(value: unknown): number | null | undefined {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  if (!isFiniteNumber(value)) {
+    return undefined
+  }
+
+  return value
+}
