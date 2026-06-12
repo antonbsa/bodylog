@@ -2,7 +2,7 @@ import { useState } from "react"
 
 import type { Measurement } from "../api/measurements"
 import { AuthenticatedDashboard } from "./components/AuthenticatedDashboard"
-import { formatDisplayDateFromIso } from "./components/date-format"
+import { formatDisplayDateFromIso } from "../utils/date-format"
 import { MeasurementForm } from "./components/MeasurementForm"
 
 type AuthenticatedAppProps = {

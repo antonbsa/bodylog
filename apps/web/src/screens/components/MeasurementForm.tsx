@@ -16,7 +16,8 @@ import {
   formatDisplayDateFromIso,
   getTodayIsoDate,
   parseDisplayDate,
-} from "./date-format"
+} from "../../utils/date-format"
+import { formatInputNumber, parseDecimalInput } from "../../utils/number-format"
 
 type MeasurementFormProps = {
   onClose: () => void
@@ -306,10 +307,6 @@ function createFieldsFromMeasurement(
   }
 }
 
-function formatInputNumber(value: number | null): string {
-  return value === null ? "" : String(value).replace(".", ",")
-}
-
 function parseMeasurementFields(fields: MeasurementFields, todayIso: string) {
   const dateIso = parseDisplayDate(fields.date)
 
@@ -358,23 +355,11 @@ function parseMeasurementFields(fields: MeasurementFields, todayIso: string) {
 }
 
 function parseRequiredDecimal(value: string): number | null {
-  const parsedValue = parseDecimal(value)
+  const parsedValue = parseDecimalInput(value)
 
   return parsedValue === undefined ? null : parsedValue
 }
 
 function parseOptionalDecimal(value: string): number | null | undefined {
-  return value.trim() === "" ? null : parseDecimal(value)
-}
-
-function parseDecimal(value: string): number | undefined {
-  const normalizedValue = value.trim().replace(",", ".")
-
-  if (normalizedValue === "") {
-    return undefined
-  }
-
-  const parsedValue = Number(normalizedValue)
-
-  return Number.isFinite(parsedValue) ? parsedValue : undefined
+  return value.trim() === "" ? null : parseDecimalInput(value)
 }

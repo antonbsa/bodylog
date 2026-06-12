@@ -3,11 +3,21 @@ import { useEffect, useState } from "react"
 import {
   getWeeklyDashboard,
   type MetricDirection,
-  type MetricVariation,
   type WeeklyDashboard,
-  type WeekSummary,
 } from "../../api/dashboard"
-import { formatDisplayDateFromIso, getTodayIsoDate } from "./date-format"
+import {
+  createDashboardCardModels,
+  formatPrimaryValue,
+  formatPrimaryVariation,
+  formatSecondaryValue,
+  formatSecondaryVariation,
+  getAvailableDaysSoFar,
+  getDirectionLabel,
+  getOutcomeClass,
+  getReliability,
+  type DashboardCardModel,
+} from "../../utils/dashboard-summary"
+import { formatDisplayDateFromIso } from "../../utils/date-format"
 
 type DashboardState = {
   dashboard: WeeklyDashboard | null
@@ -20,28 +30,6 @@ type AuthenticatedDashboardProps = {
   refreshKey: number
   savedMessage: string | null
 }
-
-type SummaryMetric = {
-  directionMetric: "bodyFat" | "muscle" | "weight"
-  label: string
-  secondaryLabel: string
-  secondaryValue: number | null
-  type: "percentage" | "weight"
-  value: number | null
-  variation: MetricVariation | undefined
-  variationSecondary: MetricVariation | undefined
-  variationSecondaryType: "absoluteKg" | "relativePercentage"
-}
-
-const ptBrNumberFormatter = new Intl.NumberFormat("pt-BR", {
-  maximumFractionDigits: 1,
-  minimumFractionDigits: 0,
-})
-
-const ptBrPreciseNumberFormatter = new Intl.NumberFormat("pt-BR", {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 0,
-})
 
 export function AuthenticatedDashboard({
   onLogout,
@@ -140,7 +128,7 @@ export function AuthenticatedDashboard({
 }
 
 function WeeklyDashboardSummary({ dashboard }: { dashboard: WeeklyDashboard }) {
-  const metrics = createSummaryMetrics(dashboard)
+  const metrics = createDashboardCardModels(dashboard)
   const currentReliability = getReliability(dashboard.current.measurementCount)
   const previousReliability = getReliability(
     dashboard.previous.measurementCount,
@@ -199,7 +187,7 @@ function WeeklyDashboardSummary({ dashboard }: { dashboard: WeeklyDashboard }) {
   )
 }
 
-function SummaryCard({ metric }: { metric: SummaryMetric }) {
+function SummaryCard({ metric }: { metric: DashboardCardModel }) {
   const outcomeClass = getOutcomeClass(
     metric.directionMetric,
     metric.variation?.direction ?? null,
@@ -233,17 +221,7 @@ function SummaryCard({ metric }: { metric: SummaryMetric }) {
 }
 
 function DirectionBadge({ direction }: { direction: MetricDirection | null }) {
-  return (
-    <span className="direction-badge">
-      {direction === "up"
-        ? "Subiu"
-        : direction === "down"
-          ? "Caiu"
-          : direction === "stable"
-            ? "Estável"
-            : "Sem comparação"}
-    </span>
-  )
+  return <span className="direction-badge">{getDirectionLabel(direction)}</span>
 }
 
 function PlaceholderSummary() {
@@ -265,176 +243,4 @@ function PlaceholderSummary() {
       ))}
     </section>
   )
-}
-
-function createSummaryMetrics(dashboard: WeeklyDashboard): SummaryMetric[] {
-  return [
-    {
-      directionMetric: "weight",
-      label: "Peso médio",
-      secondaryLabel: "IMC médio",
-      secondaryValue: dashboard.current.averages.bmi,
-      type: "weight",
-      value: dashboard.current.averages.weightKg,
-      variation: dashboard.variation.weightKg,
-      variationSecondary: dashboard.variation.weightKg,
-      variationSecondaryType: "relativePercentage",
-    },
-    {
-      directionMetric: "bodyFat",
-      label: "Gordura corporal",
-      secondaryLabel: "BF kg",
-      secondaryValue: dashboard.current.averages.bodyFatKg,
-      type: "percentage",
-      value: dashboard.current.averages.bodyFatPercentage,
-      variation: dashboard.variation.bodyFatPercentage,
-      variationSecondary: dashboard.variation.bodyFatKg,
-      variationSecondaryType: "absoluteKg",
-    },
-    {
-      directionMetric: "muscle",
-      label: "Músculo",
-      secondaryLabel: "Músculo kg",
-      secondaryValue: dashboard.current.averages.muscleKg,
-      type: "percentage",
-      value: dashboard.current.averages.musclePercentage,
-      variation: dashboard.variation.musclePercentage,
-      variationSecondary: dashboard.variation.muscleKg,
-      variationSecondaryType: "absoluteKg",
-    },
-  ]
-}
-
-function getAvailableDaysSoFar(currentWeek: WeekSummary): number {
-  const today = getTodayIsoDate()
-  const latestAvailableDate =
-    today > currentWeek.weekEndDate ? currentWeek.weekEndDate : today
-  const availableDays =
-    getDateOnlyDifferenceInDays(
-      currentWeek.weekStartDate,
-      latestAvailableDate,
-    ) + 1
-
-  return Math.max(1, Math.min(7, availableDays))
-}
-
-function getDateOnlyDifferenceInDays(startDate: string, endDate: string) {
-  const start = new Date(`${startDate}T00:00:00.000Z`)
-  const end = new Date(`${endDate}T00:00:00.000Z`)
-  const millisecondsPerDay = 24 * 60 * 60 * 1000
-
-  return Math.round((end.getTime() - start.getTime()) / millisecondsPerDay)
-}
-
-function getReliability(measurementCount: number): {
-  className: string
-  label: string
-} {
-  if (measurementCount <= 2) {
-    return {
-      className: "reliability-low",
-      label: "Baixa",
-    }
-  }
-
-  if (measurementCount <= 4) {
-    return {
-      className: "reliability-medium",
-      label: "Média",
-    }
-  }
-
-  return {
-    className: "reliability-high",
-    label: "Alta",
-  }
-}
-
-function getOutcomeClass(
-  metric: SummaryMetric["directionMetric"],
-  direction: MetricDirection | null,
-): string {
-  if (direction === null) {
-    return "metric-card-unavailable"
-  }
-
-  if (direction === "stable") {
-    return "metric-card-stable"
-  }
-
-  if (metric === "bodyFat") {
-    return direction === "down"
-      ? "metric-card-positive"
-      : "metric-card-negative"
-  }
-
-  return direction === "up" ? "metric-card-positive" : "metric-card-negative"
-}
-
-function formatPrimaryValue(
-  value: number | null,
-  type: SummaryMetric["type"],
-): string {
-  if (value === null) {
-    return "-"
-  }
-
-  return type === "percentage"
-    ? `${ptBrNumberFormatter.format(value)}%`
-    : `${ptBrNumberFormatter.format(value)} kg`
-}
-
-function formatSecondaryValue(value: number | null): string {
-  return value === null ? "-" : ptBrPreciseNumberFormatter.format(value)
-}
-
-function formatPrimaryVariation(
-  variation: MetricVariation | undefined,
-  type: SummaryMetric["type"],
-): string {
-  if (!variation) {
-    return "-"
-  }
-
-  const value =
-    type === "percentage"
-      ? variation.absolutePercentagePoints
-      : variation.absolute
-
-  if (value === undefined) {
-    return "-"
-  }
-
-  const suffix = type === "percentage" ? " p.p." : " kg"
-
-  return `${formatSignedNumber(value)}${suffix}`
-}
-
-function formatSecondaryVariation(
-  variation: MetricVariation | undefined,
-  type: SummaryMetric["variationSecondaryType"],
-): string {
-  if (!variation) {
-    return type === "relativePercentage"
-      ? "Sem variação relativa"
-      : "Sem variação em kg"
-  }
-
-  if (type === "relativePercentage") {
-    return variation.relativePercentage === null
-      ? "Sem variação relativa"
-      : `${formatSignedNumber(variation.relativePercentage)}%`
-  }
-
-  if (variation.absolute === undefined) {
-    return "Sem variação em kg"
-  }
-
-  return `${formatSignedNumber(variation.absolute)} kg`
-}
-
-function formatSignedNumber(value: number): string {
-  const sign = value > 0 ? "+" : ""
-
-  return `${sign}${ptBrPreciseNumberFormatter.format(value)}`
 }

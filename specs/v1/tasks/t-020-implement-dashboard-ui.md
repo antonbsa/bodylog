@@ -57,6 +57,8 @@ Validation notes:
   weight, body fat, and muscle.
 - Added V1 expected-outcome color classes for summary card direction states.
 - The dashboard refreshes after a measurement is saved from the modal form.
+- Extracted shared number formatting/parsing helpers and dashboard summary
+  presentation helpers to keep component files focused on rendering.
 
 ## Modified Files
 
@@ -64,6 +66,10 @@ Validation notes:
 - `apps/web/src/screens/AuthenticatedApp.tsx`
 - `apps/web/src/screens/components/AuthenticatedDashboard.tsx`
 - `apps/web/src/styles.css`
+- `apps/web/src/screens/components/MeasurementForm.tsx`
+- `apps/web/src/utils/dashboard-summary.ts`
+- `apps/web/src/utils/date-format.ts`
+- `apps/web/src/utils/number-format.ts`
 - `specs/v1/tasks/t-020-implement-dashboard-ui.md`
 - `tests/e2e/dashboard.spec.ts`
 - `tests/e2e/measurement-form.spec.ts`

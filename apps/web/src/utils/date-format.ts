@@ -13,6 +13,17 @@ export function getTodayIsoDate(): string {
   return `${year}-${month}-${day}`
 }
 
+export function getDateOnlyDifferenceInDays(
+  startDate: string,
+  endDate: string,
+): number {
+  const start = new Date(`${startDate}T00:00:00.000Z`)
+  const end = new Date(`${endDate}T00:00:00.000Z`)
+  const millisecondsPerDay = 24 * 60 * 60 * 1000
+
+  return Math.round((end.getTime() - start.getTime()) / millisecondsPerDay)
+}
+
 export function parseDisplayDate(value: string): string | null {
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim())
 
