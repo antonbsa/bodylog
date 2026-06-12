@@ -43,6 +43,7 @@ Notes:
 - Removed placeholders from measurement form inputs.
 - Added an outlined mode badge in the form header: green for creating and orange for editing.
 - Removed the header close button; cancel and submit are the only form actions.
+- Moved the lookup loading status to the modal header and kept it out of the form field flow to avoid modal layout shift while loading date-specific data.
 - Optional numeric fields accept blank values as `null`; decimal inputs accept comma or period separators.
 - Successful saves close the modal and show a short status message on the dashboard.
 - Kept full weekly dashboard UI, measurement list, and delete confirmation for their dedicated tasks.

@@ -136,6 +136,13 @@ export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
             <h2 id="measurement-form-title">Medida corporal</h2>
           </div>
           <span className={modeClassName}>{modeLabel}</span>
+          <span
+            aria-live="polite"
+            className="modal-loading-status"
+            role={isLoading ? "status" : undefined}
+          >
+            {isLoading ? "Carregando dados" : ""}
+          </span>
         </header>
 
         <form className="measurement-form" onSubmit={handleSubmit}>
@@ -155,12 +162,6 @@ export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
               value={fields.date}
             />
           </label>
-
-          {isLoading ? (
-            <p className="field-note" role="status">
-              Carregando medida...
-            </p>
-          ) : null}
 
           <label>
             Peso (kg)

@@ -65,6 +65,7 @@ test("creates a measurement from the dashboard form", async ({ page }) => {
   await expect(dialog).toBeVisible()
   await expect(dialog.getByText("Criando")).toBeVisible()
   await expect(page.getByLabel("Fechar formulário")).toHaveCount(0)
+  await expect(dialog.locator(".modal-loading-status")).toBeAttached()
   await expect(page.getByLabel("Data")).toHaveValue(todayDisplay)
   await expect(page.getByLabel("Peso (kg)")).toHaveValue("")
   await expect(page.getByLabel("Peso (kg)")).not.toHaveAttribute("placeholder")
