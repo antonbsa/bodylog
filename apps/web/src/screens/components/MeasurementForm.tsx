@@ -3,7 +3,7 @@ import {
   useRef,
   useState,
   type Dispatch,
-  type FormEvent,
+  type SubmitEvent,
   type SetStateAction,
 } from "react"
 
@@ -110,7 +110,7 @@ export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
     }
   }, [fields.date, todayIso])
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (isSubmitting) {
