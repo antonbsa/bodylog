@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
   type Dispatch,
   type FormEvent,
@@ -32,6 +33,7 @@ type MeasurementFields = {
 
 export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
   const todayIso = getTodayIsoDate()
+  const measurementByDateCache = useRef(new Map<string, Measurement | null>())
   const [fields, setFields] = useState<MeasurementFields>(() =>
     createEmptyFields(formatDisplayDateFromIso(todayIso)),
   )
@@ -45,6 +47,26 @@ export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
     const dateIso = parseDisplayDate(fields.date)
 
     if (!dateIso || dateIso > todayIso) {
+      setExistingMeasurement(null)
+      setIsLoading(false)
+      return
+    }
+
+    if (measurementByDateCache.current.has(dateIso)) {
+      const cachedMeasurement =
+        measurementByDateCache.current.get(dateIso) ?? null
+
+      setExistingMeasurement(cachedMeasurement)
+      setFields((currentFields) => {
+        if (currentFields.date !== fields.date) {
+          return currentFields
+        }
+
+        return cachedMeasurement
+          ? createFieldsFromMeasurement(cachedMeasurement)
+          : createEmptyFields(fields.date)
+      })
+      setErrorMessage(null)
       setIsLoading(false)
       return
     }
@@ -60,6 +82,7 @@ export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
           return
         }
 
+        measurementByDateCache.current.set(dateIso, measurement)
         setExistingMeasurement(measurement)
         setFields((currentFields) => {
           if (currentFields.date !== fields.date) {
@@ -110,6 +133,7 @@ export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
         parsedFields.value,
       )
 
+      measurementByDateCache.current.set(parsedFields.date, measurement)
       onSaved(measurement)
     } catch {
       setErrorMessage("Não foi possível salvar a medida.")

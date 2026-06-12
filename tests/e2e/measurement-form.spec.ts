@@ -93,6 +93,8 @@ test("creates a measurement from the dashboard form", async ({ page }) => {
 test("loads an existing date into the form before saving", async ({ page }) => {
   const existingDate = "2026-06-10"
   const existingDisplayDate = "10/06/2026"
+  const emptyDate = "11/06/2026"
+  let existingDateLookupCount = 0
 
   await mockAuthenticatedSession(page)
   await page.route("**/api/measurements/by-date/*", async (route) => {
@@ -101,6 +103,7 @@ test("loads an existing date into the form before saving", async ({ page }) => {
 
     if (request.method() === "GET") {
       if (date === existingDate) {
+        existingDateLookupCount += 1
         await fulfillMeasurementLookup(route, {
           id: "existing-measurement",
           date: existingDate,
@@ -111,6 +114,11 @@ test("loads an existing date into the form before saving", async ({ page }) => {
           createdAt: "2026-06-09T12:00:00.000Z",
           updatedAt: "2026-06-09T12:00:00.000Z",
         })
+        return
+      }
+
+      if (date === "2026-06-11") {
+        await fulfillMeasurementLookup(route, null, 404)
         return
       }
 
@@ -148,6 +156,15 @@ test("loads an existing date into the form before saving", async ({ page }) => {
   await expect(page.getByLabel("Peso (kg)")).toHaveValue("72,9")
   await expect(page.getByLabel("Gordura corporal (%)")).toHaveValue("14,46")
   await expect(page.getByLabel("Músculo (%)")).toHaveValue("")
+
+  await page.getByLabel("Data").fill(emptyDate)
+  await expect(page.getByRole("dialog").getByText("Criando")).toBeVisible()
+  await expect(page.getByLabel("Peso (kg)")).toHaveValue("")
+
+  await page.getByLabel("Data").fill(existingDisplayDate)
+  await expect(page.getByRole("dialog").getByText("Editando")).toBeVisible()
+  await expect(page.getByLabel("Peso (kg)")).toHaveValue("72,9")
+  expect(existingDateLookupCount).toBe(1)
 
   await page.getByLabel("Peso (kg)").fill("73,1")
   await page.getByRole("button", { name: "Salvar medida" }).click()

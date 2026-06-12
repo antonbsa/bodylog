@@ -40,6 +40,7 @@ Notes:
 - Split the authenticated screen into separate screen-local dashboard and measurement form components.
 - Added a responsive modal form: full viewport on mobile and constrained on larger screens.
 - Date defaults to today, uses `DD/MM/YYYY` in the form, rejects future dates during validation, and loads existing records when the selected date changes.
+- Date lookup results are cached in memory while the form is open, avoiding repeat requests when moving back and forth between already loaded dates without persisting personal measurement data.
 - Removed placeholders from measurement form inputs.
 - Added an outlined mode badge in the form header: green for creating and orange for editing.
 - Removed the header close button; cancel and submit are the only form actions.
