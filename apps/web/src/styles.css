@@ -127,9 +127,17 @@ input:disabled {
 .modal-header h2,
 .login-panel h1,
 .intro,
+.context-label,
+.context-value,
+.partial-week-note,
+.dashboard-message,
+.comparison-context,
 .metric-card p,
 .metric-card strong,
 .metric-card span,
+.variation-card p,
+.variation-card strong,
+.variation-card span,
 .login-form label,
 .measurement-form label,
 .field-note,
@@ -241,14 +249,85 @@ input:disabled {
   gap: 12px;
 }
 
+.dashboard-context {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dashboard-context > div {
+  min-width: 0;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  background: #0d1117;
+  padding: 12px;
+}
+
+.context-label {
+  color: #8b949e;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.context-value {
+  margin-top: 6px;
+  color: #f0f6fc;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.partial-week-note,
+.dashboard-message {
+  margin-bottom: 12px;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  background: #161b22;
+  color: #c9d1d9;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  padding: 12px 14px;
+}
+
+.dashboard-message[role="alert"] {
+  border-color: rgb(248 81 73 / 42%);
+  background: rgb(248 81 73 / 10%);
+  color: #ff7b72;
+}
+
 .metric-card {
   display: grid;
-  gap: 10px;
-  min-height: 136px;
+  align-content: start;
+  gap: 12px;
+  min-height: 220px;
   padding: 18px;
   border: 1px solid #30363d;
   border-radius: 8px;
   background: #161b22;
+}
+
+.metric-card-positive {
+  border-color: rgb(63 185 80 / 42%);
+}
+
+.metric-card-negative {
+  border-color: rgb(248 81 73 / 42%);
+}
+
+.metric-card-stable {
+  border-color: rgb(139 148 158 / 42%);
+}
+
+.metric-card-unavailable {
+  border-color: #30363d;
+}
+
+.metric-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .metric-card p {
@@ -258,14 +337,88 @@ input:disabled {
 
 .metric-card strong {
   color: #f0f6fc;
-  font-size: 2rem;
+  font-size: 2.25rem;
   line-height: 1;
 }
 
 .metric-card span {
-  align-self: end;
   color: #8b949e;
   font-size: 0.875rem;
+}
+
+.direction-badge {
+  flex: 0 0 auto;
+  max-width: 9rem;
+  border: 1px solid #30363d;
+  border-radius: 999px;
+  color: #c9d1d9;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.metric-card-positive .direction-badge {
+  border-color: rgb(63 185 80 / 42%);
+  color: #7ee787;
+}
+
+.metric-card-negative .direction-badge {
+  border-color: rgb(248 81 73 / 42%);
+  color: #ff7b72;
+}
+
+.metric-card-stable .direction-badge {
+  border-color: rgb(139 148 158 / 48%);
+  color: #c9d1d9;
+}
+
+.variation-card {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  background: #0d1117;
+  padding: 12px;
+}
+
+.variation-card p,
+.variation-card span {
+  color: #8b949e;
+  font-size: 0.75rem;
+}
+
+.variation-card strong {
+  color: #f0f6fc;
+  font-size: 1.125rem;
+  line-height: 1.2;
+}
+
+.metric-card-positive .variation-card strong,
+.reliability-high {
+  color: #7ee787;
+}
+
+.metric-card-negative .variation-card strong,
+.reliability-low {
+  color: #ff7b72;
+}
+
+.metric-card-stable .variation-card strong,
+.reliability-medium {
+  color: #d29922;
+}
+
+.comparison-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 12px;
+  color: #8b949e;
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
 .modal-backdrop {
@@ -365,6 +518,10 @@ input:disabled {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .metric-card:first-child {
+    min-height: 244px;
+  }
+
   .modal-backdrop {
     place-items: center;
     padding: 32px;
@@ -382,5 +539,20 @@ input:disabled {
 
   .measurement-form {
     background: #161b22;
+  }
+}
+
+@media (max-width: 430px) {
+  .dashboard-context {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h1,
+  .login-panel h1 {
+    font-size: 2.25rem;
+  }
+
+  .metric-card strong {
+    font-size: 2rem;
   }
 }

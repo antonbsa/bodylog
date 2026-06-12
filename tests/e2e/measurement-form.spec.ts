@@ -21,6 +21,51 @@ async function mockAuthenticatedSession(page: Page) {
       status: 200,
     })
   })
+  await mockWeeklyDashboard(page)
+}
+
+async function mockWeeklyDashboard(page: Page) {
+  await page.route("**/api/dashboard/weekly", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        current: {
+          weekStartDate: "2026-06-08",
+          weekEndDate: "2026-06-14",
+          measurementCount: 0,
+          isCurrentWeek: true,
+          isPartialWeek: true,
+          averages: {
+            weightKg: null,
+            bmi: null,
+            bodyFatPercentage: null,
+            bodyFatKg: null,
+            musclePercentage: null,
+            muscleKg: null,
+            restingMetabolismKcal: null,
+          },
+        },
+        previous: {
+          weekStartDate: "2026-06-01",
+          weekEndDate: "2026-06-07",
+          measurementCount: 0,
+          isCurrentWeek: false,
+          isPartialWeek: false,
+          averages: {
+            weightKg: null,
+            bmi: null,
+            bodyFatPercentage: null,
+            bodyFatKg: null,
+            musclePercentage: null,
+            muscleKg: null,
+            restingMetabolismKcal: null,
+          },
+        },
+        variation: {},
+      }),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
 }
 
 test("creates a measurement from the dashboard form", async ({ page }) => {
