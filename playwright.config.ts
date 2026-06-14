@@ -17,7 +17,8 @@ export default defineConfig({
   },
   use: {
     baseURL: webBaseUrl,
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
+    screenshot: "on",
   },
   projects: [
     {
