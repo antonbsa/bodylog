@@ -210,7 +210,7 @@ Use:
 - restrained accent colors;
 - clear data hierarchy;
 - cards for summary metrics;
-- table or table-like layout for history;
+- a literal table for measurement history;
 - form layout for data entry.
 
 Avoid:
@@ -279,6 +279,6 @@ Suggested initial palette:
 
 Component library:
 
-- do not install or commit to a full component library during T-004;
-- choose the component library during frontend setup or the first concrete UI implementation task;
-- candidates may include shadcn/ui, Radix primitives, or another small React-compatible option that fits the V1 direction.
+- use Radix UI primitives for V1 frontend components when a component primitive is useful;
+- apply Radix first to the measurement history table refactor;
+- migrate other existing UI components to Radix through a separate V1 task instead of changing all components during the history table refactor.

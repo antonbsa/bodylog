@@ -2,9 +2,25 @@
 
 ## Status
 
-To Do
+Done
 
 ## Description
+
+Implement the dashboard measurement history list backed by `GET /api/measurements`.
+
+The list is part of the authenticated dashboard, shows recent measurements in
+date-descending order, includes raw and derived values, and supports loading 20
+more records at a time.
+
+## Implementation Plan
+
+- Add `GET /api/measurements` with `limit` and `offset` query support.
+- Return derived values for each listed measurement using the configured user height.
+- Add a frontend measurement-list API helper.
+- Add a dashboard history section with loading, empty, error, populated, and load-more states.
+- Wire each history row edit action to the existing measurement form by date.
+- Expose a non-destructive delete action entry point for T-018.
+- Add API and E2E coverage for list behavior and rendering states.
 
 
 ## Why
@@ -16,24 +32,70 @@ Do not add multi-user behavior, advanced analytics, Google Sheets integration, o
 ## Validation
 Run the relevant automated checks for the changed area. If automated coverage is not practical yet, record the manual validation performed in this task.
 
+Automated checks:
+
+- `npm run typecheck`
+- `npm run lint`
+- `npm run test:api`
+- `npm run test:e2e`
+- `npm run build:web`
+
+Focused checks also run while implementing:
+
+- `npm run test:e2e -- measurement-list.spec.ts`
+
+Validation notes:
+
+- API tests cover measurement listing by descending date, pagination, derived values, invalid list query parameters, and repository list filters.
+- E2E tests cover populated, empty, and error history states.
+- E2E tests cover the initial 20-row history view, loading 20 more, raw values, derived values, missing optional values, edit action, and visible delete action.
+- Delete is intentionally non-destructive in this task. Confirmation, actual deletion, list refresh after deletion, and dashboard recalculation remain in T-018.
+
+## Implementation Notes
+
+- Added authenticated `GET /api/measurements`.
+- Added repository list options for `from`, `to`, `limit`, and `offset`.
+- The frontend requests `visibleLimit + 1` rows so it can detect whether a "Carregar mais" action should be shown without changing the documented response shape.
+- The measurement form now accepts an optional initial date so list rows can open existing measurements for editing.
+- History rows use compact responsive cards instead of horizontal-only table scrolling on mobile.
+
+## Modified Files
+
+- `apps/api/src/index.ts`
+- `apps/api/src/measurements/measurement-repository.ts`
+- `apps/web/src/api/measurements.ts`
+- `apps/web/src/screens/AuthenticatedApp.tsx`
+- `apps/web/src/screens/components/AuthenticatedDashboard.tsx`
+- `apps/web/src/screens/components/MeasurementForm.tsx`
+- `apps/web/src/styles.css`
+- `specs/v1/tasks/README.md`
+- `specs/v1/tasks/t-017-implement-measurement-list.md`
+- `tests/api/auth.test.ts`
+- `tests/api/measurement-api.test.ts`
+- `tests/api/measurement-repository.test.ts`
+- `tests/api/weekly-dashboard-api.test.ts`
+- `tests/e2e/dashboard.spec.ts`
+- `tests/e2e/measurement-form.spec.ts`
+- `tests/e2e/measurement-list.spec.ts`
+- `tests/e2e/tooling.spec.ts`
 
 ## Acceptance Criteria
 
-- [ ] Measurements listed by date descending.
-- [ ] Initial history view shows 20 records and can load 20 more when more exist.
-- [ ] Raw values shown.
-- [ ] Derived values shown when possible.
-- [ ] Missing optional values handled clearly.
-- [ ] Edit action available.
-- [ ] Delete action available.
-- [ ] E2E or component-level tests cover list rendering states.
+- [x] Measurements listed by date descending.
+- [x] Initial history view shows 20 records and can load 20 more when more exist.
+- [x] Raw values shown.
+- [x] Derived values shown when possible.
+- [x] Missing optional values handled clearly.
+- [x] Edit action available.
+- [x] Delete action available.
+- [x] E2E or component-level tests cover list rendering states.
 
 
 ## Definition of Done
 
-- [ ] Acceptance criteria are met
-- [ ] Implementation matches the approved spec or plan
-- [ ] Relevant docs or specs were updated when needed
-- [ ] Tests or manual validation were completed
-- [ ] No unrelated changes were introduced
-- [ ] Task notes include validation results
+- [x] Acceptance criteria are met
+- [x] Implementation matches the approved spec or plan
+- [x] Relevant docs or specs were updated when needed
+- [x] Tests or manual validation were completed
+- [x] No unrelated changes were introduced
+- [x] Task notes include validation results
