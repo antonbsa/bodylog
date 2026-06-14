@@ -24,12 +24,12 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-016 — Implement Measurement Form](./t-016-implement-measurement-form.md)
 - [T-019 — Implement Weekly Dashboard API](./t-019-implement-weekly-dashboard-api.md)
 - [T-026 — Prepare Local Development Data Setup](./t-026-prepare-local-development-data-setup.md)
+- [T-020 — Implement Dashboard UI](./t-020-implement-dashboard-ui.md)
 
 ## Remaining
 
 - [T-017 — Implement Measurement List](./t-017-implement-measurement-list.md)
 - [T-018 — Implement Delete Confirmation](./t-018-implement-delete-confirmation.md)
-- [T-020 — Implement Dashboard UI](./t-020-implement-dashboard-ui.md)
 - [T-021 — Implement CSV Export](./t-021-implement-csv-export.md)
 - [T-022 — Implement CSV Import](./t-022-implement-csv-import.md)
 - [T-023 — Configure Deployment Automation](./t-023-configure-deployment-automation.md)
