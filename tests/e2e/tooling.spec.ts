@@ -10,6 +10,77 @@ async function mockSession(page: Page, authenticated: boolean) {
       status: authenticated ? 200 : 401,
     })
   })
+  await mockWeeklyDashboard(page)
+}
+
+async function mockWeeklyDashboard(page: Page) {
+  await page.route("**/api/dashboard/weekly", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        current: {
+          weekStartDate: "2026-06-08",
+          weekEndDate: "2026-06-14",
+          measurementCount: 2,
+          isCurrentWeek: true,
+          isPartialWeek: true,
+          averages: {
+            weightKg: 73,
+            bmi: 25.87,
+            bodyFatPercentage: 14,
+            bodyFatKg: 10.36,
+            musclePercentage: 44,
+            muscleKg: 32.56,
+            restingMetabolismKcal: 1700,
+          },
+        },
+        previous: {
+          weekStartDate: "2026-06-01",
+          weekEndDate: "2026-06-07",
+          measurementCount: 2,
+          isCurrentWeek: false,
+          isPartialWeek: false,
+          averages: {
+            weightKg: 72,
+            bmi: 25.51,
+            bodyFatPercentage: 16.2,
+            bodyFatKg: 11.67,
+            musclePercentage: 42.75,
+            muscleKg: 30.79,
+            restingMetabolismKcal: 1690,
+          },
+        },
+        variation: {
+          weightKg: {
+            absolute: 1,
+            relativePercentage: 1.39,
+            direction: "up",
+          },
+          bodyFatPercentage: {
+            absolutePercentagePoints: -2.2,
+            relativePercentage: -13.58,
+            direction: "down",
+          },
+          bodyFatKg: {
+            absolute: -1.31,
+            relativePercentage: -11.23,
+            direction: "down",
+          },
+          musclePercentage: {
+            absolutePercentagePoints: 1.25,
+            relativePercentage: 2.92,
+            direction: "up",
+          },
+          muscleKg: {
+            absolute: 1.77,
+            relativePercentage: 5.75,
+            direction: "up",
+          },
+        },
+      }),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
 }
 
 test("login screen renders first", async ({ page }) => {
@@ -66,7 +137,7 @@ test("login screen opens the app after a valid password", async ({ page }) => {
   await page.getByRole("button", { name: "Entrar" }).click()
 
   await expect(
-    page.getByRole("heading", { name: "Registro diário de medidas corporais" }),
+    page.getByRole("heading", { name: "Resumo da semana" }),
   ).toBeVisible()
   await expect(page.getByText("Peso médio")).toBeVisible()
 })
@@ -104,7 +175,7 @@ test("authenticated session survives a page reload", async ({ page }) => {
   await page.reload()
 
   await expect(
-    page.getByRole("heading", { name: "Registro diário de medidas corporais" }),
+    page.getByRole("heading", { name: "Resumo da semana" }),
   ).toBeVisible()
   await expect(page.getByText("Peso médio")).toBeVisible()
 })

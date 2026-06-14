@@ -47,7 +47,8 @@ The app replaces a spreadsheet workflow, so trust depends on correct calculation
 Guidelines:
 
 - Store at most one measurement per date.
-- Treat `YYYY-MM-DD` dates consistently across API, database, CSV, and UI.
+- Treat `YYYY-MM-DD` dates consistently across API, database, and CSV.
+- Display and accept dates in the UI as `DD/MM/YYYY` for `pt-BR`.
 - Keep week calculations aligned with Monday-start weeks.
 - Compare partial current week against the previous full week.
 - Display percentage metric changes in percentage points.

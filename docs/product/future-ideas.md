@@ -23,11 +23,19 @@ Add an optional time field to measurements.
 
 The field should not be required. It may help identify outliers later.
 
+### Measurement Form Date Picker
+
+Replace the V1 text date field with a dedicated date picker component that preserves the `DD/MM/YYYY` display format and keeps API/database values as ISO dates.
+
 ### Better CSV Mapping
 
 Support alternative CSV headers from the existing spreadsheet export.
 
 ## V2 Candidates
+
+### Measurement Form Loading Polish
+
+Improve the measurement form loading state with a subtle rotating indicator for date lookups, no form-field layout shift, and no distracting flash when lookup responses resolve immediately.
 
 ### Google Sheets Automatic Backup
 

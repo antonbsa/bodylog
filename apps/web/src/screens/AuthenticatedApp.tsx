@@ -1,52 +1,48 @@
-const metricPlaceholders = [
-  {
-    detail: "Semana atual",
-    label: "Peso médio",
-    value: "-",
-  },
-  {
-    detail: "Comparação semanal",
-    label: "Gordura corporal",
-    value: "-",
-  },
-  {
-    detail: "Comparação semanal",
-    label: "Massa muscular",
-    value: "-",
-  },
-]
+import { useState } from "react"
+
+import type { Measurement } from "../api/measurements"
+import { AuthenticatedDashboard } from "./components/AuthenticatedDashboard"
+import { formatDisplayDateFromIso } from "../utils/date-format"
+import { MeasurementForm } from "./components/MeasurementForm"
 
 type AuthenticatedAppProps = {
   onLogout: () => void
 }
 
 export function AuthenticatedApp({ onLogout }: AuthenticatedAppProps) {
+  const [isMeasurementFormOpen, setIsMeasurementFormOpen] = useState(false)
+  const [savedMessage, setSavedMessage] = useState<string | null>(null)
+  // simple way to trigger a refresh of the dashboard when a new measurement is saved
+  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0)
+
+  function openMeasurementForm() {
+    setSavedMessage(null)
+    setIsMeasurementFormOpen(true)
+  }
+
+  function handleMeasurementSaved(measurement: Measurement) {
+    setSavedMessage(
+      `Medida de ${formatDisplayDateFromIso(measurement.date)} salva.`,
+    )
+    setDashboardRefreshKey((currentKey) => currentKey + 1)
+    setIsMeasurementFormOpen(false)
+  }
+
   return (
     <main className="app-shell">
-      <header className="app-header">
-        <section className="hero" aria-labelledby="page-title">
-          <p className="eyebrow">BodyLog</p>
-          <h1 id="page-title">Registro diário de medidas corporais</h1>
-          <p className="intro">
-            Uma base simples para acompanhar medidas e revisar a semana no
-            celular.
-          </p>
-        </section>
+      <AuthenticatedDashboard
+        onLogout={onLogout}
+        onOpenMeasurementForm={openMeasurementForm}
+        refreshKey={dashboardRefreshKey}
+        savedMessage={savedMessage}
+      />
 
-        <button className="secondary-action" onClick={onLogout} type="button">
-          Sair
-        </button>
-      </header>
-
-      <section className="summary-grid" aria-label="Resumo inicial">
-        {metricPlaceholders.map((metric) => (
-          <article className="metric-card" key={metric.label}>
-            <p>{metric.label}</p>
-            <strong>{metric.value}</strong>
-            <span>{metric.detail}</span>
-          </article>
-        ))}
-      </section>
+      {isMeasurementFormOpen ? (
+        <MeasurementForm
+          onClose={() => setIsMeasurementFormOpen(false)}
+          onSaved={handleMeasurementSaved}
+        />
+      ) : null}
     </main>
   )
 }
