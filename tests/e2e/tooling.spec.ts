@@ -11,6 +11,7 @@ async function mockSession(page: Page, authenticated: boolean) {
     })
   })
   await mockWeeklyDashboard(page)
+  await mockMeasurementList(page)
 }
 
 async function mockWeeklyDashboard(page: Page) {
@@ -76,6 +77,18 @@ async function mockWeeklyDashboard(page: Page) {
             direction: "up",
           },
         },
+      }),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
+}
+
+async function mockMeasurementList(page: Page) {
+  await page.route("**/api/measurements?*", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        items: [],
       }),
       contentType: "application/json",
       status: 200,

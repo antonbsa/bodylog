@@ -6,9 +6,9 @@ To Do
 
 ## Description
 
-Migrate existing V1 frontend UI components to Radix UI primitives where Radix provides useful accessible behavior or structure.
+Migrate existing V1 frontend UI components to Radix UI / Radix Themes components where Radix provides useful accessible behavior or structure.
 
-This task exists because Radix UI was selected during the measurement history table refactor, but that refactor should apply Radix only to history-table-related changes.
+This task exists because Radix UI / Radix Themes was selected during the measurement history table refactor, but that refactor should apply Radix only to history-table-related changes.
 
 ## Why
 
@@ -17,10 +17,10 @@ This task keeps component-library adoption deliberate and prevents the history t
 ## Scope
 
 - Review existing frontend components after the history table refactor lands.
-- Apply Radix UI primitives to suitable existing components such as dialogs, forms, buttons, and other interactive controls.
+- Apply Radix UI / Radix Themes components to suitable existing components such as dialogs, forms, buttons, and other interactive controls.
 - Keep the current dark, mobile-first visual direction.
 - Preserve all visible `pt-BR` copy.
-- Keep component changes small and behavior-preserving unless the selected primitive requires a minor accessibility improvement.
+- Keep component changes small and behavior-preserving unless the selected component requires a minor accessibility improvement.
 - Update or add tests for any changed interactive behavior.
 
 ## Out of Scope
@@ -29,7 +29,7 @@ This task keeps component-library adoption deliberate and prevents the history t
 - Do not change product behavior.
 - Do not add charts, multi-user behavior, Google Sheets integration, offline-first behavior, or Vercel compatibility.
 - Do not refactor the measurement history table in this task if that refactor has already been completed separately.
-- Do not migrate components that do not benefit from Radix primitives.
+- Do not migrate components that do not benefit from Radix components.
 
 ## Validation
 
@@ -37,8 +37,8 @@ Run the relevant automated checks for the changed area. If automated coverage is
 
 ## Acceptance Criteria
 
-- [ ] Existing UI components that benefit from Radix primitives are identified.
-- [ ] Selected components use Radix UI primitives.
+- [ ] Existing UI components that benefit from Radix components are identified.
+- [ ] Selected components use Radix UI / Radix Themes components.
 - [ ] Existing visual direction is preserved.
 - [ ] Existing product behavior is preserved.
 - [ ] Relevant E2E or component-level tests are updated.

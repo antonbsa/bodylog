@@ -138,6 +138,15 @@ async function mockAuthenticatedDashboard(
       status: 200,
     })
   })
+  await page.route("**/api/measurements?*", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        items: [],
+      }),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
 }
 
 function getAvailableDaysSoFar(week: WeekRange): number {

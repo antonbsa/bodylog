@@ -279,6 +279,6 @@ Suggested initial palette:
 
 Component library:
 
-- use Radix UI primitives for V1 frontend components when a component primitive is useful;
-- apply Radix first to the measurement history table refactor;
+- use Radix UI / Radix Themes components for V1 frontend components when a component provides useful accessible behavior or structure;
+- apply Radix first to the measurement history table refactor using the Radix Themes `Table` component;
 - migrate other existing UI components to Radix through a separate V1 task instead of changing all components during the history table refactor.

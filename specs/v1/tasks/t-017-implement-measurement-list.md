@@ -20,6 +20,8 @@ more records at a time.
 - Add a dashboard history section with loading, empty, error, populated, and load-more states.
 - Wire each history row edit action to the existing measurement form by date.
 - Expose a non-destructive delete action entry point for T-018.
+- Refactor history into a literal table with `Data` as the first column and `Ações` as the last column.
+- Use Radix UI / Radix Themes only for the history-table component in this task.
 - Add API and E2E coverage for list behavior and rendering states.
 
 
@@ -48,7 +50,8 @@ Validation notes:
 
 - API tests cover measurement listing by descending date, pagination, derived values, invalid list query parameters, and repository list filters.
 - E2E tests cover populated, empty, and error history states.
-- E2E tests cover the initial 20-row history view, loading 20 more, raw values, derived values, missing optional values, edit action, and visible delete action.
+- E2E tests cover the initial 20-row table view, loading 20 more, raw values, derived values, missing optional values, edit action, and visible delete action.
+- E2E tests assert the history is a table with `Data` as the first column and `Ações` as the last column.
 - Delete is intentionally non-destructive in this task. Confirmation, actual deletion, list refresh after deletion, and dashboard recalculation remain in T-018.
 
 ## Implementation Notes
@@ -57,19 +60,28 @@ Validation notes:
 - Added repository list options for `from`, `to`, `limit`, and `offset`.
 - The frontend requests `visibleLimit + 1` rows so it can detect whether a "Carregar mais" action should be shown without changing the documented response shape.
 - The measurement form now accepts an optional initial date so list rows can open existing measurements for editing.
-- History rows use compact responsive cards instead of horizontal-only table scrolling on mobile.
+- History now renders as a compact literal table instead of card rows.
+- Added `@radix-ui/themes` to the web workspace and used the Radix Themes `Table` component only for the history table.
+- Recorded Radix UI as the selected component library in ADR `0026` and created T-027 for applying Radix to other existing UI components later.
 
 ## Modified Files
 
+- `apps/web/package.json`
 - `apps/api/src/index.ts`
 - `apps/api/src/measurements/measurement-repository.ts`
 - `apps/web/src/api/measurements.ts`
 - `apps/web/src/screens/AuthenticatedApp.tsx`
 - `apps/web/src/screens/components/AuthenticatedDashboard.tsx`
+- `apps/web/src/screens/components/MeasurementHistoryTable.tsx`
 - `apps/web/src/screens/components/MeasurementForm.tsx`
 - `apps/web/src/styles.css`
+- `docs/product/ui-direction.md`
+- `docs/technical/decisions/0026-use-radix-ui-components.md`
+- `package-lock.json`
 - `specs/v1/tasks/README.md`
 - `specs/v1/tasks/t-017-implement-measurement-list.md`
+- `specs/v1/tasks/t-027-apply-radix-ui-to-existing-components.md`
+- `specs/v1/open-questions.md`
 - `tests/api/auth.test.ts`
 - `tests/api/measurement-api.test.ts`
 - `tests/api/measurement-repository.test.ts`

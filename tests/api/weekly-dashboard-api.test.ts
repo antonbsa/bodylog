@@ -205,8 +205,15 @@ class DashboardMeasurementD1Statement {
     this.query = query
   }
 
+  bind(): DashboardMeasurementD1Statement {
+    return this
+  }
+
   async all<T>(): Promise<D1Result<T>> {
-    if (!this.query.includes("FROM measurements ORDER BY date DESC")) {
+    if (
+      !this.query.includes("FROM measurements") ||
+      !this.query.includes("ORDER BY date DESC")
+    ) {
       throw new Error(`Unsupported all query: ${this.query}`)
     }
 

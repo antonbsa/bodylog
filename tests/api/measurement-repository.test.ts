@@ -125,6 +125,38 @@ describe("MeasurementRepository", () => {
     ])
   })
 
+  it("lists measurements with date filters and pagination", async () => {
+    const repository = createRepository(new InMemoryMeasurementD1())
+
+    await repository.create({
+      date: "2026-06-07",
+      weightKg: 71.8,
+    })
+    await repository.create({
+      date: "2026-06-08",
+      weightKg: 72.1,
+    })
+    await repository.create({
+      date: "2026-06-09",
+      weightKg: 72.9,
+    })
+    await repository.create({
+      date: "2026-06-10",
+      weightKg: 73.2,
+    })
+
+    const measurements = await repository.list({
+      from: "2026-06-08",
+      limit: 1,
+      offset: 1,
+      to: "2026-06-10",
+    })
+
+    expect(measurements.map((measurement) => measurement.date)).toEqual([
+      "2026-06-09",
+    ])
+  })
+
   it("deletes a measurement", async () => {
     const repository = createRepository(new InMemoryMeasurementD1())
     const measurement = await repository.create({
@@ -212,13 +244,43 @@ class InMemoryD1Statement {
   }
 
   async all<T>(): Promise<D1Result<T>> {
-    if (!this.query.includes("FROM measurements ORDER BY date DESC")) {
+    if (
+      !this.query.includes("FROM measurements") ||
+      !this.query.includes("ORDER BY date DESC")
+    ) {
       throw new Error(`Unsupported all query: ${this.query}`)
     }
 
-    const results = [...this.db.rows.values()].sort((left, right) =>
-      right.date.localeCompare(left.date),
-    )
+    let bindingIndex = 0
+    let results = [...this.db.rows.values()]
+
+    if (this.query.includes("date >= ?")) {
+      const from = String(this.bindings[bindingIndex])
+      bindingIndex += 1
+      results = results.filter((row) => row.date >= from)
+    }
+
+    if (this.query.includes("date <= ?")) {
+      const to = String(this.bindings[bindingIndex])
+      bindingIndex += 1
+      results = results.filter((row) => row.date <= to)
+    }
+
+    results = results.sort((left, right) => right.date.localeCompare(left.date))
+
+    if (this.query.includes("LIMIT ?")) {
+      const limit = Number(this.bindings[bindingIndex])
+      bindingIndex += 1
+      const offset = this.query.includes("OFFSET ?")
+        ? Number(this.bindings[bindingIndex])
+        : 0
+
+      results = results.slice(offset, offset + limit)
+    } else if (this.query.includes("LIMIT -1 OFFSET ?")) {
+      const offset = Number(this.bindings[bindingIndex])
+
+      results = results.slice(offset)
+    }
 
     return createD1Result(results as T[])
   }
