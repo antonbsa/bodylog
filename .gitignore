@@ -1,9 +1,19 @@
 node_modules/
-.wrangler/
+
+# env
 .env
 .env.*
 !.env.development
+
+# built
 dist/
-coverage/
+.wrangler/
+
+# tests
 test-results/
 playwright-report/
+coverage/
+
+# AI
+HANDOFF.md
+PR_DESCRIPTION.md
