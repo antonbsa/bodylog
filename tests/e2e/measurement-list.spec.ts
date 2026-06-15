@@ -20,9 +20,13 @@ test("renders recent measurements, loads more, and opens an item for editing", a
   page,
 }) => {
   const measurements = createMeasurements(21)
+  const deletedMeasurementIds: string[] = []
+  let dashboardRequestCount = 0
   let requestedListLimits: number[] = []
 
-  await mockAuthenticatedSession(page)
+  await mockAuthenticatedSession(page, () => {
+    dashboardRequestCount += 1
+  })
   await page.route("**/api/measurements?*", async (route) => {
     const url = new URL(route.request().url())
     const limit = Number(url.searchParams.get("limit") ?? "20")
@@ -31,7 +35,11 @@ test("renders recent measurements, loads more, and opens an item for editing", a
 
     await route.fulfill({
       body: JSON.stringify({
-        items: measurements.slice(0, limit),
+        items: measurements
+          .filter(
+            (measurement) => !deletedMeasurementIds.includes(measurement.id),
+          )
+          .slice(0, limit),
       }),
       contentType: "application/json",
       status: 200,
@@ -58,6 +66,23 @@ test("renders recent measurements, loads more, and opens an item for editing", a
       }),
       contentType: "application/json",
       status: measurement ? 200 : 404,
+    })
+  })
+  await page.route("**/api/measurements/*", async (route) => {
+    if (route.request().method() !== "DELETE") {
+      await route.fallback()
+      return
+    }
+
+    const id = extractDateFromRoute(route)
+    deletedMeasurementIds.push(id)
+
+    await route.fulfill({
+      body: JSON.stringify({
+        ok: true,
+      }),
+      contentType: "application/json",
+      status: 200,
     })
   })
 
@@ -91,6 +116,47 @@ test("renders recent measurements, loads more, and opens an item for editing", a
     newestItem.getByRole("button", { name: "Excluir medida de 14/06/2026" }),
   ).toBeVisible()
 
+  const deletableItem = table.getByRole("row").filter({
+    hasText: "12/06/2026",
+  })
+
+  await deletableItem
+    .getByRole("button", { name: "Excluir medida de 12/06/2026" })
+    .click()
+
+  const deleteDialog = page.getByRole("alertdialog", {
+    name: "Excluir medida",
+  })
+
+  await expect(deleteDialog).toBeVisible()
+  await expect(
+    deleteDialog.getByText(
+      "Excluir a medida de 12/06/2026? Esta ação não pode ser desfeita.",
+    ),
+  ).toBeVisible()
+  await deleteDialog.getByRole("button", { name: "Cancelar" }).click()
+  await expect(deleteDialog).toBeHidden()
+  await expect(table.locator("tbody tr")).toHaveCount(20)
+  expect(deletedMeasurementIds).toEqual([])
+
+  await deletableItem
+    .getByRole("button", { name: "Excluir medida de 12/06/2026" })
+    .click()
+  await expect(deleteDialog).toBeVisible()
+  await deleteDialog
+    .getByRole("button", { name: "Excluir medida", exact: true })
+    .click()
+
+  await expect(page.getByText("Medida de 12/06/2026 excluída.")).toBeVisible()
+  await expect(deleteDialog).toBeHidden()
+  await expect(
+    table.getByRole("row").filter({
+      hasText: "12/06/2026",
+    }),
+  ).toHaveCount(0)
+  expect(deletedMeasurementIds).toEqual(["measurement-3"])
+  expect(dashboardRequestCount).toBeGreaterThanOrEqual(2)
+
   const missingOptionalItem = table.getByRole("row").filter({
     hasText: "13/06/2026",
   })
@@ -101,7 +167,7 @@ test("renders recent measurements, loads more, and opens an item for editing", a
 
   await page.getByRole("button", { name: "Carregar mais" }).click()
 
-  await expect(table.locator("tbody tr")).toHaveCount(21)
+  await expect(table.locator("tbody tr")).toHaveCount(20)
   await expect(page.getByRole("button", { name: "Carregar mais" })).toHaveCount(
     0,
   )
@@ -152,7 +218,10 @@ test("renders a measurement history error state", async ({ page }) => {
   ).toBeVisible()
 })
 
-async function mockAuthenticatedSession(page: Page) {
+async function mockAuthenticatedSession(
+  page: Page,
+  onDashboardRequest?: () => void,
+) {
   await page.route("**/api/auth/session", async (route) => {
     await route.fulfill({
       body: JSON.stringify({
@@ -162,11 +231,16 @@ async function mockAuthenticatedSession(page: Page) {
       status: 200,
     })
   })
-  await mockWeeklyDashboard(page)
+  await mockWeeklyDashboard(page, onDashboardRequest)
 }
 
-async function mockWeeklyDashboard(page: Page) {
+async function mockWeeklyDashboard(
+  page: Page,
+  onDashboardRequest?: () => void,
+) {
   await page.route("**/api/dashboard/weekly", async (route) => {
+    onDashboardRequest?.()
+
     await route.fulfill({
       body: JSON.stringify({
         current: {

@@ -9,12 +9,16 @@ import {
 } from "../../utils/number-format"
 
 type MeasurementHistoryTableProps = {
+  deletingMeasurementId: string | null
   measurements: ListedMeasurement[]
+  onDeleteMeasurement: (measurement: ListedMeasurement) => void
   onEditMeasurement: (date: string) => void
 }
 
 type MeasurementHistoryRowProps = {
+  deletingMeasurementId: string | null
   measurement: ListedMeasurement
+  onDeleteMeasurement: (measurement: ListedMeasurement) => void
   onEditMeasurement: (date: string) => void
 }
 
@@ -37,10 +41,13 @@ function formatRestingMetabolism(value: number | null): string {
 }
 
 function MeasurementHistoryRow({
+  deletingMeasurementId,
   measurement,
+  onDeleteMeasurement,
   onEditMeasurement,
 }: MeasurementHistoryRowProps) {
   const displayDate = formatDisplayDateFromIso(measurement.date)
+  const isDeleting = deletingMeasurementId === measurement.id
 
   return (
     <Table.Row>
@@ -60,6 +67,7 @@ function MeasurementHistoryRow({
         <div className="history-actions">
           <button
             className="secondary-action compact-action"
+            disabled={isDeleting}
             onClick={() => onEditMeasurement(measurement.date)}
             type="button"
           >
@@ -68,10 +76,11 @@ function MeasurementHistoryRow({
           <button
             aria-label={`Excluir medida de ${displayDate}`}
             className="danger-action compact-action"
-            onClick={() => undefined}
+            disabled={isDeleting}
+            onClick={() => onDeleteMeasurement(measurement)}
             type="button"
           >
-            Excluir
+            {isDeleting ? "Excluindo..." : "Excluir"}
           </button>
         </div>
       </Table.Cell>
@@ -80,7 +89,9 @@ function MeasurementHistoryRow({
 }
 
 export function MeasurementHistoryTable({
+  deletingMeasurementId,
   measurements,
+  onDeleteMeasurement,
   onEditMeasurement,
 }: MeasurementHistoryTableProps) {
   return (
@@ -117,8 +128,10 @@ export function MeasurementHistoryTable({
             <Table.Body>
               {measurements.map((measurement) => (
                 <MeasurementHistoryRow
+                  deletingMeasurementId={deletingMeasurementId}
                   key={measurement.id}
                   measurement={measurement}
+                  onDeleteMeasurement={onDeleteMeasurement}
                   onEditMeasurement={onEditMeasurement}
                 />
               ))}

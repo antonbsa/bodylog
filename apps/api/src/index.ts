@@ -185,6 +185,37 @@ app.put("/api/measurements/by-date/:date", async (c) => {
   })
 })
 
+app.delete("/api/measurements/:id", async (c) => {
+  const id = c.req.param("id")
+
+  if (!id) {
+    return c.json(
+      {
+        error: "INVALID_MEASUREMENT_ID",
+        ok: false,
+      },
+      400,
+    )
+  }
+
+  const repository = new MeasurementRepository(c.env.DB)
+  const deleted = await repository.delete(id)
+
+  if (!deleted) {
+    return c.json(
+      {
+        error: "MEASUREMENT_NOT_FOUND",
+        ok: false,
+      },
+      404,
+    )
+  }
+
+  return c.json({
+    ok: true,
+  })
+})
+
 app.post("/api/auth/login", async (c) => {
   const body = (await c.req.json().catch(() => null)) as {
     password?: unknown

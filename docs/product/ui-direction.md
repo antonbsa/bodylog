@@ -153,7 +153,7 @@ Columns:
 - `Músculo (kg)`;
 - `RM`.
 
-Each row includes an edit action. In edit mode, the form should expose update and delete actions. Delete requires confirmation.
+Each row includes edit and delete actions. Delete is initiated from the history table and requires confirmation in a modal dialog. Form-context deletion is deferred for now.
 
 On narrow screens, the implementation can use a responsive table pattern that preserves the same information without forcing horizontal scrolling as the only usable path.
 

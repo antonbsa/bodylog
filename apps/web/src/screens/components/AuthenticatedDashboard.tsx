@@ -6,9 +6,11 @@ import {
   type WeeklyDashboard,
 } from "../../api/dashboard"
 import {
+  deleteMeasurement,
   listMeasurements,
   type ListedMeasurement,
 } from "../../api/measurements"
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog"
 import { MeasurementHistoryTable } from "./MeasurementHistoryTable"
 import {
   createDashboardCardModels,
@@ -32,8 +34,10 @@ type DashboardState = {
 }
 
 type MeasurementHistoryState = {
+  deletingId: string | null
   hasMore: boolean
   items: ListedMeasurement[]
+  message: string | null
   status: "error" | "loaded" | "loading"
 }
 
@@ -171,16 +175,22 @@ function PlaceholderSummary() {
 }
 
 function MeasurementHistory({
+  onDeletedMeasurement,
   onEditMeasurement,
   refreshKey,
 }: {
+  onDeletedMeasurement: () => void
   onEditMeasurement: (date: string) => void
   refreshKey: number
 }) {
   const [visibleLimit, setVisibleLimit] = useState(HISTORY_PAGE_SIZE)
+  const [pendingDeleteMeasurement, setPendingDeleteMeasurement] =
+    useState<ListedMeasurement | null>(null)
   const [state, setState] = useState<MeasurementHistoryState>({
+    deletingId: null,
     hasMore: false,
     items: [],
+    message: null,
     status: "loading",
   })
 
@@ -201,8 +211,10 @@ function MeasurementHistory({
         }
 
         setState({
+          deletingId: null,
           hasMore: items.length > visibleLimit,
           items: items.slice(0, visibleLimit),
+          message: null,
           status: "loaded",
         })
       })
@@ -224,6 +236,61 @@ function MeasurementHistory({
     state.status === "loading" && state.items.length === 0
   const isEmpty = state.status === "loaded" && state.items.length === 0
 
+  const pendingDeleteDisplayDate = pendingDeleteMeasurement
+    ? formatDisplayDateFromIso(pendingDeleteMeasurement.date)
+    : null
+
+  function handleDeleteDialogOpenChange(open: boolean) {
+    if (state.deletingId) {
+      return
+    }
+
+    if (!open) {
+      setPendingDeleteMeasurement(null)
+    }
+  }
+
+  function handleDeleteMeasurement(measurement: ListedMeasurement) {
+    setPendingDeleteMeasurement(measurement)
+  }
+
+  function handleConfirmDeleteMeasurement() {
+    if (!pendingDeleteMeasurement || !pendingDeleteDisplayDate) {
+      return
+    }
+
+    const measurement = pendingDeleteMeasurement
+    const displayDate = pendingDeleteDisplayDate
+
+    setState((currentState) => ({
+      ...currentState,
+      deletingId: measurement.id,
+      message: null,
+    }))
+
+    deleteMeasurement(measurement.id)
+      .then(() => {
+        setState((currentState) => ({
+          ...currentState,
+          deletingId: null,
+          items: currentState.items.filter(
+            (item) => item.id !== measurement.id,
+          ),
+          message: `Medida de ${displayDate} excluída.`,
+          status: "loaded",
+        }))
+        setPendingDeleteMeasurement(null)
+        onDeletedMeasurement()
+      })
+      .catch(() => {
+        setState((currentState) => ({
+          ...currentState,
+          deletingId: null,
+          message: "Não foi possível excluir a medida.",
+        }))
+      })
+  }
+
   return (
     <section className="history-section" aria-label="Histórico de medidas">
       {state.status === "error" ? (
@@ -238,11 +305,26 @@ function MeasurementHistory({
         </p>
       ) : null}
 
+      {state.message ? (
+        <p
+          className={
+            state.message.startsWith("Não foi possível")
+              ? "dashboard-message"
+              : "form-success"
+          }
+          role="status"
+        >
+          {state.message}
+        </p>
+      ) : null}
+
       {isEmpty ? <p className="history-empty">Nenhum registro ainda.</p> : null}
 
       {state.items.length > 0 ? (
         <MeasurementHistoryTable
+          deletingMeasurementId={state.deletingId}
           measurements={state.items}
+          onDeleteMeasurement={handleDeleteMeasurement}
           onEditMeasurement={onEditMeasurement}
         />
       ) : null}
@@ -259,6 +341,18 @@ function MeasurementHistory({
           {state.status === "loading" ? "Carregando..." : "Carregar mais"}
         </button>
       ) : null}
+
+      <DeleteConfirmationDialog
+        description={
+          pendingDeleteDisplayDate
+            ? `Excluir a medida de ${pendingDeleteDisplayDate}? Esta ação não pode ser desfeita.`
+            : ""
+        }
+        isConfirming={state.deletingId !== null}
+        onConfirm={handleConfirmDeleteMeasurement}
+        onOpenChange={handleDeleteDialogOpenChange}
+        open={pendingDeleteMeasurement !== null}
+      />
     </section>
   )
 }
@@ -273,6 +367,7 @@ export function AuthenticatedDashboard({
     dashboard: null,
     status: "loading",
   })
+  const [deletedRefreshKey, setDeletedRefreshKey] = useState(0)
 
   useEffect(() => {
     let isCurrentRequest = true
@@ -303,7 +398,7 @@ export function AuthenticatedDashboard({
     return () => {
       isCurrentRequest = false
     }
-  }, [refreshKey])
+  }, [deletedRefreshKey, refreshKey])
 
   const dashboard = state.dashboard
 
@@ -357,6 +452,9 @@ export function AuthenticatedDashboard({
       )}
 
       <MeasurementHistory
+        onDeletedMeasurement={() =>
+          setDeletedRefreshKey((currentKey) => currentKey + 1)
+        }
         onEditMeasurement={onOpenMeasurementForm}
         refreshKey={refreshKey}
       />

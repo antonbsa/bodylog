@@ -104,3 +104,14 @@ export async function saveMeasurementByDate(
 
   return payload.item
 }
+
+export async function deleteMeasurement(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/measurements/${id}`, {
+    credentials: "include",
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error("Measurement delete failed")
+  }
+}

@@ -258,6 +258,63 @@ describe("measurement api", () => {
       ok: false,
     })
   })
+
+  it("deletes a measurement by id", async () => {
+    const env = createEnv([
+      createMeasurementRow({
+        date: "2026-06-10",
+        id: "measurement-to-delete",
+        weightKg: 72.9,
+      }),
+    ])
+    const response = await app.request(
+      "/api/measurements/measurement-to-delete",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "DELETE",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      ok: true,
+    })
+
+    const loadResponse = await app.request(
+      "/api/measurements/by-date/2026-06-10",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+
+    expect(loadResponse.status).toBe(404)
+  })
+
+  it("returns not found when deleting a missing measurement", async () => {
+    const env = createEnv()
+    const response = await app.request(
+      "/api/measurements/missing-measurement",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "DELETE",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(404)
+    expect(await response.json()).toEqual({
+      error: "MEASUREMENT_NOT_FOUND",
+      ok: false,
+    })
+  })
 })
 
 function createEnv(rows: MeasurementRow[] = []) {
@@ -332,6 +389,10 @@ class MeasurementApiD1Statement {
 
     if (this.query.startsWith("UPDATE measurements")) {
       return this.updateMeasurement()
+    }
+
+    if (this.query.startsWith("DELETE FROM measurements")) {
+      return this.deleteMeasurement()
     }
 
     throw new Error(`Unsupported run query: ${this.query}`)
@@ -441,6 +502,13 @@ class MeasurementApiD1Statement {
     })
 
     return createD1Result(1)
+  }
+
+  private async deleteMeasurement(): Promise<D1Result> {
+    const id = this.bindings[0]
+    const deleted = this.rows.delete(String(id))
+
+    return createD1Result(deleted ? 1 : 0)
   }
 }
 

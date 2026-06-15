@@ -46,9 +46,9 @@
 
 ## Flow 5 — Delete a Measurement
 
-1. The user opens a measurement from the history list or form context.
-2. The user chooses delete.
-3. The system asks for confirmation.
+1. The user chooses delete from a measurement row in the history list.
+2. The system identifies the selected measurement.
+3. The system asks for confirmation in a modal dialog.
 4. The user confirms.
 5. The system deletes the measurement.
 6. History and weekly calculations update accordingly.
