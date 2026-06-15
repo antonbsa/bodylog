@@ -15,5 +15,4 @@ playwright-report/
 coverage/
 
 # AI
-HANDOFF.md
-PR_DESCRIPTION.md
+.agent-state/

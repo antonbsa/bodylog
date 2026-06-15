@@ -7,7 +7,9 @@ description: Suggest a pull request title and description from the current repos
 
 Use this skill to draft PR text from the current worktree and branch history. Do not create commits, push branches, or open PRs.
 
-Write the suggested PR output to `PR_DESCRIPTION.md` at the repository root every time this skill is used. Overwrite the file when it already exists.
+Write the suggested PR output to `.agent-state/PR_DESCRIPTION.md` every time this skill is used.
+
+If `.agent-state/` does not exist, create it. If `.agent-state/PR_DESCRIPTION.md` already exists, rewrite the complete file with the latest PR suggestion.
 
 ## Workflow
 
@@ -54,13 +56,14 @@ Write the suggested PR output to `PR_DESCRIPTION.md` at the repository root ever
    - Do not add extra sections unless the user asks.
 
 6. Write the output file.
-   - Create or replace `PR_DESCRIPTION.md` in the repository root.
+   - Create `.agent-state/` if it does not exist.
+   - Create or replace `.agent-state/PR_DESCRIPTION.md`.
    - The file must contain the warning when present, then the title and description in the same format shown below.
-   - Do not write the PR suggestion anywhere outside the repository root unless the user explicitly asks.
+   - Do not write the PR suggestion anywhere outside `.agent-state/` unless the user explicitly asks.
 
 ## Output
 
-Write `PR_DESCRIPTION.md` with:
+Write `.agent-state/PR_DESCRIPTION.md` with:
 
 ```md
 Warning: ... (only when local main is ahead of origin/main)

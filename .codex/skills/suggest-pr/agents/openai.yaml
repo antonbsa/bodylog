@@ -1,4 +1,4 @@
 interface:
   display_name: "Suggest PR"
-  short_description: "Draft PR text into a root Markdown file"
-  default_prompt: "Use $suggest-pr to write a suggested PR title and description for the current changes into PR_DESCRIPTION.md."
+  short_description: "Draft PR text into .agent-state/PR_DESCRIPTION.md"
+  default_prompt: "Use $suggest-pr to write a suggested PR title and description for the current changes into .agent-state/PR_DESCRIPTION.md."
