@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Create a root HANDOFF.md for continuing work in a fresh session."
+  default_prompt: "Use $handoff to create or update HANDOFF.md with the current task status, changed files, validation, risks, and the next exact action."
