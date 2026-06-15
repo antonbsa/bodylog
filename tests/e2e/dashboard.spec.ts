@@ -118,6 +118,37 @@ test("shows latest recorded metrics when the current week has no measurements", 
   await expect(weightCard).toContainText("IMC médio: 26,22")
 })
 
+test("exports measurements CSV from the dashboard action", async ({ page }) => {
+  const currentWeek = getWeekRange(getTodayDateInputValue())
+  const previousWeek = getPreviousWeekRange(currentWeek.weekStartDate)
+
+  await mockAuthenticatedDashboard(page, {
+    currentWeek,
+    previousWeek,
+  })
+  await page.route("**/api/export/csv", async (route) => {
+    await route.fulfill({
+      body: [
+        "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
+        "2026-06-10,72.9,14.46,43.72,1700,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z",
+      ].join("\n"),
+      contentType: "text/csv",
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+
+  const exportResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/export/csv"),
+  )
+
+  await page.getByRole("button", { name: "Exportar CSV" }).click()
+
+  const exportResponse = await exportResponsePromise
+  expect(exportResponse.status()).toBe(200)
+})
+
 type WeekRange = {
   weekEndDate: string
   weekStartDate: string

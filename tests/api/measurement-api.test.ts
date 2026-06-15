@@ -259,6 +259,49 @@ describe("measurement api", () => {
     })
   })
 
+  it("exports measurements as CSV with documented headers and row values", async () => {
+    const env = createEnv([
+      createMeasurementRow({
+        bodyFatPercentage: 14.46,
+        date: "2026-06-10",
+        id: "newest",
+        musclePercentage: 43.72,
+        restingMetabolismKcal: 1700,
+        weightKg: 72.9,
+      }),
+      createMeasurementRow({
+        bodyFatPercentage: null,
+        date: "2026-06-09",
+        id: "oldest",
+        musclePercentage: null,
+        restingMetabolismKcal: null,
+        weightKg: 72.1,
+      }),
+    ])
+    const response = await app.request(
+      "/api/export/csv",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/csv; charset=utf-8")
+    expect(response.headers.get("content-disposition")).toBe(
+      'attachment; filename="bodylog-measurements.csv"',
+    )
+    expect(await response.text()).toBe(
+      [
+        "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
+        "2026-06-10,72.9,14.46,43.72,1700,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z",
+        "2026-06-09,72.1,,,,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z",
+      ].join("\n"),
+    )
+  })
+
   it("deletes a measurement by id", async () => {
     const env = createEnv([
       createMeasurementRow({

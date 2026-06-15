@@ -7,6 +7,7 @@ import {
 } from "../../api/dashboard"
 import {
   deleteMeasurement,
+  exportMeasurementsCsv,
   listMeasurements,
   type ListedMeasurement,
 } from "../../api/measurements"
@@ -32,6 +33,8 @@ type DashboardState = {
   dashboard: WeeklyDashboard | null
   status: "error" | "loaded" | "loading"
 }
+
+type ExportState = "error" | "idle" | "loading"
 
 type MeasurementHistoryState = {
   deletingId: string | null
@@ -368,6 +371,7 @@ export function AuthenticatedDashboard({
     status: "loading",
   })
   const [deletedRefreshKey, setDeletedRefreshKey] = useState(0)
+  const [exportState, setExportState] = useState<ExportState>("idle")
 
   useEffect(() => {
     let isCurrentRequest = true
@@ -402,6 +406,25 @@ export function AuthenticatedDashboard({
 
   const dashboard = state.dashboard
 
+  function handleExportCsv() {
+    setExportState("loading")
+
+    exportMeasurementsCsv()
+      .then((csvBlob) => {
+        const url = URL.createObjectURL(csvBlob)
+        const link = document.createElement("a")
+
+        link.href = url
+        link.download = "bodylog-measurements.csv"
+        link.click()
+        URL.revokeObjectURL(url)
+        setExportState("idle")
+      })
+      .catch(() => {
+        setExportState("error")
+      })
+  }
+
   return (
     <>
       <header className="app-header">
@@ -421,6 +444,14 @@ export function AuthenticatedDashboard({
           >
             Registrar medida
           </button>
+          <button
+            className="secondary-action"
+            disabled={exportState === "loading"}
+            onClick={handleExportCsv}
+            type="button"
+          >
+            {exportState === "loading" ? "Exportando..." : "Exportar CSV"}
+          </button>
           <button className="secondary-action" onClick={onLogout} type="button">
             Sair
           </button>
@@ -430,6 +461,12 @@ export function AuthenticatedDashboard({
       {savedMessage ? (
         <p className="form-success" role="status">
           {savedMessage}
+        </p>
+      ) : null}
+
+      {exportState === "error" ? (
+        <p className="dashboard-message" role="alert">
+          Não foi possível exportar o CSV.
         </p>
       ) : null}
 

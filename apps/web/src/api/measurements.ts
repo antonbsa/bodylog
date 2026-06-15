@@ -115,3 +115,16 @@ export async function deleteMeasurement(id: string): Promise<void> {
     throw new Error("Measurement delete failed")
   }
 }
+
+export async function exportMeasurementsCsv(): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/api/export/csv`, {
+    credentials: "include",
+    method: "GET",
+  })
+
+  if (!response.ok) {
+    throw new Error("Measurement CSV export failed")
+  }
+
+  return response.blob()
+}

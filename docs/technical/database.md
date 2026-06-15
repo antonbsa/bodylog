@@ -134,12 +134,17 @@ CREATE TABLE measurements (
 CREATE INDEX idx_measurements_date ON measurements(date);
 ```
 
-## CSV Import
+## CSV Format
 
-Initial expected headers:
+Canonical V1 CSV headers:
 
 ```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
 ```
+
+CSV export uses this full canonical format and omits the internal `id` field.
+CSV import should upsert records by `date`; `created_at` and `updated_at` may be
+used as backup metadata when present but should not be required for spreadsheet
+import compatibility.
 
 Alternative headers from the current spreadsheet can be mapped later if needed.

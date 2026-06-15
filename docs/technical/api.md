@@ -279,6 +279,26 @@ The response must include week date ranges and measurement counts so the UI can 
 }
 ```
 
+## CSV Export
+
+### GET /api/export/csv
+
+Downloads all measurements as CSV.
+
+#### Response 200
+
+```csv
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
+2026-06-10,72.9,14.46,43.72,1700,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z
+```
+
+#### Rules
+
+- Includes all measurements ordered by date descending.
+- Includes raw measurement fields and audit timestamps.
+- Does not include internal database identifiers.
+- Empty optional values are exported as empty cells.
+
 `current` always represents the actual current week in the configured user time
 zone. `display` provides the summary values the dashboard cards should render:
 it uses the current week when it has records and falls back to the latest

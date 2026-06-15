@@ -18,6 +18,7 @@ import {
   getCurrentDateOnly,
   getWeeklyDashboard,
 } from "./dashboard/weekly-dashboard-service"
+import { serializeMeasurementsCsv } from "./measurements/csv-export"
 import { calculateDerivedMeasurementValues } from "./measurements/derived-calculations"
 import { MeasurementRepository } from "./measurements/measurement-repository"
 
@@ -86,6 +87,19 @@ app.get("/api/dashboard/weekly", async (c) => {
   })
 
   return c.json(dashboard)
+})
+
+app.get("/api/export/csv", async (c) => {
+  const repository = new MeasurementRepository(c.env.DB)
+  const csv = serializeMeasurementsCsv(await repository.list())
+
+  c.header(
+    "content-disposition",
+    'attachment; filename="bodylog-measurements.csv"',
+  )
+  c.header("content-type", "text/csv; charset=utf-8")
+
+  return c.body(csv)
 })
 
 app.get("/api/measurements", async (c) => {
