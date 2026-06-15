@@ -36,8 +36,17 @@ export type MetricVariation = {
   direction: MetricDirection | null
 }
 
+export type WeeklyDisplayMode = "current-week" | "latest-recorded-week"
+
+export type WeeklyDisplaySummary = {
+  mode: WeeklyDisplayMode
+  summary: WeekSummary
+  variation: Partial<Record<keyof WeeklyAverages, MetricVariation>>
+}
+
 export type WeeklyComparison = {
   current: WeekSummary
+  display: WeeklyDisplaySummary
   previous: WeekSummary
   variation: Partial<Record<keyof WeeklyAverages, MetricVariation>>
 }
@@ -90,9 +99,16 @@ export function createWeeklyComparison(
     heightCm: config.heightCm,
     isCurrentWeek: false,
   })
+  const display = createDisplaySummary(measurements, {
+    current,
+    currentDate: config.currentDate,
+    heightCm: config.heightCm,
+    previous,
+  })
 
   return {
     current,
+    display,
     previous,
     variation: compareWeeklyAverages(current.averages, previous.averages),
   }
@@ -168,6 +184,60 @@ function summarizeWeek(
     isPartialWeek:
       options.isCurrentWeek && options.currentDate < options.weekEndDate,
     averages: calculateWeeklyAverages(weeklyMeasurements, options.heightCm),
+  }
+}
+
+function createDisplaySummary(
+  measurements: Measurement[],
+  options: {
+    current: WeekSummary
+    currentDate: string
+    heightCm: number
+    previous: WeekSummary
+  },
+): WeeklyDisplaySummary {
+  if (options.current.measurementCount > 0) {
+    return {
+      mode: "current-week",
+      summary: options.current,
+      variation: compareWeeklyAverages(
+        options.current.averages,
+        options.previous.averages,
+      ),
+    }
+  }
+
+  const latestMeasurement = measurements
+    .filter((measurement) => measurement.date <= options.currentDate)
+    .sort((left, right) => right.date.localeCompare(left.date))[0]
+
+  if (!latestMeasurement) {
+    return {
+      mode: "current-week",
+      summary: options.current,
+      variation: {},
+    }
+  }
+
+  const latestRange = getWeekRange(latestMeasurement.date)
+  const latestPreviousRange = getPreviousWeekRange(latestRange.weekStartDate)
+  const latest = summarizeWeek(measurements, {
+    ...latestRange,
+    currentDate: options.currentDate,
+    heightCm: options.heightCm,
+    isCurrentWeek: false,
+  })
+  const latestPrevious = summarizeWeek(measurements, {
+    ...latestPreviousRange,
+    currentDate: options.currentDate,
+    heightCm: options.heightCm,
+    isCurrentWeek: false,
+  })
+
+  return {
+    mode: "latest-recorded-week",
+    summary: latest,
+    variation: compareWeeklyAverages(latest.averages, latestPrevious.averages),
   }
 }
 

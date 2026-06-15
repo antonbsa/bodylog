@@ -3,6 +3,7 @@ export type AppBindings = {
   DB: D1Database
   SESSION_SECRET: string
   USER_HEIGHT_CM: string
+  USER_TIME_ZONE: string
 }
 
 export function getAppPassword(env: Pick<AppBindings, "APP_PASSWORD">): string {
@@ -33,4 +34,22 @@ export function getUserHeightCm(
   }
 
   return heightCm
+}
+
+export function getUserTimeZone(
+  env: Pick<AppBindings, "USER_TIME_ZONE">,
+): string {
+  if (!env.USER_TIME_ZONE) {
+    throw new Error("USER_TIME_ZONE must be configured")
+  }
+
+  try {
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: env.USER_TIME_ZONE,
+    }).format()
+  } catch {
+    throw new Error("USER_TIME_ZONE must be a valid IANA time zone")
+  }
+
+  return env.USER_TIME_ZONE
 }

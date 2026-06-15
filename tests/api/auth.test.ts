@@ -39,6 +39,7 @@ const env = {
   } as unknown as D1Database,
   SESSION_SECRET: "test-session-secret",
   USER_HEIGHT_CM: "168",
+  USER_TIME_ZONE: "America/Sao_Paulo",
 }
 
 describe("auth login", () => {

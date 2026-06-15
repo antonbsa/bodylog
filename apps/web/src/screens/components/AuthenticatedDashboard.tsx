@@ -83,6 +83,14 @@ function WeeklyDashboardSummary({ dashboard }: { dashboard: WeeklyDashboard }) {
         </p>
       ) : null}
 
+      {dashboard.display.mode === "latest-recorded-week" ? (
+        <p className="partial-week-note">
+          Exibindo últimos dados registrados:{" "}
+          {formatDisplayDateFromIso(dashboard.display.summary.weekStartDate)} a{" "}
+          {formatDisplayDateFromIso(dashboard.display.summary.weekEndDate)}.
+        </p>
+      ) : null}
+
       <section className="summary-grid" aria-label="Resumo semanal">
         {metrics.map((metric) => (
           <SummaryCard key={metric.label} metric={metric} />

@@ -34,6 +34,52 @@ async function mockWeeklyDashboard(page: Page) {
             restingMetabolismKcal: 1700,
           },
         },
+        display: {
+          mode: "current-week",
+          summary: {
+            weekStartDate: "2026-06-08",
+            weekEndDate: "2026-06-14",
+            measurementCount: 2,
+            isCurrentWeek: true,
+            isPartialWeek: true,
+            averages: {
+              weightKg: 73,
+              bmi: 25.87,
+              bodyFatPercentage: 14,
+              bodyFatKg: 10.36,
+              musclePercentage: 44,
+              muscleKg: 32.56,
+              restingMetabolismKcal: 1700,
+            },
+          },
+          variation: {
+            weightKg: {
+              absolute: 1,
+              relativePercentage: 1.39,
+              direction: "up",
+            },
+            bodyFatPercentage: {
+              absolutePercentagePoints: -2.2,
+              relativePercentage: -13.58,
+              direction: "down",
+            },
+            bodyFatKg: {
+              absolute: -1.31,
+              relativePercentage: -11.23,
+              direction: "down",
+            },
+            musclePercentage: {
+              absolutePercentagePoints: 1.25,
+              relativePercentage: 2.92,
+              direction: "up",
+            },
+            muscleKg: {
+              absolute: 1.77,
+              relativePercentage: 5.75,
+              direction: "up",
+            },
+          },
+        },
         previous: {
           weekStartDate: "2026-06-01",
           weekEndDate: "2026-06-07",

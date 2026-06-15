@@ -124,6 +124,7 @@ The system must provide a dashboard as the main screen.
 
 - [ ] The dashboard is the initial authenticated screen.
 - [ ] The dashboard shows current week averages.
+- [ ] If the current week has no records yet, the dashboard summary cards show the latest available recorded metrics instead of placeholders.
 - [ ] The dashboard shows comparison against the previous week.
 - [ ] The dashboard includes a button to open the measurement form.
 - [ ] The dashboard is mobile-first.

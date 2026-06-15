@@ -32,6 +32,12 @@ When the authenticated user opens the app, the first screen should answer:
 
 The weight summary is the primary metric. Body fat and muscle summaries are secondary metrics.
 
+Summary cards represent the latest available metrics. When the current week has
+records, they use current-week averages. When the current week has no records
+yet, they continue to show the latest recorded week rather than blank
+placeholders, while the current calendar week context remains visible
+separately.
+
 ## Dashboard Summary
 
 The summary section uses cards, not charts.

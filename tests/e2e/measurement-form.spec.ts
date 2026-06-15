@@ -45,6 +45,26 @@ async function mockWeeklyDashboard(page: Page) {
             restingMetabolismKcal: null,
           },
         },
+        display: {
+          mode: "current-week",
+          summary: {
+            weekStartDate: "2026-06-08",
+            weekEndDate: "2026-06-14",
+            measurementCount: 0,
+            isCurrentWeek: true,
+            isPartialWeek: true,
+            averages: {
+              weightKg: null,
+              bmi: null,
+              bodyFatPercentage: null,
+              bodyFatKg: null,
+              musclePercentage: null,
+              muscleKg: null,
+              restingMetabolismKcal: null,
+            },
+          },
+          variation: {},
+        },
         previous: {
           weekStartDate: "2026-06-01",
           weekEndDate: "2026-06-07",

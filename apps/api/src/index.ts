@@ -5,6 +5,7 @@ import {
   getAppPassword,
   getSessionSecret,
   getUserHeightCm,
+  getUserTimeZone,
   type AppBindings,
 } from "./config"
 import {
@@ -80,7 +81,7 @@ app.get("/api/health/d1", async (c) => {
 app.get("/api/dashboard/weekly", async (c) => {
   const repository = new MeasurementRepository(c.env.DB)
   const dashboard = await getWeeklyDashboard(repository, {
-    currentDate: getCurrentDateOnly(),
+    currentDate: getCurrentDateOnly(getUserTimeZone(c.env)),
     heightCm: getUserHeightCm(c.env),
   })
 
