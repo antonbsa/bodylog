@@ -20,6 +20,13 @@ type MeasurementRepositoryOptions = {
   now?: () => Date
 }
 
+type ListMeasurementsOptions = {
+  from?: string
+  limit?: number
+  offset?: number
+  to?: string
+}
+
 const measurementColumns = `
   id,
   date,
@@ -132,15 +139,50 @@ export class MeasurementRepository {
     return row ? mapMeasurementRow(row) : null
   }
 
-  async list(): Promise<Measurement[]> {
+  async list(options: ListMeasurementsOptions = {}): Promise<Measurement[]> {
+    const whereClauses: string[] = []
+    const bindings: Array<number | string> = []
+
+    if (options.from) {
+      whereClauses.push("date >= ?")
+      bindings.push(options.from)
+    }
+
+    if (options.to) {
+      whereClauses.push("date <= ?")
+      bindings.push(options.to)
+    }
+
+    const whereSql =
+      whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : ""
+    const limitSql =
+      options.limit === undefined
+        ? options.offset === undefined
+          ? ""
+          : "LIMIT -1 OFFSET ?"
+        : options.offset === undefined
+          ? "LIMIT ?"
+          : "LIMIT ? OFFSET ?"
+
+    if (options.limit !== undefined) {
+      bindings.push(options.limit)
+    }
+
+    if (options.offset !== undefined) {
+      bindings.push(options.offset)
+    }
+
     const result = await this.db
       .prepare(
         `
           SELECT ${measurementColumns}
           FROM measurements
+          ${whereSql}
           ORDER BY date DESC
+          ${limitSql}
         `,
       )
+      .bind(...bindings)
       .all<MeasurementRow>()
 
     return result.results.map(mapMeasurementRow)

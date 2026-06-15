@@ -90,6 +90,9 @@ describe("weekly logic", () => {
     expect(comparison.previous.isCurrentWeek).toBe(false)
     expect(comparison.previous.isPartialWeek).toBe(false)
     expect(comparison.previous.averages.weightKg).toBe(72)
+    expect(comparison.display.mode).toBe("current-week")
+    expect(comparison.display.summary.weekStartDate).toBe("2026-06-08")
+    expect(comparison.display.summary.averages.weightKg).toBe(74)
     expect(comparison.variation.weightKg).toEqual({
       absolute: 2,
       relativePercentage: 2.78,
@@ -151,6 +154,47 @@ describe("weekly logic", () => {
     expect(comparison.variation.bodyFatPercentage?.direction).toBe("down")
     expect(comparison.variation.muscleKg?.direction).toBe("stable")
     expect(comparison.variation.musclePercentage?.direction).toBe("stable")
+  })
+
+  it("displays latest recorded week metrics when current week has no measurements", () => {
+    const comparison = createWeeklyComparison(
+      [
+        measurement({
+          date: "2026-06-01",
+          weightKg: 71,
+        }),
+        measurement({
+          date: "2026-06-08",
+          weightKg: 73,
+          bodyFatPercentage: 15,
+          musclePercentage: 43,
+        }),
+        measurement({
+          date: "2026-06-14",
+          weightKg: 75,
+          bodyFatPercentage: 13,
+          musclePercentage: 45,
+        }),
+      ],
+      {
+        currentDate: "2026-06-15",
+        heightCm: USER_HEIGHT_CM,
+      },
+    )
+
+    expect(comparison.current.weekStartDate).toBe("2026-06-15")
+    expect(comparison.current.measurementCount).toBe(0)
+    expect(comparison.current.averages.weightKg).toBeNull()
+    expect(comparison.display.mode).toBe("latest-recorded-week")
+    expect(comparison.display.summary.weekStartDate).toBe("2026-06-08")
+    expect(comparison.display.summary.weekEndDate).toBe("2026-06-14")
+    expect(comparison.display.summary.averages.weightKg).toBe(74)
+    expect(comparison.display.summary.averages.bodyFatPercentage).toBe(14)
+    expect(comparison.display.variation.weightKg).toEqual({
+      absolute: 3,
+      relativePercentage: 4.23,
+      direction: "up",
+    })
   })
 })
 

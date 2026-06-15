@@ -11,12 +11,16 @@ type AuthenticatedAppProps = {
 
 export function AuthenticatedApp({ onLogout }: AuthenticatedAppProps) {
   const [isMeasurementFormOpen, setIsMeasurementFormOpen] = useState(false)
+  const [selectedMeasurementDate, setSelectedMeasurementDate] = useState<
+    string | null
+  >(null)
   const [savedMessage, setSavedMessage] = useState<string | null>(null)
   // simple way to trigger a refresh of the dashboard when a new measurement is saved
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0)
 
-  function openMeasurementForm() {
+  function openMeasurementForm(date?: string) {
     setSavedMessage(null)
+    setSelectedMeasurementDate(date ?? null)
     setIsMeasurementFormOpen(true)
   }
 
@@ -39,6 +43,7 @@ export function AuthenticatedApp({ onLogout }: AuthenticatedAppProps) {
 
       {isMeasurementFormOpen ? (
         <MeasurementForm
+          initialDate={selectedMeasurementDate ?? undefined}
           onClose={() => setIsMeasurementFormOpen(false)}
           onSaved={handleMeasurementSaved}
         />

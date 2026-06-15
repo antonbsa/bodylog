@@ -9,9 +9,37 @@ import {
 
 const env = {
   APP_PASSWORD: "correct-password",
-  DB: {} as D1Database,
+  DB: {
+    prepare(query: string) {
+      return {
+        bind() {
+          return this
+        },
+        async all<T>(): Promise<D1Result<T>> {
+          if (!query.includes("FROM measurements")) {
+            throw new Error(`Unsupported all query: ${query}`)
+          }
+
+          return {
+            results: [],
+            success: true,
+            meta: {
+              changed_db: false,
+              changes: 0,
+              duration: 0,
+              last_row_id: 0,
+              rows_read: 0,
+              rows_written: 0,
+              size_after: 0,
+            },
+          } as D1Result<T>
+        },
+      }
+    },
+  } as unknown as D1Database,
   SESSION_SECRET: "test-session-secret",
   USER_HEIGHT_CM: "168",
+  USER_TIME_ZONE: "America/Sao_Paulo",
 }
 
 describe("auth login", () => {
@@ -178,7 +206,10 @@ describe("protected api routes", () => {
       env,
     )
 
-    expect(response.status).toBe(404)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      items: [],
+    })
   })
 
   it("keeps public api routes accessible without a session", async () => {

@@ -11,11 +11,45 @@ export type Measurement = {
   updatedAt: string
 }
 
+export type MeasurementDerivedValues = {
+  bmi: number
+  bodyFatKg: number | null
+  muscleKg: number | null
+}
+
+export type ListedMeasurement = Measurement & {
+  derived: MeasurementDerivedValues
+}
+
 export type SaveMeasurementInput = {
   bodyFatPercentage: number | null
   musclePercentage: number | null
   restingMetabolismKcal: number | null
   weightKg: number
+}
+
+export async function listMeasurements(options: {
+  limit: number
+  offset?: number
+}): Promise<ListedMeasurement[]> {
+  const query = new URLSearchParams({
+    limit: String(options.limit),
+    offset: String(options.offset ?? 0),
+  })
+  const response = await fetch(`${API_BASE_URL}/api/measurements?${query}`, {
+    credentials: "include",
+    method: "GET",
+  })
+
+  if (!response.ok) {
+    throw new Error("Measurement list failed")
+  }
+
+  const payload = (await response.json()) as {
+    items: ListedMeasurement[]
+  }
+
+  return payload.items
 }
 
 export async function getMeasurementByDate(
@@ -69,4 +103,15 @@ export async function saveMeasurementByDate(
   }
 
   return payload.item
+}
+
+export async function deleteMeasurement(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/measurements/${id}`, {
+    credentials: "include",
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error("Measurement delete failed")
+  }
 }

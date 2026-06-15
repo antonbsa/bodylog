@@ -22,16 +22,17 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-014 — Protect Routes](./t-014-protect-routes.md)
 - [T-015 — Implement Logout](./t-015-implement-logout.md)
 - [T-016 — Implement Measurement Form](./t-016-implement-measurement-form.md)
+- [T-017 — Implement Measurement List](./t-017-implement-measurement-list.md)
 - [T-019 — Implement Weekly Dashboard API](./t-019-implement-weekly-dashboard-api.md)
 - [T-026 — Prepare Local Development Data Setup](./t-026-prepare-local-development-data-setup.md)
 - [T-020 — Implement Dashboard UI](./t-020-implement-dashboard-ui.md)
+- [T-018 — Implement Delete Confirmation](./t-018-implement-delete-confirmation.md)
 
 ## Remaining
 
-- [T-017 — Implement Measurement List](./t-017-implement-measurement-list.md)
-- [T-018 — Implement Delete Confirmation](./t-018-implement-delete-confirmation.md)
 - [T-021 — Implement CSV Export](./t-021-implement-csv-export.md)
 - [T-022 — Implement CSV Import](./t-022-implement-csv-import.md)
 - [T-023 — Configure Deployment Automation](./t-023-configure-deployment-automation.md)
 - [T-024 — Validate V1 End-to-End](./t-024-validate-v1-end-to-end.md)
 - [T-025 — Validate Production State](./t-025-validate-production-state.md)
+- [T-027 — Apply Radix UI to Existing Components](./t-027-apply-radix-ui-to-existing-components.md)

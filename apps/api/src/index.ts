@@ -5,6 +5,7 @@ import {
   getAppPassword,
   getSessionSecret,
   getUserHeightCm,
+  getUserTimeZone,
   type AppBindings,
 } from "./config"
 import {
@@ -17,6 +18,7 @@ import {
   getCurrentDateOnly,
   getWeeklyDashboard,
 } from "./dashboard/weekly-dashboard-service"
+import { calculateDerivedMeasurementValues } from "./measurements/derived-calculations"
 import { MeasurementRepository } from "./measurements/measurement-repository"
 
 export const app = new Hono<{ Bindings: AppBindings }>()
@@ -79,11 +81,39 @@ app.get("/api/health/d1", async (c) => {
 app.get("/api/dashboard/weekly", async (c) => {
   const repository = new MeasurementRepository(c.env.DB)
   const dashboard = await getWeeklyDashboard(repository, {
-    currentDate: getCurrentDateOnly(),
+    currentDate: getCurrentDateOnly(getUserTimeZone(c.env)),
     heightCm: getUserHeightCm(c.env),
   })
 
   return c.json(dashboard)
+})
+
+app.get("/api/measurements", async (c) => {
+  const query = c.req.query()
+  const listQuery = parseMeasurementListQuery(query)
+
+  if (!listQuery.ok) {
+    return c.json(
+      {
+        error: listQuery.error,
+        ok: false,
+      },
+      400,
+    )
+  }
+
+  const repository = new MeasurementRepository(c.env.DB)
+  const measurements = await repository.list(listQuery.value)
+  const heightCm = getUserHeightCm(c.env)
+
+  return c.json({
+    items: measurements.map((measurement) => ({
+      ...measurement,
+      derived: calculateDerivedMeasurementValues(measurement, {
+        heightCm,
+      }),
+    })),
+  })
 })
 
 app.get("/api/measurements/by-date/:date", async (c) => {
@@ -152,6 +182,37 @@ app.put("/api/measurements/by-date/:date", async (c) => {
 
   return c.json({
     item: measurement,
+  })
+})
+
+app.delete("/api/measurements/:id", async (c) => {
+  const id = c.req.param("id")
+
+  if (!id) {
+    return c.json(
+      {
+        error: "INVALID_MEASUREMENT_ID",
+        ok: false,
+      },
+      400,
+    )
+  }
+
+  const repository = new MeasurementRepository(c.env.DB)
+  const deleted = await repository.delete(id)
+
+  if (!deleted) {
+    return c.json(
+      {
+        error: "MEASUREMENT_NOT_FOUND",
+        ok: false,
+      },
+      404,
+    )
+  }
+
+  return c.json({
+    ok: true,
   })
 })
 
@@ -247,6 +308,21 @@ type MeasurementInputResult =
       ok: false
     }
 
+type MeasurementListQueryResult =
+  | {
+      ok: true
+      value: {
+        from?: string
+        limit?: number
+        offset?: number
+        to?: string
+      }
+    }
+  | {
+      error: "INVALID_MEASUREMENTS_QUERY"
+      ok: false
+    }
+
 async function parseMeasurementInput(
   bodyPromise: Promise<unknown>,
 ): Promise<MeasurementInputResult> {
@@ -288,6 +364,65 @@ async function parseMeasurementInput(
       weightKg: body.weightKg,
     },
   }
+}
+
+function parseMeasurementListQuery(
+  query: Record<string, string>,
+): MeasurementListQueryResult {
+  const from = query.from
+  const to = query.to
+  const limit = parseOptionalNonNegativeInteger(query.limit, {
+    max: 100,
+    min: 1,
+  })
+  const offset = parseOptionalNonNegativeInteger(query.offset, {
+    max: 10000,
+    min: 0,
+  })
+
+  if (
+    (from !== undefined && !isDateOnly(from)) ||
+    (to !== undefined && !isDateOnly(to)) ||
+    limit === null ||
+    offset === null
+  ) {
+    return {
+      error: "INVALID_MEASUREMENTS_QUERY",
+      ok: false,
+    }
+  }
+
+  return {
+    ok: true,
+    value: {
+      ...(from === undefined ? {} : { from }),
+      ...(limit === undefined ? {} : { limit }),
+      ...(offset === undefined ? {} : { offset }),
+      ...(to === undefined ? {} : { to }),
+    },
+  }
+}
+
+function parseOptionalNonNegativeInteger(
+  value: string | undefined,
+  options: {
+    max: number
+    min: number
+  },
+): number | null | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
+  if (!/^\d+$/.test(value)) {
+    return null
+  }
+
+  const parsedValue = Number(value)
+
+  return parsedValue >= options.min && parsedValue <= options.max
+    ? parsedValue
+    : null
 }
 
 function isDateOnly(value: string): boolean {

@@ -21,6 +21,7 @@ const baseEnv = {
   APP_PASSWORD: "correct-password",
   SESSION_SECRET: "test-session-secret",
   USER_HEIGHT_CM: "168",
+  USER_TIME_ZONE: "America/Sao_Paulo",
 }
 
 describe("measurement api", () => {
@@ -167,6 +168,153 @@ describe("measurement api", () => {
       ok: false,
     })
   })
+
+  it("lists measurements by date descending with derived values and pagination", async () => {
+    const env = createEnv([
+      createMeasurementRow({
+        bodyFatPercentage: 14.46,
+        date: "2026-06-10",
+        id: "newest",
+        musclePercentage: 43.72,
+        restingMetabolismKcal: 1700,
+        weightKg: 72.9,
+      }),
+      createMeasurementRow({
+        bodyFatPercentage: null,
+        date: "2026-06-09",
+        id: "middle",
+        musclePercentage: null,
+        restingMetabolismKcal: null,
+        weightKg: 72.1,
+      }),
+      createMeasurementRow({
+        date: "2026-06-08",
+        id: "oldest",
+        weightKg: 71.8,
+      }),
+    ])
+    const response = await app.request(
+      "/api/measurements?limit=2&offset=0",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      items: [
+        {
+          id: "newest",
+          date: "2026-06-10",
+          weightKg: 72.9,
+          bodyFatPercentage: 14.46,
+          musclePercentage: 43.72,
+          restingMetabolismKcal: 1700,
+          createdAt: "2026-06-09T12:00:00.000Z",
+          updatedAt: "2026-06-09T12:00:00.000Z",
+          derived: {
+            bmi: 25.83,
+            bodyFatKg: 10.54,
+            muscleKg: 31.87,
+          },
+        },
+        {
+          id: "middle",
+          date: "2026-06-09",
+          weightKg: 72.1,
+          bodyFatPercentage: null,
+          musclePercentage: null,
+          restingMetabolismKcal: null,
+          createdAt: "2026-06-09T12:00:00.000Z",
+          updatedAt: "2026-06-09T12:00:00.000Z",
+          derived: {
+            bmi: 25.55,
+            bodyFatKg: null,
+            muscleKg: null,
+          },
+        },
+      ],
+    })
+  })
+
+  it("rejects invalid measurement list query params", async () => {
+    const env = createEnv()
+    const response = await app.request(
+      "/api/measurements?limit=0",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      error: "INVALID_MEASUREMENTS_QUERY",
+      ok: false,
+    })
+  })
+
+  it("deletes a measurement by id", async () => {
+    const env = createEnv([
+      createMeasurementRow({
+        date: "2026-06-10",
+        id: "measurement-to-delete",
+        weightKg: 72.9,
+      }),
+    ])
+    const response = await app.request(
+      "/api/measurements/measurement-to-delete",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "DELETE",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      ok: true,
+    })
+
+    const loadResponse = await app.request(
+      "/api/measurements/by-date/2026-06-10",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+
+    expect(loadResponse.status).toBe(404)
+  })
+
+  it("returns not found when deleting a missing measurement", async () => {
+    const env = createEnv()
+    const response = await app.request(
+      "/api/measurements/missing-measurement",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "DELETE",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(404)
+    expect(await response.json()).toEqual({
+      error: "MEASUREMENT_NOT_FOUND",
+      ok: false,
+    })
+  })
 })
 
 function createEnv(rows: MeasurementRow[] = []) {
@@ -185,17 +333,20 @@ async function createSessionCookieHeader(): Promise<string> {
 }
 
 function createMeasurementRow(input: {
+  bodyFatPercentage?: number | null
   date: string
   id: string
+  musclePercentage?: number | null
+  restingMetabolismKcal?: number | null
   weightKg: number
 }): MeasurementRow {
   return {
     id: input.id,
     date: input.date,
     weight_kg: input.weightKg,
-    body_fat_percentage: null,
-    muscle_percentage: null,
-    resting_metabolism_kcal: null,
+    body_fat_percentage: input.bodyFatPercentage ?? null,
+    muscle_percentage: input.musclePercentage ?? null,
+    resting_metabolism_kcal: input.restingMetabolismKcal ?? null,
     created_at: "2026-06-09T12:00:00.000Z",
     updated_at: "2026-06-09T12:00:00.000Z",
   }
@@ -240,6 +391,10 @@ class MeasurementApiD1Statement {
       return this.updateMeasurement()
     }
 
+    if (this.query.startsWith("DELETE FROM measurements")) {
+      return this.deleteMeasurement()
+    }
+
     throw new Error(`Unsupported run query: ${this.query}`)
   }
 
@@ -252,6 +407,48 @@ class MeasurementApiD1Statement {
     const row = [...this.rows.values()].find((item) => item.date === date)
 
     return (row ?? null) as T | null
+  }
+
+  async all<T>(): Promise<D1Result<T>> {
+    if (
+      !this.query.includes("FROM measurements") ||
+      !this.query.includes("ORDER BY date DESC")
+    ) {
+      throw new Error(`Unsupported all query: ${this.query}`)
+    }
+
+    let bindingIndex = 0
+    let results = [...this.rows.values()]
+
+    if (this.query.includes("date >= ?")) {
+      const from = String(this.bindings[bindingIndex])
+      bindingIndex += 1
+      results = results.filter((row) => row.date >= from)
+    }
+
+    if (this.query.includes("date <= ?")) {
+      const to = String(this.bindings[bindingIndex])
+      bindingIndex += 1
+      results = results.filter((row) => row.date <= to)
+    }
+
+    results = results.sort((left, right) => right.date.localeCompare(left.date))
+
+    if (this.query.includes("LIMIT ?")) {
+      const limit = Number(this.bindings[bindingIndex])
+      bindingIndex += 1
+      const offset = this.query.includes("OFFSET ?")
+        ? Number(this.bindings[bindingIndex])
+        : 0
+
+      results = results.slice(offset, offset + limit)
+    } else if (this.query.includes("LIMIT -1 OFFSET ?")) {
+      const offset = Number(this.bindings[bindingIndex])
+
+      results = results.slice(offset)
+    }
+
+    return createD1Result(0, results as T[])
   }
 
   private async insertMeasurement(): Promise<D1Result> {
@@ -306,6 +503,13 @@ class MeasurementApiD1Statement {
 
     return createD1Result(1)
   }
+
+  private async deleteMeasurement(): Promise<D1Result> {
+    const id = this.bindings[0]
+    const deleted = this.rows.delete(String(id))
+
+    return createD1Result(deleted ? 1 : 0)
+  }
 }
 
 function normalizeSql(query: string): string {
@@ -316,18 +520,21 @@ function nullableNumber(value: unknown): number | null {
   return value === null || value === undefined ? null : Number(value)
 }
 
-function createD1Result(changes: number): D1Result {
+function createD1Result<T = unknown>(
+  changes: number,
+  results: T[] = [],
+): D1Result<T> {
   return {
-    results: [],
+    results,
     success: true,
     meta: {
       changed_db: false,
       changes,
       duration: 0,
       last_row_id: 0,
-      rows_read: 0,
+      rows_read: results.length,
       rows_written: changes,
       size_after: 0,
     },
-  } as D1Result
+  } as D1Result<T>
 }

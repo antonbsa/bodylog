@@ -39,7 +39,7 @@ The system must allow the user to delete an existing measurement.
 
 #### Acceptance Criteria
 
-- [ ] A measurement can be deleted from the history list or detail/form context.
+- [ ] A measurement can be deleted from the history list.
 - [ ] The user must confirm deletion before it happens.
 - [ ] Deleted records no longer appear in history.
 - [ ] Weekly averages and variations are recalculated after deletion.
@@ -124,6 +124,7 @@ The system must provide a dashboard as the main screen.
 
 - [ ] The dashboard is the initial authenticated screen.
 - [ ] The dashboard shows current week averages.
+- [ ] If the current week has no records yet, the dashboard summary cards show the latest available recorded metrics instead of placeholders.
 - [ ] The dashboard shows comparison against the previous week.
 - [ ] The dashboard includes a button to open the measurement form.
 - [ ] The dashboard is mobile-first.

@@ -224,6 +224,32 @@ The response must include week date ranges and measurement counts so the UI can 
       "restingMetabolismKcal": 1700
     }
   },
+  "display": {
+    "mode": "current-week",
+    "summary": {
+      "weekStartDate": "YYYY-MM-DD",
+      "weekEndDate": "YYYY-MM-DD",
+      "measurementCount": 4,
+      "isCurrentWeek": true,
+      "isPartialWeek": true,
+      "averages": {
+        "weightKg": 72.9,
+        "bmi": 25.83,
+        "bodyFatPercentage": 14.46,
+        "bodyFatKg": 10.54,
+        "musclePercentage": 43.72,
+        "muscleKg": 31.87,
+        "restingMetabolismKcal": 1700
+      }
+    },
+    "variation": {
+      "weightKg": {
+        "absolute": 1.15,
+        "relativePercentage": 1.6,
+        "direction": "up"
+      }
+    }
+  },
   "previous": {
     "weekStartDate": "YYYY-MM-DD",
     "weekEndDate": "YYYY-MM-DD",
@@ -252,6 +278,11 @@ The response must include week date ranges and measurement counts so the UI can 
   }
 }
 ```
+
+`current` always represents the actual current week in the configured user time
+zone. `display` provides the summary values the dashboard cards should render:
+it uses the current week when it has records and falls back to the latest
+recorded week when the current week is still empty.
 
 ## CSV
 

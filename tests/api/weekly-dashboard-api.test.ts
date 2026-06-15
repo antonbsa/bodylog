@@ -5,6 +5,8 @@ import {
   createSessionCookieValue,
   SESSION_COOKIE_NAME,
 } from "../../apps/api/src/auth/session"
+import { getCurrentDateOnly } from "../../apps/api/src/dashboard/weekly-dashboard-service"
+import type { WeeklyComparison } from "../../apps/api/src/measurements/weekly-logic"
 
 type MeasurementRow = {
   id: string
@@ -58,6 +60,62 @@ describe("weekly dashboard api", () => {
           musclePercentage: 44,
           muscleKg: 32.56,
           restingMetabolismKcal: 1700,
+        },
+      },
+      display: {
+        mode: "current-week",
+        summary: {
+          weekStartDate: "2026-06-08",
+          weekEndDate: "2026-06-14",
+          measurementCount: 2,
+          isCurrentWeek: true,
+          isPartialWeek: true,
+          averages: {
+            weightKg: 73,
+            bmi: 25.87,
+            bodyFatPercentage: 14,
+            bodyFatKg: 10.36,
+            musclePercentage: 44,
+            muscleKg: 32.56,
+            restingMetabolismKcal: 1700,
+          },
+        },
+        variation: {
+          weightKg: {
+            absolute: 1,
+            relativePercentage: 1.39,
+            direction: "up",
+          },
+          bmi: {
+            absolute: 0.36,
+            relativePercentage: 1.41,
+            direction: "up",
+          },
+          bodyFatPercentage: {
+            absolutePercentagePoints: -2.2,
+            relativePercentage: -13.58,
+            direction: "down",
+          },
+          bodyFatKg: {
+            absolute: -1.31,
+            relativePercentage: -11.23,
+            direction: "down",
+          },
+          musclePercentage: {
+            absolutePercentagePoints: 1.25,
+            relativePercentage: 2.92,
+            direction: "up",
+          },
+          muscleKg: {
+            absolute: 1.77,
+            relativePercentage: 5.75,
+            direction: "up",
+          },
+          restingMetabolismKcal: {
+            absolute: 10,
+            relativePercentage: 0.59,
+            direction: "up",
+          },
         },
       },
       previous: {
@@ -115,6 +173,31 @@ describe("weekly dashboard api", () => {
       },
     })
   })
+
+  it("uses the configured timezone when deriving the current dashboard date", async () => {
+    vi.setSystemTime(new Date("2026-06-15T01:30:00.000Z"))
+
+    expect(getCurrentDateOnly("America/Sao_Paulo")).toBe("2026-06-14")
+
+    const env = createEnv()
+    const sessionCookieValue = await createSessionCookieValue(
+      env.SESSION_SECRET,
+    )
+    const response = await app.request(
+      "/api/dashboard/weekly",
+      {
+        headers: {
+          cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}`,
+        },
+      },
+      env,
+    )
+    const body = (await response.json()) as WeeklyComparison
+
+    expect(response.status).toBe(200)
+    expect(body.current.weekStartDate).toBe("2026-06-08")
+    expect(body.current.weekEndDate).toBe("2026-06-14")
+  })
 })
 
 function createEnv(): {
@@ -122,6 +205,7 @@ function createEnv(): {
   DB: D1Database
   SESSION_SECRET: string
   USER_HEIGHT_CM: string
+  USER_TIME_ZONE: string
 } {
   return {
     APP_PASSWORD: "correct-password",
@@ -161,6 +245,7 @@ function createEnv(): {
     ]) as unknown as D1Database,
     SESSION_SECRET: "test-session-secret",
     USER_HEIGHT_CM: "168",
+    USER_TIME_ZONE: "America/Sao_Paulo",
   }
 }
 
@@ -205,8 +290,15 @@ class DashboardMeasurementD1Statement {
     this.query = query
   }
 
+  bind(): DashboardMeasurementD1Statement {
+    return this
+  }
+
   async all<T>(): Promise<D1Result<T>> {
-    if (!this.query.includes("FROM measurements ORDER BY date DESC")) {
+    if (
+      !this.query.includes("FROM measurements") ||
+      !this.query.includes("ORDER BY date DESC")
+    ) {
       throw new Error(`Unsupported all query: ${this.query}`)
     }
 

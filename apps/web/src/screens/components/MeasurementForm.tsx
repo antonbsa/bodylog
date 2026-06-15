@@ -20,6 +20,7 @@ import {
 import { formatInputNumber, parseDecimalInput } from "../../utils/number-format"
 
 type MeasurementFormProps = {
+  initialDate?: string
   onClose: () => void
   onSaved: (measurement: Measurement) => void
 }
@@ -32,11 +33,16 @@ type MeasurementFields = {
   weightKg: string
 }
 
-export function MeasurementForm({ onClose, onSaved }: MeasurementFormProps) {
+export function MeasurementForm({
+  initialDate,
+  onClose,
+  onSaved,
+}: MeasurementFormProps) {
   const todayIso = getTodayIsoDate()
+  const initialIsoDate = initialDate ?? todayIso
   const measurementByDateCache = useRef(new Map<string, Measurement | null>())
   const [fields, setFields] = useState<MeasurementFields>(() =>
-    createEmptyFields(formatDisplayDateFromIso(todayIso)),
+    createEmptyFields(formatDisplayDateFromIso(initialIsoDate)),
   )
   const [existingMeasurement, setExistingMeasurement] =
     useState<Measurement | null>(null)

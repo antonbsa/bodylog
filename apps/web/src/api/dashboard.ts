@@ -30,6 +30,11 @@ export type MetricVariation = {
 
 export type WeeklyDashboard = {
   current: WeekSummary
+  display: {
+    mode: "current-week" | "latest-recorded-week"
+    summary: WeekSummary
+    variation: Partial<Record<keyof WeeklyAverages, MetricVariation>>
+  }
   previous: WeekSummary
   variation: Partial<Record<keyof WeeklyAverages, MetricVariation>>
 }

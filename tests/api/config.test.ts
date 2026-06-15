@@ -4,6 +4,7 @@ import {
   getAppPassword,
   getSessionSecret,
   getUserHeightCm,
+  getUserTimeZone,
 } from "../../apps/api/src/config"
 
 describe("auth config", () => {
@@ -46,6 +47,23 @@ describe("getUserHeightCm", () => {
     )
     expect(() => getUserHeightCm({ USER_HEIGHT_CM: "not-a-number" })).toThrow(
       "USER_HEIGHT_CM must be a positive number in centimeters",
+    )
+  })
+})
+
+describe("getUserTimeZone", () => {
+  it("reads the user time zone from the environment", () => {
+    expect(getUserTimeZone({ USER_TIME_ZONE: "America/Sao_Paulo" })).toBe(
+      "America/Sao_Paulo",
+    )
+  })
+
+  it("rejects missing or invalid time zone configuration", () => {
+    expect(() => getUserTimeZone({ USER_TIME_ZONE: "" })).toThrow(
+      "USER_TIME_ZONE must be configured",
+    )
+    expect(() => getUserTimeZone({ USER_TIME_ZONE: "not-a-zone" })).toThrow(
+      "USER_TIME_ZONE must be a valid IANA time zone",
     )
   })
 })

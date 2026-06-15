@@ -32,6 +32,12 @@ When the authenticated user opens the app, the first screen should answer:
 
 The weight summary is the primary metric. Body fat and muscle summaries are secondary metrics.
 
+Summary cards represent the latest available metrics. When the current week has
+records, they use current-week averages. When the current week has no records
+yet, they continue to show the latest recorded week rather than blank
+placeholders, while the current calendar week context remains visible
+separately.
+
 ## Dashboard Summary
 
 The summary section uses cards, not charts.
@@ -147,7 +153,7 @@ Columns:
 - `Músculo (kg)`;
 - `RM`.
 
-Each row includes an edit action. In edit mode, the form should expose update and delete actions. Delete requires confirmation.
+Each row includes edit and delete actions. Delete is initiated from the history table and requires confirmation in a modal dialog. Form-context deletion is deferred for now.
 
 On narrow screens, the implementation can use a responsive table pattern that preserves the same information without forcing horizontal scrolling as the only usable path.
 
@@ -210,7 +216,7 @@ Use:
 - restrained accent colors;
 - clear data hierarchy;
 - cards for summary metrics;
-- table or table-like layout for history;
+- a literal table for measurement history;
 - form layout for data entry.
 
 Avoid:
@@ -279,6 +285,6 @@ Suggested initial palette:
 
 Component library:
 
-- do not install or commit to a full component library during T-004;
-- choose the component library during frontend setup or the first concrete UI implementation task;
-- candidates may include shadcn/ui, Radix primitives, or another small React-compatible option that fits the V1 direction.
+- use Radix UI / Radix Themes components for V1 frontend components when a component provides useful accessible behavior or structure;
+- apply Radix first to the measurement history table refactor using the Radix Themes `Table` component;
+- migrate other existing UI components to Radix through a separate V1 task instead of changing all components during the history table refactor.
