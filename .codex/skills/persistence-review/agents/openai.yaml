@@ -1,0 +1,4 @@
+interface:
+  display_name: "Persistence Review"
+  short_description: "Review what task learnings should become durable project knowledge."
+  default_prompt: "Use $persistence-review to inspect the current task and write recommendations into .agent-state/PERSISTENCE_REVIEW.md."
