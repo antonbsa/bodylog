@@ -39,12 +39,15 @@ SESSION_SECRET
 ```txt
 USER_HEIGHT_CM=168
 USER_TIME_ZONE=America/Sao_Paulo
+FRONTEND_ORIGIN=https://bodylog.pages.dev
 VITE_API_BASE_URL=https://bodylog-api.antonbsa.workers.dev
 ```
 
 `USER_HEIGHT_CM` configures the single user's height in centimeters for BMI calculations. The API converts this value to meters before applying the BMI formula. Height is not a secret and should be configured as a Worker variable, not as a Cloudflare secret.
 
 `USER_TIME_ZONE` configures the single user's IANA time zone for dashboard date and week boundaries. It is not a secret and should be configured as a Worker variable.
+
+`FRONTEND_ORIGIN` configures the exact production frontend origin allowed by API CORS. It is not a secret. Deployment automation passes it to `wrangler deploy` from the GitHub `PRODUCTION_FRONTEND_ORIGIN` variable.
 
 `VITE_API_BASE_URL` configures the frontend API origin. It is not a secret because Vite exposes `VITE_*` values to the browser.
 
@@ -76,9 +79,8 @@ migrations/
 - Frontend running through Vite.
 - Hono API running through Wrangler local/dev.
 - Local or preview D1 database.
-- Non-production defaults loaded from the committed `.env.development` file through `wrangler dev --env development`.
+- Non-production defaults loaded from the committed `.env.development` file through Wrangler's `--env-file` flag.
 - `npm run dev` starts the API on `http://localhost:8787` and the frontend on `http://localhost:5173`.
-- The repository does not define `[env.development]` yet, so Wrangler may warn about the missing named environment while still loading `.env.development` for local dev.
 
 Local development uses separate processes:
 
@@ -126,7 +128,33 @@ Expected deployment secret:
 
 ```txt
 CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
 ```
+
+Expected deployment variables:
+
+```txt
+CLOUDFLARE_PAGES_PROJECT_NAME
+PRODUCTION_FRONTEND_ORIGIN
+VITE_API_BASE_URL
+```
+
+`PRODUCTION_FRONTEND_ORIGIN` should be the Cloudflare Pages origin, such as `https://bodylog.pages.dev`, without a trailing path. `VITE_API_BASE_URL` should be the Worker origin, such as `https://bodylog-api.antonbsa.workers.dev`.
+
+The deploy workflow runs the project checks first, builds the frontend with `VITE_API_BASE_URL`, deploys the Worker with `FRONTEND_ORIGIN`, and then deploys `apps/web/dist` to Cloudflare Pages.
+
+## Wrangler Configuration
+
+Wrangler configuration is split by deployment target:
+
+```txt
+apps/api/wrangler.toml
+apps/web/wrangler.toml
+```
+
+The API config owns the Worker entry point, non-secret Worker variables, observability, and the D1 binding. Local API development uses this config with the root `.env.development` file loaded explicitly through `--env-file`, avoiding a named Wrangler environment solely for local secrets.
+
+The web config owns stable Cloudflare Pages settings such as the Pages build output directory. The Pages project name remains an external deployment variable so local and CI deploys can target the configured Cloudflare project without committing account-specific identifiers.
 
 ## Deployment Strategy
 

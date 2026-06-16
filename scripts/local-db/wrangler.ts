@@ -6,6 +6,7 @@ import { join } from "node:path"
 import { databaseName } from "./types"
 
 const localPersistTo = process.env.BODYLOG_D1_PERSIST_TO ?? null
+const wranglerConfigPath = "apps/api/wrangler.toml"
 
 export function applyLocalMigrations(): void {
   console.log("Applying local D1 migrations...")
@@ -83,15 +84,19 @@ function runWrangler(
   options: { captureOutput?: boolean } = {},
 ): string {
   const executable = process.platform === "win32" ? "npx.cmd" : "npx"
-  const result = spawnSync(executable, ["wrangler", ...args], {
-    encoding: "utf8",
-    stdio: options.captureOutput === true ? "pipe" : "inherit",
-  })
+  const result = spawnSync(
+    executable,
+    ["wrangler", "--config", wranglerConfigPath, ...args],
+    {
+      encoding: "utf8",
+      stdio: options.captureOutput === true ? "pipe" : "inherit",
+    },
+  )
 
   if (result.status !== 0) {
     throw new Error(
       [
-        `Wrangler command failed: npx wrangler ${args.join(" ")}`,
+        `Wrangler command failed: npx wrangler --config ${wranglerConfigPath} ${args.join(" ")}`,
         result.stdout,
         result.stderr,
       ]

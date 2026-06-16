@@ -145,21 +145,12 @@ This is acceptable for personal V1 usage but not a scalable authentication model
 
 The full V1 deploy target is Cloudflare.
 
-Possible deployment models:
-
-### Option A — Cloudflare Pages + Worker API
-
 - Frontend deployed to Cloudflare Pages.
 - API deployed as a Worker.
 - Clear separation between frontend and backend.
-
-### Option B — Single Worker with Static Assets
-
-- One Worker serves frontend assets and API routes.
-- Fewer moving parts.
-- Potentially simpler for a personal app.
-
-The final choice should be made during implementation.
+- Wrangler configuration is split by target:
+  - `apps/api/wrangler.toml` for the Worker API.
+  - `apps/web/wrangler.toml` for the Pages frontend.
 
 ## Non-Goals
 

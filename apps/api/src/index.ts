@@ -3,6 +3,7 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie"
 
 import {
   getAppPassword,
+  getFrontendOrigin,
   getSessionSecret,
   getUserHeightCm,
   getUserTimeZone,
@@ -25,6 +26,9 @@ import { MeasurementRepository } from "./measurements/measurement-repository"
 
 export const app = new Hono<{ Bindings: AppBindings }>()
 
+const corsAllowedMethods = "GET,POST,PUT,DELETE,OPTIONS"
+const defaultCorsAllowedHeaders = "Content-Type"
+
 const protectedApiRoutePrefixes = [
   "/api/measurements",
   "/api/dashboard",
@@ -37,6 +41,56 @@ function isProtectedApiRoute(path: string): boolean {
     (prefix) => path === prefix || path.startsWith(`${prefix}/`),
   )
 }
+
+function getAllowedCorsOrigin(
+  requestOrigin: string | undefined,
+  env: Pick<AppBindings, "FRONTEND_ORIGIN">,
+): string | null {
+  if (!requestOrigin) {
+    return null
+  }
+
+  const frontendOrigin = getFrontendOrigin(env)
+
+  if (frontendOrigin && requestOrigin === frontendOrigin) {
+    return requestOrigin
+  }
+
+  try {
+    const originUrl = new URL(requestOrigin)
+    const isLocalOrigin =
+      originUrl.protocol === "http:" &&
+      (originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1")
+
+    return isLocalOrigin ? requestOrigin : null
+  } catch {
+    return null
+  }
+}
+
+app.use("/api/*", async (c, next) => {
+  const allowedOrigin = getAllowedCorsOrigin(c.req.header("origin"), c.env)
+
+  if (allowedOrigin) {
+    c.header("access-control-allow-origin", allowedOrigin)
+    c.header("access-control-allow-credentials", "true")
+    c.header("vary", "Origin")
+  }
+
+  if (c.req.method === "OPTIONS") {
+    c.header("access-control-allow-methods", corsAllowedMethods)
+    c.header(
+      "access-control-allow-headers",
+      c.req.header("access-control-request-headers") ??
+        defaultCorsAllowedHeaders,
+    )
+    c.header("access-control-max-age", "86400")
+
+    return c.body(null, 204)
+  }
+
+  await next()
+})
 
 app.use("/api/*", async (c, next) => {
   if (isProtectedApiRoute(c.req.path)) {
