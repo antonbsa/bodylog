@@ -39,6 +39,57 @@ Run the relevant automated checks before validating production. Then perform man
 
 If a production issue is found, document the failing check and either fix it in the smallest related task scope or create a follow-up task when the fix is not appropriate for this validation task.
 
+## Production Issue Notes
+
+### Installed iOS PWA session persistence and password autofill
+
+Finding:
+
+- When installed to the iPhone home screen from the production frontend, the app required entering the password again after closing and reopening.
+- iOS Passwords did not offer to save or autofill the password on the login screen.
+
+Assumption:
+
+- The production frontend and API were using separate Cloudflare default sites (`pages.dev` and `workers.dev`), which makes API session cookies cross-site. iOS standalone web apps can drop or omit those cookies.
+
+Fix:
+
+- Production should use same-site custom domains:
+  - Frontend: `https://bodylog.antonbsa.dev`
+  - API: `https://api.bodylog.antonbsa.dev`
+- The API now sets production session cookies as `Secure` + `SameSite=Lax` when the request URL and configured `FRONTEND_ORIGIN` are same-site under that custom-domain layout.
+- The API keeps the existing `Secure` + `SameSite=None` fallback for separate Cloudflare default domains.
+- The login form now includes a stable `username` autocomplete field and password input metadata so iOS Passwords can associate the saved credential with the app.
+
+Validation to run after deployment:
+
+- Configure the frontend custom domain in Cloudflare Pages.
+- Configure the API custom domain/route for the Worker.
+- Set `PRODUCTION_FRONTEND_ORIGIN=https://bodylog.antonbsa.dev`.
+- Build/deploy the frontend with `VITE_API_BASE_URL=https://api.bodylog.antonbsa.dev`.
+- Install the app from `https://bodylog.antonbsa.dev` on iPhone, log in, close it, reopen it, and confirm the session is still authenticated.
+- Save the `bodylog` credential in iOS Passwords for `bodylog.antonbsa.dev` and confirm the password field offers autofill.
+
+Automated checks:
+
+- `npm run test:api -- tests/api/auth.test.ts`
+- `npm run typecheck`
+- `npm run test:e2e -- tests/e2e/tooling.spec.ts`
+- `npm run lint`
+- `npm run build:web`
+- `npm run test:api`
+- `npm run test:e2e`
+- `npx prettier --check apps/api/src/index.ts apps/web/src/screens/LoginScreen.tsx tests/api/auth.test.ts tests/e2e/tooling.spec.ts docs/technical/deployment.md specs/v1/tasks/t-025-validate-production-state.md`
+
+Modified files:
+
+- `apps/api/src/index.ts`
+- `apps/web/src/screens/LoginScreen.tsx`
+- `docs/technical/deployment.md`
+- `specs/v1/tasks/t-025-validate-production-state.md`
+- `tests/api/auth.test.ts`
+- `tests/e2e/tooling.spec.ts`
+
 ## Acceptance Criteria
 
 - [ ] Production frontend URL is documented and reachable.

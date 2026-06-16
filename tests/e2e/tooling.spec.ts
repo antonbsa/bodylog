@@ -150,6 +150,23 @@ test("login screen renders first", async ({ page }) => {
   await expect(page.getByLabel("Senha")).toBeVisible()
 })
 
+test("login form exposes password manager metadata", async ({ page }) => {
+  await mockSession(page, false)
+  await page.goto("/")
+
+  const usernameInput = page.locator('input[name="username"]')
+  const passwordInput = page.getByLabel("Senha")
+
+  await expect(usernameInput).toHaveAttribute("autocomplete", "username")
+  await expect(usernameInput).toHaveValue("bodylog")
+  await expect(passwordInput).toHaveAttribute(
+    "autocomplete",
+    "current-password",
+  )
+  await expect(passwordInput).toHaveAttribute("autocapitalize", "none")
+  await expect(passwordInput).toHaveAttribute("autocorrect", "off")
+})
+
 test("login screen shows invalid password errors", async ({ page }) => {
   await mockSession(page, false)
   await page.route("**/api/auth/login", async (route) => {

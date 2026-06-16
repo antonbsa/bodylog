@@ -39,8 +39,8 @@ SESSION_SECRET
 ```txt
 USER_HEIGHT_CM=168
 USER_TIME_ZONE=America/Sao_Paulo
-FRONTEND_ORIGIN=https://bodylog.pages.dev
-VITE_API_BASE_URL=https://bodylog-api.antonbsa.workers.dev
+FRONTEND_ORIGIN=https://bodylog.antonbsa.dev
+VITE_API_BASE_URL=https://api.bodylog.antonbsa.dev
 ```
 
 `USER_HEIGHT_CM` configures the single user's height in centimeters for BMI calculations. The API converts this value to meters before applying the BMI formula. Height is not a secret and should be configured as a Worker variable, not as a Cloudflare secret.
@@ -50,6 +50,15 @@ VITE_API_BASE_URL=https://bodylog-api.antonbsa.workers.dev
 `FRONTEND_ORIGIN` configures the exact production frontend origin allowed by API CORS. It is not a secret. Deployment automation passes it to `wrangler deploy` from the GitHub `PRODUCTION_FRONTEND_ORIGIN` variable.
 
 `VITE_API_BASE_URL` configures the frontend API origin. It is not a secret because Vite exposes `VITE_*` values to the browser.
+
+The production frontend and API should use same-site custom domains for reliable installed-PWA session persistence on iOS:
+
+```txt
+Frontend: https://bodylog.antonbsa.dev
+API:      https://api.bodylog.antonbsa.dev
+```
+
+The API remains a separate Worker, but requests from the frontend to the API are same-site under this domain layout. That allows the session cookie to use `Secure` + `SameSite=Lax` in production. The default Cloudflare domains, such as `pages.dev` for the frontend and `workers.dev` for the API, are cross-site and can lose session cookies in iOS standalone web apps.
 
 ## D1
 
@@ -139,7 +148,7 @@ PRODUCTION_FRONTEND_ORIGIN
 VITE_API_BASE_URL
 ```
 
-`PRODUCTION_FRONTEND_ORIGIN` should be the Cloudflare Pages origin, such as `https://bodylog.pages.dev`, without a trailing path. `VITE_API_BASE_URL` should be the Worker origin, such as `https://bodylog-api.antonbsa.workers.dev`.
+`PRODUCTION_FRONTEND_ORIGIN` should be the production frontend origin, such as `https://bodylog.antonbsa.dev`, without a trailing path. `VITE_API_BASE_URL` should be the Worker API origin, such as `https://api.bodylog.antonbsa.dev`.
 
 The deploy workflow runs the project checks first, builds the frontend with `VITE_API_BASE_URL`, deploys the Worker with `FRONTEND_ORIGIN`, and then deploys `apps/web/dist` to Cloudflare Pages.
 

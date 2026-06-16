@@ -68,6 +68,64 @@ function getAllowedCorsOrigin(
   }
 }
 
+function isLocalHostname(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1"
+}
+
+function isSameOrChildHostname(hostname: string, parentHostname: string) {
+  return hostname === parentHostname || hostname.endsWith(`.${parentHostname}`)
+}
+
+function isSameSiteFrontendOrigin(
+  requestUrl: URL,
+  env: Pick<AppBindings, "FRONTEND_ORIGIN">,
+): boolean {
+  const frontendOrigin = getFrontendOrigin(env)
+
+  if (!frontendOrigin) {
+    return false
+  }
+
+  try {
+    const frontendUrl = new URL(frontendOrigin)
+
+    return (
+      requestUrl.protocol === frontendUrl.protocol &&
+      (isSameOrChildHostname(requestUrl.hostname, frontendUrl.hostname) ||
+        isSameOrChildHostname(frontendUrl.hostname, requestUrl.hostname))
+    )
+  } catch {
+    return false
+  }
+}
+
+function getSessionCookieSettings(
+  requestUrl: URL,
+  env: Pick<AppBindings, "FRONTEND_ORIGIN">,
+): {
+  sameSite: "Lax" | "None"
+  secure: boolean
+} {
+  if (isLocalHostname(requestUrl.hostname)) {
+    return {
+      sameSite: "Lax",
+      secure: false,
+    }
+  }
+
+  if (isSameSiteFrontendOrigin(requestUrl, env)) {
+    return {
+      sameSite: "Lax",
+      secure: true,
+    }
+  }
+
+  return {
+    sameSite: "None",
+    secure: true,
+  }
+}
+
 app.use("/api/*", async (c, next) => {
   const allowedOrigin = getAllowedCorsOrigin(c.req.header("origin"), c.env)
 
@@ -94,9 +152,8 @@ app.use("/api/*", async (c, next) => {
 
 app.use("/api/*", async (c, next) => {
   if (isProtectedApiRoute(c.req.path)) {
-    const sessionCookieValue = getCookie(c, SESSION_COOKIE_NAME)
     const hasValidSession = await isValidSessionCookieValue(
-      sessionCookieValue,
+      getCookie(c, SESSION_COOKIE_NAME),
       getSessionSecret(c.env),
     )
 
@@ -332,17 +389,15 @@ app.post("/api/auth/login", async (c) => {
   }
 
   const requestUrl = new URL(c.req.url)
-  const isLocalRequest =
-    requestUrl.hostname === "localhost" || requestUrl.hostname === "127.0.0.1"
+  const sessionCookieSettings = getSessionCookieSettings(requestUrl, c.env)
   const sessionValue = await createSessionCookieValue(getSessionSecret(c.env))
 
-  // Local dev runs over plain HTTP; production cross-origin cookies need Secure + SameSite=None.
   setCookie(c, SESSION_COOKIE_NAME, sessionValue, {
     httpOnly: true,
     maxAge: SESSION_MAX_AGE_SECONDS,
     path: "/",
-    sameSite: isLocalRequest ? "Lax" : "None",
-    secure: !isLocalRequest,
+    sameSite: sessionCookieSettings.sameSite,
+    secure: sessionCookieSettings.secure,
   })
 
   return c.json({
@@ -351,9 +406,8 @@ app.post("/api/auth/login", async (c) => {
 })
 
 app.get("/api/auth/session", async (c) => {
-  const sessionCookieValue = getCookie(c, SESSION_COOKIE_NAME)
   const hasValidSession = await isValidSessionCookieValue(
-    sessionCookieValue,
+    getCookie(c, SESSION_COOKIE_NAME),
     getSessionSecret(c.env),
   )
 
@@ -373,15 +427,13 @@ app.get("/api/auth/session", async (c) => {
 
 app.post("/api/auth/logout", (c) => {
   const requestUrl = new URL(c.req.url)
-  const isLocalRequest =
-    requestUrl.hostname === "localhost" || requestUrl.hostname === "127.0.0.1"
+  const sessionCookieSettings = getSessionCookieSettings(requestUrl, c.env)
 
-  // Local dev runs over plain HTTP; production cross-origin cookies need Secure + SameSite=None.
   deleteCookie(c, SESSION_COOKIE_NAME, {
     httpOnly: true,
     path: "/",
-    sameSite: isLocalRequest ? "Lax" : "None",
-    secure: !isLocalRequest,
+    sameSite: sessionCookieSettings.sameSite,
+    secure: sessionCookieSettings.secure,
   })
 
   return c.json({

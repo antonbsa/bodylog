@@ -96,6 +96,60 @@ describe("auth login", () => {
       await isValidSessionCookieValue(cookieValue, env.SESSION_SECRET),
     ).toBe(true)
   })
+
+  it("uses same-site production cookies for custom frontend and API domains", async () => {
+    const response = await app.request(
+      "https://api.bodylog.antonbsa.dev/api/auth/login",
+      {
+        body: JSON.stringify({ password: "correct-password" }),
+        headers: {
+          "content-type": "application/json",
+          origin: "https://bodylog.antonbsa.dev",
+        },
+        method: "POST",
+      },
+      {
+        ...env,
+        FRONTEND_ORIGIN: "https://bodylog.antonbsa.dev",
+      },
+    )
+
+    expect(response.status).toBe(200)
+
+    const setCookieHeader = response.headers.get("set-cookie")
+
+    expect(setCookieHeader).toContain(`${SESSION_COOKIE_NAME}=`)
+    expect(setCookieHeader).toContain("HttpOnly")
+    expect(setCookieHeader).toContain("Secure")
+    expect(setCookieHeader).toContain("SameSite=Lax")
+  })
+
+  it("keeps cross-site production cookies compatible with separate Cloudflare default domains", async () => {
+    const response = await app.request(
+      "https://bodylog-api.antonbsa.workers.dev/api/auth/login",
+      {
+        body: JSON.stringify({ password: "correct-password" }),
+        headers: {
+          "content-type": "application/json",
+          origin: "https://bodylog.pages.dev",
+        },
+        method: "POST",
+      },
+      {
+        ...env,
+        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+      },
+    )
+
+    expect(response.status).toBe(200)
+
+    const setCookieHeader = response.headers.get("set-cookie")
+
+    expect(setCookieHeader).toContain(`${SESSION_COOKIE_NAME}=`)
+    expect(setCookieHeader).toContain("HttpOnly")
+    expect(setCookieHeader).toContain("Secure")
+    expect(setCookieHeader).toContain("SameSite=None")
+  })
 })
 
 describe("auth logout", () => {
