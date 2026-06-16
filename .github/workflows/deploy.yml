@@ -1,84 +1,33 @@
 name: Deploy
 
+# Triggers only after CI completes successfully on main, which guarantees
+# validations already passed before any deployment step runs.
+# workflow_dispatch allows a manual deploy when needed (no CI gate in that path).
 on:
-  push:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
     branches:
       - main
   workflow_dispatch:
 
 permissions:
   contents: read
-  pull-requests: read
 
 concurrency:
   group: deploy-production
   cancel-in-progress: false
 
 jobs:
-  scope:
-    name: Determine deploy scope
-    runs-on: ubuntu-latest
-    outputs:
-      is_pr_merge: ${{ steps.scope.outputs.is_pr_merge }}
-    steps:
-      - name: Check event source
-        id: scope
-        uses: actions/github-script@v8
-        with:
-          script: |
-            // A push produced by merging a pull request was already validated on
-            // that PR by the CI workflow, so we can deploy it without re-running
-            // validations. Any other trigger (direct push, manual dispatch) has
-            // not been validated yet and must run the validation suite first.
-            if (context.eventName !== "push") {
-              core.setOutput("is_pr_merge", "false");
-              core.info(`Event ${context.eventName}: validating before deploy.`);
-              return;
-            }
-
-            const { owner, repo } = context.repo;
-            const associatedPullRequests = await github.paginate(
-              github.rest.repos.listPullRequestsAssociatedWithCommit,
-              {
-                owner,
-                repo,
-                commit_sha: context.sha,
-                per_page: 100,
-              },
-            );
-
-            const mainPullRequests = associatedPullRequests.filter(
-              (pullRequest) => pullRequest.base?.ref === "main",
-            );
-
-            const isPrMerge = mainPullRequests.length > 0;
-            core.setOutput("is_pr_merge", isPrMerge ? "true" : "false");
-
-            if (isPrMerge) {
-              core.info("Push came from a merged pull request; validations already ran in CI, deploying directly.");
-            } else {
-              core.info("Direct push to main; running validations before deploy.");
-            }
-
-  validate:
-    name: Validate
-    needs:
-      - scope
-    if: needs.scope.outputs.is_pr_merge != 'true'
-    uses: ./.github/workflows/validate.yml
-
   deploy:
     name: Deploy to Cloudflare
-    needs:
-      - scope
-      - validate
-    # Deploy on every push to main. The validate job is skipped for PR merges
-    # (already validated on the PR) and must succeed otherwise.
+    # For workflow_run: only proceed when CI actually passed.
+    # For workflow_dispatch: always allow (manual operator decision).
     if: >-
-      always() &&
-      needs.scope.result == 'success' &&
-      needs.validate.result != 'failure' &&
-      needs.validate.result != 'cancelled'
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
