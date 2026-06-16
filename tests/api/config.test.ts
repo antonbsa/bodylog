@@ -73,7 +73,7 @@ describe("getFrontendOrigin", () => {
   it("reads the configured production frontend origin", () => {
     expect(
       getFrontendOrigin({
-        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
       }),
     ).toBe("https://bodylog.pages.dev")
   })
@@ -83,13 +83,13 @@ describe("getFrontendOrigin", () => {
   })
 
   it("rejects invalid or path-based frontend origins", () => {
-    expect(() => getFrontendOrigin({ FRONTEND_ORIGIN: "not-a-url" })).toThrow(
-      "FRONTEND_ORIGIN must be a valid URL origin",
-    )
+    expect(() =>
+      getFrontendOrigin({ PRODUCTION_FRONTEND_ORIGIN: "not-a-url" }),
+    ).toThrow("PRODUCTION_FRONTEND_ORIGIN must be a valid URL origin")
     expect(() =>
       getFrontendOrigin({
-        FRONTEND_ORIGIN: "https://bodylog.pages.dev/dashboard",
+        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev/dashboard",
       }),
-    ).toThrow("FRONTEND_ORIGIN must be a valid URL origin")
+    ).toThrow("PRODUCTION_FRONTEND_ORIGIN must be a valid URL origin")
   })
 })

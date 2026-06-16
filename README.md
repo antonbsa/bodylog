@@ -66,6 +66,12 @@ Agent-specific instructions are in [`AGENTS.md`](./AGENTS.md).
 
 ## Development
 
+Use the project Node.js version:
+
+```sh
+nvm use
+```
+
 Install dependencies:
 
 ```sh
@@ -170,7 +176,7 @@ npm run deploy:api
 
 For non-interactive deployment, such as CI or an agent environment, Wrangler requires `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to be set before deployment.
 Local API development explicitly loads the committed `.env.development` file with non-production auth defaults through Wrangler's `--env-file` flag. Production secrets must be configured through Cloudflare, not committed.
-Non-secret Worker variables such as `USER_HEIGHT_CM` and `USER_TIME_ZONE` are configured in `apps/api/wrangler.toml`. Deployment automation injects `FRONTEND_ORIGIN` from the GitHub `PRODUCTION_FRONTEND_ORIGIN` variable so the API can allow credentialed requests from the production Pages origin.
+Non-secret Worker variables such as `USER_HEIGHT_CM` and `USER_TIME_ZONE` are configured in `apps/api/wrangler.toml`. Deployment automation injects `PRODUCTION_FRONTEND_ORIGIN` so the API can allow credentialed requests from the production Pages origin.
 The frontend Pages deployment uses `apps/web/wrangler.toml`.
 
 ```sh

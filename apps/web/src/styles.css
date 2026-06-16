@@ -621,6 +621,17 @@ input:disabled {
   border: 0;
 }
 
+.password-manager-username {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 1px;
+  padding: 0;
+  border: 0;
+  margin: 0;
+  opacity: 0;
+}
+
 .modal-backdrop {
   position: fixed;
   z-index: 10;

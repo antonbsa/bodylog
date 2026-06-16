@@ -116,6 +116,13 @@ If ambiguity does not block implementation, choose the simplest option that sati
 6. Validate against acceptance criteria.
 7. Update docs if behavior changed.
 
+## Node Version
+
+This repo pins Node via `.nvmrc` (currently `24.16.0`) and enforces it with
+`engine-strict=true` plus a `package.json` `engines` range. Run `nvm use` (or
+otherwise use Node 24) before any `npm install` / npm script, or installs fail
+with `EBADENGINE`.
+
 ## Local Development Servers
 
 Do not start long-running development servers or watchers unless the user explicitly asks for them.

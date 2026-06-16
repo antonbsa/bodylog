@@ -47,9 +47,23 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         </p>
 
         <form className="login-form" onSubmit={handleLoginSubmit}>
+          <label className="visually-hidden" htmlFor="username">
+            Usuário
+          </label>
+          <input
+            autoComplete="username"
+            className="password-manager-username"
+            defaultValue="bodylog"
+            id="username"
+            name="username"
+            type="text"
+          />
+
           <label htmlFor="password">Senha</label>
           <input
-            autoComplete="current-password"
+            autoCapitalize="none"
+            autoComplete="password"
+            autoCorrect="off"
             disabled={isSubmitting}
             id="password"
             name="password"
