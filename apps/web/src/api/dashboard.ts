@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ""
+import { apiFetch } from "./client"
 
 export type MetricDirection = "up" | "down" | "stable"
 
@@ -40,10 +40,7 @@ export type WeeklyDashboard = {
 }
 
 export async function getWeeklyDashboard(): Promise<WeeklyDashboard> {
-  const response = await fetch(`${API_BASE_URL}/api/dashboard/weekly`, {
-    credentials: "include",
-    method: "GET",
-  })
+  const response = await apiFetch("/api/dashboard/weekly", { method: "GET" })
 
   if (!response.ok) {
     throw new Error("Weekly dashboard lookup failed")

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ""
+import { apiFetch } from "./client"
 
 export type Measurement = {
   id: string
@@ -52,8 +52,7 @@ export async function listMeasurements(options: {
     limit: String(options.limit),
     offset: String(options.offset ?? 0),
   })
-  const response = await fetch(`${API_BASE_URL}/api/measurements?${query}`, {
-    credentials: "include",
+  const response = await apiFetch(`/api/measurements?${query}`, {
     method: "GET",
   })
 
@@ -71,13 +70,9 @@ export async function listMeasurements(options: {
 export async function getMeasurementByDate(
   date: string,
 ): Promise<Measurement | null> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/measurements/by-date/${date}`,
-    {
-      credentials: "include",
-      method: "GET",
-    },
-  )
+  const response = await apiFetch(`/api/measurements/by-date/${date}`, {
+    method: "GET",
+  })
 
   if (response.status === 404) {
     return null
@@ -98,17 +93,11 @@ export async function saveMeasurementByDate(
   date: string,
   input: SaveMeasurementInput,
 ): Promise<Measurement> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/measurements/by-date/${date}`,
-    {
-      body: JSON.stringify(input),
-      credentials: "include",
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "PUT",
-    },
-  )
+  const response = await apiFetch(`/api/measurements/by-date/${date}`, {
+    body: JSON.stringify(input),
+    headers: { "content-type": "application/json" },
+    method: "PUT",
+  })
 
   if (!response.ok) {
     throw new Error("Measurement save failed")
@@ -122,8 +111,7 @@ export async function saveMeasurementByDate(
 }
 
 export async function deleteMeasurement(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/measurements/${id}`, {
-    credentials: "include",
+  const response = await apiFetch(`/api/measurements/${id}`, {
     method: "DELETE",
   })
 
@@ -133,10 +121,7 @@ export async function deleteMeasurement(id: string): Promise<void> {
 }
 
 export async function exportMeasurementsCsv(): Promise<Blob> {
-  const response = await fetch(`${API_BASE_URL}/api/export/csv`, {
-    credentials: "include",
-    method: "GET",
-  })
+  const response = await apiFetch("/api/export/csv", { method: "GET" })
 
   if (!response.ok) {
     throw new Error("Measurement CSV export failed")
@@ -152,9 +137,8 @@ export async function importMeasurementsCsv(
 
   formData.append("file", file)
 
-  const response = await fetch(`${API_BASE_URL}/api/import/csv`, {
+  const response = await apiFetch("/api/import/csv", {
     body: formData,
-    credentials: "include",
     method: "POST",
   })
   const payload = (await response.json().catch(() => null)) as

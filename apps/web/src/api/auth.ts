@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ""
+import { apiFetch } from "./client"
 
 export type LoginResult =
   | {
@@ -11,10 +11,7 @@ export type LoginResult =
 
 export async function checkSession(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
-      credentials: "include",
-      method: "GET",
-    })
+    const response = await apiFetch("/api/auth/session", { method: "GET" })
 
     return response.ok
   } catch {
@@ -24,12 +21,9 @@ export async function checkSession(): Promise<boolean> {
 
 export async function login(password: string): Promise<LoginResult> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await apiFetch("/api/auth/login", {
       body: JSON.stringify({ password }),
-      credentials: "include",
-      headers: {
-        "content-type": "application/json",
-      },
+      headers: { "content-type": "application/json" },
       method: "POST",
     })
 
@@ -57,10 +51,7 @@ export async function login(password: string): Promise<LoginResult> {
 }
 
 export async function logout(): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
-    credentials: "include",
-    method: "POST",
-  })
+  const response = await apiFetch("/api/auth/logout", { method: "POST" })
 
   if (!response.ok) {
     throw new Error("Logout request failed")
