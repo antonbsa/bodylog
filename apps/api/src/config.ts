@@ -1,6 +1,7 @@
 export type AppBindings = {
   APP_PASSWORD: string
   DB: D1Database
+  FRONTEND_ORIGIN?: string
   SESSION_SECRET: string
   USER_HEIGHT_CM: string
   USER_TIME_ZONE: string
@@ -52,4 +53,24 @@ export function getUserTimeZone(
   }
 
   return env.USER_TIME_ZONE
+}
+
+export function getFrontendOrigin(
+  env: Pick<AppBindings, "FRONTEND_ORIGIN">,
+): string | null {
+  if (!env.FRONTEND_ORIGIN) {
+    return null
+  }
+
+  try {
+    const url = new URL(env.FRONTEND_ORIGIN)
+
+    if (url.origin !== env.FRONTEND_ORIGIN) {
+      throw new Error("FRONTEND_ORIGIN must be an origin without a path")
+    }
+
+    return url.origin
+  } catch {
+    throw new Error("FRONTEND_ORIGIN must be a valid URL origin")
+  }
 }

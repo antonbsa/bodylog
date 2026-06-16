@@ -218,3 +218,99 @@ describe("protected api routes", () => {
     expect(response.status).toBe(200)
   })
 })
+
+describe("api cors", () => {
+  it("allows local frontend origins for development", async () => {
+    const response = await app.request(
+      "/api/auth/session",
+      {
+        headers: {
+          origin: "http://localhost:5173",
+        },
+      },
+      env,
+    )
+
+    expect(response.status).toBe(401)
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      "http://localhost:5173",
+    )
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true",
+    )
+  })
+
+  it("allows the configured production frontend origin", async () => {
+    const response = await app.request(
+      "/api/auth/session",
+      {
+        headers: {
+          origin: "https://bodylog.pages.dev",
+        },
+      },
+      {
+        ...env,
+        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+      },
+    )
+
+    expect(response.status).toBe(401)
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      "https://bodylog.pages.dev",
+    )
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true",
+    )
+  })
+
+  it("does not allow unrelated origins", async () => {
+    const response = await app.request(
+      "/api/auth/session",
+      {
+        headers: {
+          origin: "https://example.com",
+        },
+      },
+      {
+        ...env,
+        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+      },
+    )
+
+    expect(response.status).toBe(401)
+    expect(response.headers.get("access-control-allow-origin")).toBeNull()
+    expect(response.headers.get("access-control-allow-credentials")).toBeNull()
+  })
+
+  it("responds to protected route preflight before auth", async () => {
+    const response = await app.request(
+      "/api/measurements",
+      {
+        headers: {
+          "access-control-request-headers": "content-type",
+          "access-control-request-method": "GET",
+          origin: "https://bodylog.pages.dev",
+        },
+        method: "OPTIONS",
+      },
+      {
+        ...env,
+        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+      },
+    )
+
+    expect(response.status).toBe(204)
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      "https://bodylog.pages.dev",
+    )
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true",
+    )
+    expect(response.headers.get("access-control-allow-methods")).toBe(
+      "GET,POST,PUT,DELETE,OPTIONS",
+    )
+    expect(response.headers.get("access-control-allow-headers")).toBe(
+      "content-type",
+    )
+  })
+})
