@@ -607,6 +607,42 @@ describe("measurement api", () => {
     })
   })
 
+  it("rejects impossible calendar dates in imported rows", async () => {
+    const response = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData([
+          "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal",
+          "2026-02-30,72.9,14.46,43.72,1700",
+          "2026-00-01,72.9,14.46,43.72,1700",
+        ]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      createEnv(),
+    )
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      created: 0,
+      errors: [
+        {
+          message: "Invalid date",
+          row: 2,
+        },
+        {
+          message: "Invalid date",
+          row: 3,
+        },
+      ],
+      ok: false,
+      skipped: 2,
+      updated: 0,
+    })
+  })
+
   it("upserts imported records by date", async () => {
     const env = createEnv([
       createMeasurementRow({
