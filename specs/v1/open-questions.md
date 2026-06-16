@@ -2,7 +2,6 @@
 
 ## Product
 
-- Should the first CSV import support only the canonical format or include mappings from the current spreadsheet export?
 - What warning thresholds should count as absurd but still saveable form values?
 
 ## Deployment

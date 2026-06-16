@@ -302,6 +302,369 @@ describe("measurement api", () => {
     )
   })
 
+  it("imports a full CSV and creates measurements", async () => {
+    const env = createEnv()
+    const response = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData([
+          "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
+          "2026-06-10,72.9,14.46,43.72,1700,2026-06-01T10:00:00.000Z,2026-06-02T10:00:00.000Z",
+          "2026-06-09,72.1,,,,2026-06-01T11:00:00.000Z,2026-06-02T11:00:00.000Z",
+        ]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      created: 2,
+      errors: [],
+      skipped: 0,
+      updated: 0,
+    })
+
+    const listResponse = await app.request(
+      "/api/measurements?limit=10&offset=0",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+
+    expect(await listResponse.json()).toMatchObject({
+      items: [
+        {
+          date: "2026-06-10",
+          weightKg: 72.9,
+          bodyFatPercentage: 14.46,
+          musclePercentage: 43.72,
+          restingMetabolismKcal: 1700,
+          createdAt: "2026-06-01T10:00:00.000Z",
+          updatedAt: "2026-06-02T10:00:00.000Z",
+        },
+        {
+          date: "2026-06-09",
+          weightKg: 72.1,
+          bodyFatPercentage: null,
+          musclePercentage: null,
+          restingMetabolismKcal: null,
+          createdAt: "2026-06-01T11:00:00.000Z",
+          updatedAt: "2026-06-02T11:00:00.000Z",
+        },
+      ],
+    })
+  })
+
+  it("imports a minimal CSV and fills missing audit timestamps", async () => {
+    const env = createEnv()
+    const response = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData([
+          "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal",
+          "2026-06-10,72.9,14.46,43.72,1700",
+        ]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      created: 1,
+      errors: [],
+      skipped: 0,
+      updated: 0,
+    })
+
+    const loadResponse = await app.request(
+      "/api/measurements/by-date/2026-06-10",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+    const payload = (await loadResponse.json()) as {
+      item: {
+        createdAt: string
+        updatedAt: string
+      }
+    }
+
+    expect(payload.item.createdAt).toEqual(expect.any(String))
+    expect(payload.item.updatedAt).toEqual(expect.any(String))
+  })
+
+  it("imports quoted decimal-comma values", async () => {
+    const env = createEnv()
+    const response = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData([
+          "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
+          '2026-05-13,72,17,"42,3",1.696,,',
+          '2026-05-15,"71,5","15,4","43,2",1.691,,',
+          '2026-05-16,"71,5","15,4","43,2",1.691,,',
+        ]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      created: 3,
+      errors: [],
+      skipped: 0,
+      updated: 0,
+    })
+
+    const listResponse = await app.request(
+      "/api/measurements?limit=10&offset=0",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+
+    expect(await listResponse.json()).toMatchObject({
+      items: [
+        {
+          date: "2026-05-16",
+          weightKg: 71.5,
+          bodyFatPercentage: 15.4,
+          musclePercentage: 43.2,
+          restingMetabolismKcal: 1691,
+        },
+        {
+          date: "2026-05-15",
+          weightKg: 71.5,
+          bodyFatPercentage: 15.4,
+          musclePercentage: 43.2,
+          restingMetabolismKcal: 1691,
+        },
+        {
+          date: "2026-05-13",
+          weightKg: 72,
+          bodyFatPercentage: 17,
+          musclePercentage: 42.3,
+          restingMetabolismKcal: 1696,
+        },
+      ],
+    })
+  })
+
+  it("rejects unquoted decimal-comma values because they break CSV columns", async () => {
+    const response = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData([
+          "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
+          "2026-05-15,71,5,15,4,43,2,1.691,,",
+        ]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      createEnv(),
+    )
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      created: 0,
+      errors: [
+        {
+          message:
+            "Expected 7 columns. Quote decimal-comma values or use dot decimals.",
+          row: 2,
+        },
+      ],
+      ok: false,
+      skipped: 1,
+      updated: 0,
+    })
+  })
+
+  it("reports invalid CSV headers and rows", async () => {
+    const invalidHeadersResponse = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData(["date,peso", "2026-06-10,72.9"]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      createEnv(),
+    )
+
+    expect(invalidHeadersResponse.status).toBe(400)
+    expect(await invalidHeadersResponse.json()).toEqual({
+      created: 0,
+      errors: [
+        {
+          message: "Invalid CSV headers",
+          row: 1,
+        },
+      ],
+      ok: false,
+      skipped: 1,
+      updated: 0,
+    })
+
+    const invalidRowsResponse = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData([
+          "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal",
+          "2026-06-10,72.9,14.46,43.72,1700",
+          "2026/06/11,not-a-number,x,43.72,1700",
+        ]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      createEnv(),
+    )
+
+    expect(invalidRowsResponse.status).toBe(200)
+    expect(await invalidRowsResponse.json()).toEqual({
+      created: 1,
+      errors: [
+        {
+          message: "Invalid date",
+          row: 3,
+        },
+        {
+          message: "Invalid weight value",
+          row: 3,
+        },
+        {
+          message: "Invalid body fat percentage",
+          row: 3,
+        },
+      ],
+      skipped: 1,
+      updated: 0,
+    })
+  })
+
+  it("returns a bad request when import validation rejects every row", async () => {
+    const response = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData([
+          "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal",
+          "2026/06/11,not-a-number,x,43.72,1700",
+        ]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      createEnv(),
+    )
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      created: 0,
+      errors: [
+        {
+          message: "Invalid date",
+          row: 2,
+        },
+        {
+          message: "Invalid weight value",
+          row: 2,
+        },
+        {
+          message: "Invalid body fat percentage",
+          row: 2,
+        },
+      ],
+      ok: false,
+      skipped: 1,
+      updated: 0,
+    })
+  })
+
+  it("upserts imported records by date", async () => {
+    const env = createEnv([
+      createMeasurementRow({
+        bodyFatPercentage: 14.46,
+        date: "2026-06-10",
+        id: "existing",
+        musclePercentage: 43.72,
+        restingMetabolismKcal: 1700,
+        weightKg: 72.9,
+      }),
+    ])
+    const response = await app.request(
+      "/api/import/csv",
+      {
+        body: createCsvFormData([
+          "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
+          "2026-06-10,73.4,15.1,44.2,1710,2026-06-01T10:00:00.000Z,2026-06-03T10:00:00.000Z",
+        ]),
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+        method: "POST",
+      },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      created: 0,
+      errors: [],
+      skipped: 0,
+      updated: 1,
+    })
+
+    const loadResponse = await app.request(
+      "/api/measurements/by-date/2026-06-10",
+      {
+        headers: {
+          cookie: await createSessionCookieHeader(),
+        },
+      },
+      env,
+    )
+
+    expect(await loadResponse.json()).toMatchObject({
+      item: {
+        id: "existing",
+        date: "2026-06-10",
+        weightKg: 73.4,
+        bodyFatPercentage: 15.1,
+        musclePercentage: 44.2,
+        restingMetabolismKcal: 1710,
+        createdAt: "2026-06-01T10:00:00.000Z",
+        updatedAt: "2026-06-03T10:00:00.000Z",
+      },
+    })
+  })
+
   it("deletes a measurement by id", async () => {
     const env = createEnv([
       createMeasurementRow({
@@ -373,6 +736,19 @@ async function createSessionCookieHeader(): Promise<string> {
   )
 
   return `${SESSION_COOKIE_NAME}=${sessionCookieValue}`
+}
+
+function createCsvFormData(lines: string[]): FormData {
+  const formData = new FormData()
+
+  formData.append(
+    "file",
+    new File([lines.join("\n")], "measurements.csv", {
+      type: "text/csv",
+    }),
+  )
+
+  return formData
 }
 
 function createMeasurementRow(input: {
@@ -521,6 +897,10 @@ class MeasurementApiD1Statement {
   }
 
   private async updateMeasurement(): Promise<D1Result> {
+    if (this.query.includes("created_at = ?")) {
+      return this.updateImportedMeasurement()
+    }
+
     const [
       weightKg,
       bodyFatPercentage,
@@ -541,6 +921,35 @@ class MeasurementApiD1Statement {
       body_fat_percentage: nullableNumber(bodyFatPercentage),
       muscle_percentage: nullableNumber(musclePercentage),
       resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
+      updated_at: String(updatedAt),
+    })
+
+    return createD1Result(1)
+  }
+
+  private async updateImportedMeasurement(): Promise<D1Result> {
+    const [
+      weightKg,
+      bodyFatPercentage,
+      musclePercentage,
+      restingMetabolismKcal,
+      createdAt,
+      updatedAt,
+      date,
+    ] = this.bindings
+    const row = [...this.rows.values()].find((item) => item.date === date)
+
+    if (!row) {
+      return createD1Result(0)
+    }
+
+    this.rows.set(row.id, {
+      ...row,
+      weight_kg: Number(weightKg),
+      body_fat_percentage: nullableNumber(bodyFatPercentage),
+      muscle_percentage: nullableNumber(musclePercentage),
+      resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
+      created_at: String(createdAt),
       updated_at: String(updatedAt),
     })
 

@@ -26,6 +26,28 @@ Authenticates the single user.
 }
 ```
 
+Returned when at least one row was imported. The `errors` array may still
+contain row-level validation errors for skipped rows.
+
+#### Response 400
+
+Returned when the request is invalid or CSV validation imports no rows.
+
+```json
+{
+  "ok": false,
+  "created": 0,
+  "updated": 0,
+  "skipped": 1,
+  "errors": [
+    {
+      "row": 1,
+      "message": "Invalid CSV headers"
+    }
+  ]
+}
+```
+
 #### Response 401
 
 ```json
@@ -279,6 +301,11 @@ The response must include week date ranges and measurement counts so the UI can 
 }
 ```
 
+`current` always represents the actual current week in the configured user time
+zone. `display` provides the summary values the dashboard cards should render:
+it uses the current week when it has records and falls back to the latest
+recorded week when the current week is still empty.
+
 ## CSV Export
 
 ### GET /api/export/csv
@@ -299,32 +326,7 @@ date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,cre
 - Does not include internal database identifiers.
 - Empty optional values are exported as empty cells.
 
-`current` always represents the actual current week in the configured user time
-zone. `display` provides the summary values the dashboard cards should render:
-it uses the current week when it has records and falls back to the latest
-recorded week when the current week is still empty.
-
-## CSV
-
-### GET /api/export/csv
-
-Exports all measurements as CSV.
-
-#### Response 200
-
-Content type:
-
-```txt
-text/csv
-```
-
-Initial columns:
-
-```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
-```
-
----
+## CSV Import
 
 ### POST /api/import/csv
 
@@ -332,14 +334,31 @@ Imports measurements from CSV.
 
 #### Request
 
-Multipart upload containing a CSV file.
+Multipart upload containing a CSV file in a `file` field.
+
+#### Supported Headers
+
+Full canonical format:
+
+```txt
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
+```
+
+Minimal canonical format:
+
+```txt
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
+```
 
 #### Rules
 
-- Validate headers.
-- Validate each row.
-- Upsert by date.
-- Return import summary.
+- Validates headers exactly against supported canonical formats.
+- Validates each row.
+- Upserts records by `date`.
+- Uses the current import timestamp when `created_at` or `updated_at` are
+  omitted or empty.
+- Returns an import summary.
+- Reports invalid rows without importing those rows.
 
 #### Response 200
 

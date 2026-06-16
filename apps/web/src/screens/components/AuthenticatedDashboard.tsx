@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import {
   getWeeklyDashboard,
@@ -7,8 +7,11 @@ import {
 } from "../../api/dashboard"
 import {
   deleteMeasurement,
+  CsvImportError,
   exportMeasurementsCsv,
+  importMeasurementsCsv,
   listMeasurements,
+  type CsvImportSummary,
   type ListedMeasurement,
 } from "../../api/measurements"
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog"
@@ -25,6 +28,11 @@ import {
   getReliability,
   type DashboardCardModel,
 } from "../../utils/dashboard-summary"
+import {
+  formatImportFailureMessage,
+  formatImportPartialMessage,
+  formatImportSuccessMessage,
+} from "../../utils/csv-import-summary"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
 
 const HISTORY_PAGE_SIZE = 20
@@ -35,6 +43,17 @@ type DashboardState = {
 }
 
 type ExportState = "error" | "idle" | "loading"
+type ImportState =
+  | {
+      message: string
+      status: "error"
+      summary: CsvImportSummary | null
+    }
+  | {
+      message: null
+      status: "idle" | "loading"
+      summary: CsvImportSummary | null
+    }
 
 type MeasurementHistoryState = {
   deletingId: string | null
@@ -371,7 +390,14 @@ export function AuthenticatedDashboard({
     status: "loading",
   })
   const [deletedRefreshKey, setDeletedRefreshKey] = useState(0)
+  const [importRefreshKey, setImportRefreshKey] = useState(0)
   const [exportState, setExportState] = useState<ExportState>("idle")
+  const [importState, setImportState] = useState<ImportState>({
+    message: null,
+    status: "idle",
+    summary: null,
+  })
+  const importFileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     let isCurrentRequest = true
@@ -402,7 +428,7 @@ export function AuthenticatedDashboard({
     return () => {
       isCurrentRequest = false
     }
-  }, [deletedRefreshKey, refreshKey])
+  }, [deletedRefreshKey, importRefreshKey, refreshKey])
 
   const dashboard = state.dashboard
 
@@ -422,6 +448,42 @@ export function AuthenticatedDashboard({
       })
       .catch(() => {
         setExportState("error")
+      })
+  }
+
+  function handleImportCsv(file: File | undefined) {
+    if (!file) {
+      return
+    }
+
+    setImportState({
+      message: null,
+      status: "loading",
+      summary: null,
+    })
+
+    importMeasurementsCsv(file)
+      .then((summary) => {
+        setImportState({
+          message: null,
+          status: "idle",
+          summary,
+        })
+        setImportRefreshKey((currentKey) => currentKey + 1)
+      })
+      .catch((error: unknown) => {
+        const summary = error instanceof CsvImportError ? error.summary : null
+
+        setImportState({
+          message: formatImportFailureMessage(summary),
+          status: "error",
+          summary,
+        })
+      })
+      .finally(() => {
+        if (importFileInputRef.current) {
+          importFileInputRef.current.value = ""
+        }
       })
   }
 
@@ -452,6 +514,23 @@ export function AuthenticatedDashboard({
           >
             {exportState === "loading" ? "Exportando..." : "Exportar CSV"}
           </button>
+          <button
+            className="secondary-action"
+            disabled={importState.status === "loading"}
+            onClick={() => importFileInputRef.current?.click()}
+            type="button"
+          >
+            {importState.status === "loading"
+              ? "Importando..."
+              : "Importar CSV"}
+          </button>
+          <input
+            ref={importFileInputRef}
+            accept=".csv,text/csv"
+            className="visually-hidden"
+            onChange={(event) => handleImportCsv(event.target.files?.[0])}
+            type="file"
+          />
           <button className="secondary-action" onClick={onLogout} type="button">
             Sair
           </button>
@@ -468,6 +547,24 @@ export function AuthenticatedDashboard({
         <p className="dashboard-message" role="alert">
           Não foi possível exportar o CSV.
         </p>
+      ) : null}
+
+      {importState.status === "error" ? (
+        <p className="dashboard-message" role="alert">
+          {importState.message}
+        </p>
+      ) : null}
+
+      {importState.summary && importState.status !== "error" ? (
+        importState.summary.errors.length > 0 ? (
+          <p className="dashboard-message" role="alert">
+            {formatImportPartialMessage(importState.summary)}
+          </p>
+        ) : (
+          <p className="form-success" role="status">
+            {formatImportSuccessMessage(importState.summary)}
+          </p>
+        )
       ) : null}
 
       {state.status === "error" ? (
@@ -493,7 +590,7 @@ export function AuthenticatedDashboard({
           setDeletedRefreshKey((currentKey) => currentKey + 1)
         }
         onEditMeasurement={onOpenMeasurementForm}
-        refreshKey={refreshKey}
+        refreshKey={refreshKey + importRefreshKey}
       />
     </>
   )

@@ -1,5 +1,6 @@
 import type {
   CreateMeasurementInput,
+  ImportedMeasurementInput,
   Measurement,
   UpdateMeasurementByDateInput,
 } from "./types"
@@ -137,6 +138,95 @@ export class MeasurementRepository {
       .first<MeasurementRow>()
 
     return row ? mapMeasurementRow(row) : null
+  }
+
+  async upsertImportedByDate(input: ImportedMeasurementInput): Promise<{
+    measurement: Measurement
+    operation: "created" | "updated"
+  }> {
+    const existingMeasurement = await this.getByDate(input.date)
+
+    if (existingMeasurement) {
+      await this.db
+        .prepare(
+          `
+            UPDATE measurements
+            SET
+              weight_kg = ?,
+              body_fat_percentage = ?,
+              muscle_percentage = ?,
+              resting_metabolism_kcal = ?,
+              created_at = ?,
+              updated_at = ?
+            WHERE date = ?
+          `,
+        )
+        .bind(
+          input.weightKg,
+          input.bodyFatPercentage ?? null,
+          input.musclePercentage ?? null,
+          input.restingMetabolismKcal ?? null,
+          input.createdAt,
+          input.updatedAt,
+          input.date,
+        )
+        .run()
+
+      const measurement = await this.getByDate(input.date)
+
+      if (!measurement) {
+        throw new Error("Imported measurement update failed")
+      }
+
+      return {
+        measurement,
+        operation: "updated",
+      }
+    }
+
+    const measurement: Measurement = {
+      id: this.createId(),
+      date: input.date,
+      weightKg: input.weightKg,
+      bodyFatPercentage: input.bodyFatPercentage ?? null,
+      musclePercentage: input.musclePercentage ?? null,
+      restingMetabolismKcal: input.restingMetabolismKcal ?? null,
+      createdAt: input.createdAt,
+      updatedAt: input.updatedAt,
+    }
+
+    await this.db
+      .prepare(
+        `
+          INSERT INTO measurements (
+            id,
+            date,
+            weight_kg,
+            body_fat_percentage,
+            muscle_percentage,
+            resting_metabolism_kcal,
+            created_at,
+            updated_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .bind(
+        measurement.id,
+        measurement.date,
+        measurement.weightKg,
+        measurement.bodyFatPercentage,
+        measurement.musclePercentage,
+        measurement.restingMetabolismKcal,
+        measurement.createdAt,
+        measurement.updatedAt,
+      )
+      .run()
+
+    return {
+      measurement,
+      operation: "created",
+    }
   }
 
   async list(options: ListMeasurementsOptions = {}): Promise<Measurement[]> {
