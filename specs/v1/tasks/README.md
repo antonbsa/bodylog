@@ -31,8 +31,8 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-022 — Implement CSV Import](./t-022-implement-csv-import.md)
 - [T-023 — Configure Deployment Automation](./t-023-configure-deployment-automation.md)
 - [T-024 — Validate V1 End-to-End](./t-024-validate-v1-end-to-end.md)
+- [T-025 — Validate Production State](./t-025-validate-production-state.md)
 
 ## Remaining
 
-- [T-025 — Validate Production State](./t-025-validate-production-state.md)
 - [T-027 — Apply Radix UI to Existing Components](./t-027-apply-radix-ui-to-existing-components.md)
