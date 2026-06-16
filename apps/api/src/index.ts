@@ -44,7 +44,7 @@ function isProtectedApiRoute(path: string): boolean {
 
 function getAllowedCorsOrigin(
   requestOrigin: string | undefined,
-  env: Pick<AppBindings, "FRONTEND_ORIGIN">,
+  env: Pick<AppBindings, "PRODUCTION_FRONTEND_ORIGIN">,
 ): string | null {
   if (!requestOrigin) {
     return null
@@ -78,7 +78,7 @@ function isSameOrChildHostname(hostname: string, parentHostname: string) {
 
 function isSameSiteFrontendOrigin(
   requestUrl: URL,
-  env: Pick<AppBindings, "FRONTEND_ORIGIN">,
+  env: Pick<AppBindings, "PRODUCTION_FRONTEND_ORIGIN">,
 ): boolean {
   const frontendOrigin = getFrontendOrigin(env)
 
@@ -101,7 +101,7 @@ function isSameSiteFrontendOrigin(
 
 function getSessionCookieSettings(
   requestUrl: URL,
-  env: Pick<AppBindings, "FRONTEND_ORIGIN">,
+  env: Pick<AppBindings, "PRODUCTION_FRONTEND_ORIGIN">,
 ): {
   sameSite: "Lax" | "None"
   secure: boolean

@@ -110,7 +110,7 @@ describe("auth login", () => {
       },
       {
         ...env,
-        FRONTEND_ORIGIN: "https://bodylog.antonbsa.dev",
+        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.antonbsa.dev",
       },
     )
 
@@ -137,7 +137,7 @@ describe("auth login", () => {
       },
       {
         ...env,
-        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
       },
     )
 
@@ -304,7 +304,7 @@ describe("api cors", () => {
       },
       {
         ...env,
-        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
       },
     )
 
@@ -327,7 +327,7 @@ describe("api cors", () => {
       },
       {
         ...env,
-        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
       },
     )
 
@@ -349,7 +349,7 @@ describe("api cors", () => {
       },
       {
         ...env,
-        FRONTEND_ORIGIN: "https://bodylog.pages.dev",
+        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
       },
     )
 

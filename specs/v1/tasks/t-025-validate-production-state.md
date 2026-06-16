@@ -57,7 +57,7 @@ Fix:
 - Production should use same-site custom domains:
   - Frontend: `https://bodylog.antonbsa.dev`
   - API: `https://api.bodylog.antonbsa.dev`
-- The API now sets production session cookies as `Secure` + `SameSite=Lax` when the request URL and configured `FRONTEND_ORIGIN` are same-site under that custom-domain layout.
+- The API now sets production session cookies as `Secure` + `SameSite=Lax` when the request URL and configured `PRODUCTION_FRONTEND_ORIGIN` are same-site under that custom-domain layout.
 - The API keeps the existing `Secure` + `SameSite=None` fallback for separate Cloudflare default domains.
 - The login form now includes a stable `username` autocomplete field and password input metadata so iOS Passwords can associate the saved credential with the app.
 

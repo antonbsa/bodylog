@@ -72,7 +72,7 @@ jobs:
           PRODUCTION_FRONTEND_ORIGIN: ${{ vars.PRODUCTION_FRONTEND_ORIGIN }}
         run: |
           npm run deploy:api -- \
-            --var "FRONTEND_ORIGIN:$PRODUCTION_FRONTEND_ORIGIN" \
+            --var "PRODUCTION_FRONTEND_ORIGIN:$PRODUCTION_FRONTEND_ORIGIN" \
             --keep-vars
 
       - name: Deploy frontend Pages project
