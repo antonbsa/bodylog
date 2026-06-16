@@ -22,6 +22,7 @@ export default [
       "playwright-report/**",
       "test-results/**",
       ".wrangler/**",
+      "apps/api/.wrangler/**",
     ],
   },
   ...compat.extends("@rocketseat/eslint-config/react"),
