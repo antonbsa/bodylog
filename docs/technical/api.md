@@ -284,27 +284,27 @@ zone. `display` provides the summary values the dashboard cards should render:
 it uses the current week when it has records and falls back to the latest
 recorded week when the current week is still empty.
 
-## CSV
+## CSV Export
 
 ### GET /api/export/csv
 
-Exports all measurements as CSV.
+Downloads all measurements as CSV.
 
 #### Response 200
 
-Content type:
-
-```txt
-text/csv
+```csv
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
+2026-06-10,72.9,14.46,43.72,1700,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z
 ```
 
-Initial columns:
+#### Rules
 
-```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
-```
+- Includes all measurements ordered by date descending.
+- Includes raw measurement fields and audit timestamps.
+- Does not include internal database identifiers.
+- Empty optional values are exported as empty cells.
 
----
+## CSV Import
 
 ### POST /api/import/csv
 
@@ -312,16 +312,36 @@ Imports measurements from CSV.
 
 #### Request
 
-Multipart upload containing a CSV file.
+Multipart upload containing a CSV file in a `file` field.
+
+#### Supported Headers
+
+Full canonical format:
+
+```txt
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
+```
+
+Minimal canonical format:
+
+```txt
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
+```
 
 #### Rules
 
-- Validate headers.
-- Validate each row.
-- Upsert by date.
-- Return import summary.
+- Validates headers exactly against supported canonical formats.
+- Validates each row.
+- Upserts records by `date`.
+- Uses the current import timestamp when `created_at` or `updated_at` are
+  omitted or empty.
+- Returns an import summary.
+- Reports invalid rows without importing those rows.
 
 #### Response 200
+
+Returned when at least one row was imported. The `errors` array may still
+contain row-level validation errors for skipped rows.
 
 ```json
 {
@@ -336,3 +356,30 @@ Multipart upload containing a CSV file.
   ]
 }
 ```
+
+#### Response 400
+
+Returned when the request is invalid or CSV validation imports no rows.
+
+```json
+{
+  "ok": false,
+  "created": 0,
+  "updated": 0,
+  "skipped": 1,
+  "errors": [
+    {
+      "row": 1,
+      "message": "Invalid CSV headers"
+    }
+  ]
+}
+```
+
+#### Numeric Format
+
+- Dot decimals are accepted, for example `71.5`.
+- Decimal-comma values are accepted only when they are valid CSV cells, for
+  example `"71,5"`.
+- Unquoted decimal-comma values are rejected because they break the CSV column
+  structure.

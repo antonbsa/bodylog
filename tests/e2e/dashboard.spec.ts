@@ -118,6 +118,125 @@ test("shows latest recorded metrics when the current week has no measurements", 
   await expect(weightCard).toContainText("IMC médio: 26,22")
 })
 
+test("exports measurements CSV from the dashboard action", async ({ page }) => {
+  const currentWeek = getWeekRange(getTodayDateInputValue())
+  const previousWeek = getPreviousWeekRange(currentWeek.weekStartDate)
+
+  await mockAuthenticatedDashboard(page, {
+    currentWeek,
+    previousWeek,
+  })
+  await page.route("**/api/export/csv", async (route) => {
+    await route.fulfill({
+      body: [
+        "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
+        "2026-06-10,72.9,14.46,43.72,1700,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z",
+      ].join("\n"),
+      contentType: "text/csv",
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+
+  const exportResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/api/export/csv"),
+  )
+
+  await page.getByRole("button", { name: "Exportar CSV" }).click()
+
+  const exportResponse = await exportResponsePromise
+  expect(exportResponse.status()).toBe(200)
+})
+
+test("imports measurements CSV from the dashboard action", async ({ page }) => {
+  const currentWeek = getWeekRange(getTodayDateInputValue())
+  const previousWeek = getPreviousWeekRange(currentWeek.weekStartDate)
+  let importRequestBody: string | null = null
+
+  await mockAuthenticatedDashboard(page, {
+    currentWeek,
+    previousWeek,
+  })
+  await page.route("**/api/import/csv", async (route) => {
+    importRequestBody = route.request().postData()
+
+    await route.fulfill({
+      body: JSON.stringify({
+        created: 1,
+        errors: [],
+        skipped: 0,
+        updated: 0,
+      }),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+
+  await page.locator('input[type="file"]').setInputFiles({
+    buffer: Buffer.from(
+      [
+        "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal",
+        "2026-06-10,72.9,14.46,43.72,1700",
+      ].join("\n"),
+    ),
+    mimeType: "text/csv",
+    name: "measurements.csv",
+  })
+
+  await expect(
+    page.getByText(
+      "Importação concluída: 1 criados, 0 atualizados, 0 ignorados.",
+    ),
+  ).toBeVisible()
+  expect(importRequestBody).toContain("measurements.csv")
+})
+
+test("shows a descriptive CSV import failure", async ({ page }) => {
+  const currentWeek = getWeekRange(getTodayDateInputValue())
+  const previousWeek = getPreviousWeekRange(currentWeek.weekStartDate)
+
+  await mockAuthenticatedDashboard(page, {
+    currentWeek,
+    previousWeek,
+  })
+  await page.route("**/api/import/csv", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        created: 0,
+        errors: [
+          {
+            message: "Invalid CSV headers",
+            row: 1,
+          },
+        ],
+        ok: false,
+        skipped: 1,
+        updated: 0,
+      }),
+      contentType: "application/json",
+      status: 400,
+    })
+  })
+
+  await page.goto("/")
+
+  await page.locator('input[type="file"]').setInputFiles({
+    buffer: Buffer.from(["date,peso", "2026-06-10,72.9"].join("\n")),
+    mimeType: "text/csv",
+    name: "measurements.csv",
+  })
+
+  await expect(
+    page.getByRole("alert").filter({
+      hasText:
+        "Importação falhou: nenhum registro foi importado. 1 ignorados, 1 erros. Primeiro erro: linha 1, Invalid CSV headers.",
+    }),
+  ).toBeVisible()
+})
+
 type WeekRange = {
   weekEndDate: string
   weekStartDate: string

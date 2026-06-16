@@ -8,16 +8,16 @@ V1 allows at most one measurement per date.
 
 ## Fields
 
-| Field | Type | Required | Description |
-|---|---|---:|---|
-| `id` | string | yes | Unique measurement identifier. |
-| `date` | string | yes | Measurement date in `YYYY-MM-DD` format. Must be unique. |
-| `weightKg` | number | yes | Body weight in kilograms. |
-| `bodyFatPercentage` | number/null | no | Body fat percentage from the scale. |
-| `musclePercentage` | number/null | no | Muscle percentage from the scale. |
-| `restingMetabolismKcal` | number/null | no | Resting metabolism from the scale. |
-| `createdAt` | string | yes | Creation timestamp. |
-| `updatedAt` | string | yes | Last update timestamp. |
+| Field                   | Type        | Required | Description                                              |
+| ----------------------- | ----------- | -------: | -------------------------------------------------------- |
+| `id`                    | string      |      yes | Unique measurement identifier.                           |
+| `date`                  | string      |      yes | Measurement date in `YYYY-MM-DD` format. Must be unique. |
+| `weightKg`              | number      |      yes | Body weight in kilograms.                                |
+| `bodyFatPercentage`     | number/null |       no | Body fat percentage from the scale.                      |
+| `musclePercentage`      | number/null |       no | Muscle percentage from the scale.                        |
+| `restingMetabolismKcal` | number/null |       no | Resting metabolism from the scale.                       |
+| `createdAt`             | string      |      yes | Creation timestamp.                                      |
+| `updatedAt`             | string      |      yes | Last update timestamp.                                   |
 
 ## Derived Values
 
@@ -134,12 +134,23 @@ CREATE TABLE measurements (
 CREATE INDEX idx_measurements_date ON measurements(date);
 ```
 
-## CSV Import
+## CSV Format
 
-Initial expected headers:
+Canonical V1 CSV headers:
 
 ```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
 ```
+
+CSV export uses this full canonical format and omits the internal `id` field.
+CSV import should upsert records by `date`; `created_at` and `updated_at` may be
+used as backup metadata when present but should not be required for spreadsheet
+import compatibility.
+
+CSV import validates `date` as a real `YYYY-MM-DD` calendar date, not only as a
+string shape. Impossible dates such as `2026-02-30` are rejected.
+
+Numeric values may use dot decimals. Decimal-comma values are accepted only when
+quoted as CSV cells, such as `"71,5"`.
 
 Alternative headers from the current spreadsheet can be mapped later if needed.

@@ -28,6 +28,22 @@ export type SaveMeasurementInput = {
   weightKg: number
 }
 
+export type CsvImportSummary = {
+  created: number
+  errors: Array<{
+    message: string
+    row: number
+  }>
+  skipped: number
+  updated: number
+}
+
+export class CsvImportError extends Error {
+  constructor(readonly summary: CsvImportSummary | null) {
+    super("Measurement CSV import failed")
+  }
+}
+
 export async function listMeasurements(options: {
   limit: number
   offset?: number
@@ -114,4 +130,46 @@ export async function deleteMeasurement(id: string): Promise<void> {
   if (!response.ok) {
     throw new Error("Measurement delete failed")
   }
+}
+
+export async function exportMeasurementsCsv(): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/api/export/csv`, {
+    credentials: "include",
+    method: "GET",
+  })
+
+  if (!response.ok) {
+    throw new Error("Measurement CSV export failed")
+  }
+
+  return response.blob()
+}
+
+export async function importMeasurementsCsv(
+  file: File,
+): Promise<CsvImportSummary> {
+  const formData = new FormData()
+
+  formData.append("file", file)
+
+  const response = await fetch(`${API_BASE_URL}/api/import/csv`, {
+    body: formData,
+    credentials: "include",
+    method: "POST",
+  })
+  const payload = (await response.json().catch(() => null)) as
+    | (CsvImportSummary & {
+        ok?: false
+      })
+    | null
+
+  if (!response.ok) {
+    throw new CsvImportError(payload)
+  }
+
+  if (!payload) {
+    throw new CsvImportError(null)
+  }
+
+  return payload
 }

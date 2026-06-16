@@ -18,6 +18,8 @@ import {
   getCurrentDateOnly,
   getWeeklyDashboard,
 } from "./dashboard/weekly-dashboard-service"
+import { importMeasurementsCsv } from "./measurements/csv-import"
+import { serializeMeasurementsCsv } from "./measurements/csv-export"
 import { calculateDerivedMeasurementValues } from "./measurements/derived-calculations"
 import { MeasurementRepository } from "./measurements/measurement-repository"
 
@@ -86,6 +88,50 @@ app.get("/api/dashboard/weekly", async (c) => {
   })
 
   return c.json(dashboard)
+})
+
+app.get("/api/export/csv", async (c) => {
+  const repository = new MeasurementRepository(c.env.DB)
+  const csv = serializeMeasurementsCsv(await repository.list())
+
+  c.header(
+    "content-disposition",
+    'attachment; filename="bodylog-measurements.csv"',
+  )
+  c.header("content-type", "text/csv; charset=utf-8")
+
+  return c.body(csv)
+})
+
+app.post("/api/import/csv", async (c) => {
+  const body = await c.req.parseBody().catch(() => null)
+  const file = body?.file
+
+  if (!(file instanceof File)) {
+    return c.json(
+      {
+        error: "CSV_FILE_REQUIRED",
+        ok: false,
+      },
+      400,
+    )
+  }
+
+  const repository = new MeasurementRepository(c.env.DB)
+  const summary = await importMeasurementsCsv(await file.text(), repository)
+  const importedCount = summary.created + summary.updated
+
+  if (importedCount === 0 && summary.errors.length > 0) {
+    return c.json(
+      {
+        ...summary,
+        ok: false,
+      },
+      400,
+    )
+  }
+
+  return c.json(summary)
 })
 
 app.get("/api/measurements", async (c) => {

@@ -17,6 +17,11 @@ export type CreateMeasurementInput = {
   restingMetabolismKcal?: number | null
 }
 
+export type ImportedMeasurementInput = CreateMeasurementInput & {
+  createdAt: string
+  updatedAt: string
+}
+
 export type UpdateMeasurementByDateInput = {
   weightKg: number
   bodyFatPercentage?: number | null
