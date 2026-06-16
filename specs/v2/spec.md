@@ -1,0 +1,43 @@
+# BodyLog V2 Specification
+
+## Purpose
+
+BodyLog V2 polishes the V1 foundation: cleaner internal architecture, improved
+UI/UX, and extra non-blocking MVP features that were deliberately deferred from
+V1.
+
+## Scope
+
+V2 includes:
+
+- backend domain model refactor to encapsulate business rules in domain objects;
+- UI/UX polish and Radix UI adoption across all components;
+- non-blocking MVP features deferred from V1.
+
+V2 excludes:
+
+- multi-user support;
+- complex authentication;
+- Google Sheets integration;
+- offline-first behavior;
+- health recommendations or automatic interpretation;
+- serverless Postgres migration (planned for V3).
+
+## Source Documents
+
+- Product overview: `docs/product/overview.md`
+- Requirements: `docs/product/requirements.md`
+- Scope: `docs/product/scope.md`
+- Architecture: `docs/technical/architecture.md`
+- API contract: `docs/technical/api.md`
+- Database model: `docs/technical/database.md`
+- Technical decisions: `docs/technical/decisions/`
+- Future ideas: `docs/product/future-ideas.md`
+
+## Success Criteria
+
+- Backend business logic is encapsulated in domain objects, not free functions.
+- UI components use Radix UI primitives consistently across the app.
+- All V1 acceptance criteria remain satisfied after V2 changes.
+- New non-blocking MVP features are delivered without expanding scope into
+  multi-user or Postgres migration territory.
