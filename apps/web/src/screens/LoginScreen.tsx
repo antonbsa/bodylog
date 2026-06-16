@@ -52,19 +52,17 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           </label>
           <input
             autoComplete="username"
-            className="visually-hidden"
+            className="password-manager-username"
+            defaultValue="bodylog"
             id="username"
             name="username"
-            readOnly
-            tabIndex={-1}
             type="text"
-            value="bodylog"
           />
 
           <label htmlFor="password">Senha</label>
           <input
             autoCapitalize="none"
-            autoComplete="current-password"
+            autoComplete="password"
             autoCorrect="off"
             disabled={isSubmitting}
             id="password"

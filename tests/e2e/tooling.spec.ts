@@ -158,11 +158,12 @@ test("login form exposes password manager metadata", async ({ page }) => {
   const passwordInput = page.getByLabel("Senha")
 
   await expect(usernameInput).toHaveAttribute("autocomplete", "username")
+  await expect(usernameInput).toHaveAttribute("type", "text")
   await expect(usernameInput).toHaveValue("bodylog")
-  await expect(passwordInput).toHaveAttribute(
-    "autocomplete",
-    "current-password",
-  )
+  await expect(usernameInput).toHaveClass("password-manager-username")
+  await expect(passwordInput).toHaveAttribute("id", "password")
+  await expect(passwordInput).toHaveAttribute("name", "password")
+  await expect(passwordInput).toHaveAttribute("autocomplete", "password")
   await expect(passwordInput).toHaveAttribute("autocapitalize", "none")
   await expect(passwordInput).toHaveAttribute("autocorrect", "off")
 })
