@@ -72,6 +72,11 @@ Validation notes:
 - Follow-up validation corrected import failure semantics: imports that validate
   zero rows now return `400`, and the dashboard displays a descriptive alert
   instead of a green success message.
+- Follow-up review fixed CSV import date validation so impossible calendar dates
+  are rejected before upsert.
+- Local CSV testing clarified numeric format support: import accepts quoted
+  decimal-comma numeric values, but rejects unquoted decimal-comma rows because
+  they break CSV column counts.
 - The project still has known unrelated default parallel E2E flakiness from
   earlier validation; this task validated E2E with `--workers=1`.
 
@@ -87,6 +92,10 @@ Validation notes:
   states.
 - Fully failed imports render as an alert. Partial imports with row-level errors
   also render as an alert, while clean imports use the success message.
+- Import validates dates as real calendar dates, not only `YYYY-MM-DD` string
+  shapes.
+- Import accepts quoted decimal-comma numeric values and rejects unquoted
+  decimal-comma rows.
 - Kept spreadsheet-specific alternate header mapping out of V1 until a real CSV
   sample is available.
 

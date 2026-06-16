@@ -26,28 +26,6 @@ Authenticates the single user.
 }
 ```
 
-Returned when at least one row was imported. The `errors` array may still
-contain row-level validation errors for skipped rows.
-
-#### Response 400
-
-Returned when the request is invalid or CSV validation imports no rows.
-
-```json
-{
-  "ok": false,
-  "created": 0,
-  "updated": 0,
-  "skipped": 1,
-  "errors": [
-    {
-      "row": 1,
-      "message": "Invalid CSV headers"
-    }
-  ]
-}
-```
-
 #### Response 401
 
 ```json
@@ -362,6 +340,9 @@ date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
 
 #### Response 200
 
+Returned when at least one row was imported. The `errors` array may still
+contain row-level validation errors for skipped rows.
+
 ```json
 {
   "created": 10,
@@ -375,3 +356,30 @@ date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
   ]
 }
 ```
+
+#### Response 400
+
+Returned when the request is invalid or CSV validation imports no rows.
+
+```json
+{
+  "ok": false,
+  "created": 0,
+  "updated": 0,
+  "skipped": 1,
+  "errors": [
+    {
+      "row": 1,
+      "message": "Invalid CSV headers"
+    }
+  ]
+}
+```
+
+#### Numeric Format
+
+- Dot decimals are accepted, for example `71.5`.
+- Decimal-comma values are accepted only when they are valid CSV cells, for
+  example `"71,5"`.
+- Unquoted decimal-comma values are rejected because they break the CSV column
+  structure.
