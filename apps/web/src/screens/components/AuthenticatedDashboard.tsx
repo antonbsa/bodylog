@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react"
+import { Badge, Callout, Card } from "@radix-ui/themes"
 
+import { Button } from "../../components/Button"
 import {
   getWeeklyDashboard,
   type MetricDirection,
@@ -27,6 +29,7 @@ import {
   getOutcomeClass,
   getReliability,
   type DashboardCardModel,
+  type OutcomeClass,
 } from "../../utils/dashboard-summary"
 import {
   formatImportFailureMessage,
@@ -138,6 +141,13 @@ function WeeklyDashboardSummary({ dashboard }: { dashboard: WeeklyDashboard }) {
   )
 }
 
+const OUTCOME_BADGE_COLOR: Record<OutcomeClass, "gray" | "green" | "red"> = {
+  "metric-card-negative": "red",
+  "metric-card-positive": "green",
+  "metric-card-stable": "gray",
+  "metric-card-unavailable": "gray",
+}
+
 function SummaryCard({ metric }: { metric: DashboardCardModel }) {
   const outcomeClass = getOutcomeClass(
     metric.directionMetric,
@@ -145,10 +155,13 @@ function SummaryCard({ metric }: { metric: DashboardCardModel }) {
   )
 
   return (
-    <article className={`metric-card ${outcomeClass}`}>
+    <Card className={`metric-card ${outcomeClass}`}>
       <div className="metric-card-header">
         <p>{metric.label}</p>
-        <DirectionBadge direction={metric.variation?.direction ?? null} />
+        <DirectionBadge
+          direction={metric.variation?.direction ?? null}
+          outcomeClass={outcomeClass}
+        />
       </div>
 
       <strong>{formatPrimaryValue(metric.value, metric.type)}</strong>
@@ -167,19 +180,29 @@ function SummaryCard({ metric }: { metric: DashboardCardModel }) {
           )}
         </span>
       </div>
-    </article>
+    </Card>
   )
 }
 
-function DirectionBadge({ direction }: { direction: MetricDirection | null }) {
-  return <span className="direction-badge">{getDirectionLabel(direction)}</span>
+function DirectionBadge({
+  direction,
+  outcomeClass,
+}: {
+  direction: MetricDirection | null
+  outcomeClass: OutcomeClass
+}) {
+  return (
+    <Badge color={OUTCOME_BADGE_COLOR[outcomeClass]} radius="large">
+      {getDirectionLabel(direction)}
+    </Badge>
+  )
 }
 
 function PlaceholderSummary() {
   return (
     <section className="summary-grid" aria-label="Resumo semanal">
       {["Peso médio", "Gordura corporal", "Massa muscular"].map((label) => (
-        <article className="metric-card" key={label}>
+        <Card className="metric-card" key={label}>
           <div className="metric-card-header">
             <p>{label}</p>
           </div>
@@ -190,7 +213,7 @@ function PlaceholderSummary() {
             <strong>-</strong>
             <span>-</span>
           </div>
-        </article>
+        </Card>
       ))}
     </section>
   )
@@ -316,28 +339,24 @@ function MeasurementHistory({
   return (
     <section className="history-section" aria-label="Histórico de medidas">
       {state.status === "error" ? (
-        <p className="dashboard-message" role="alert">
-          Não foi possível carregar o histórico.
-        </p>
+        <Callout.Root color="red" role="alert">
+          <Callout.Text>Não foi possível carregar o histórico.</Callout.Text>
+        </Callout.Root>
       ) : null}
 
       {isInitialLoading ? (
-        <p className="dashboard-message" role="status">
-          Carregando histórico...
-        </p>
+        <Callout.Root role="status">
+          <Callout.Text>Carregando histórico...</Callout.Text>
+        </Callout.Root>
       ) : null}
 
       {state.message ? (
-        <p
-          className={
-            state.message.startsWith("Não foi possível")
-              ? "dashboard-message"
-              : "form-success"
-          }
+        <Callout.Root
+          color={state.message.startsWith("Não foi possível") ? "red" : "green"}
           role="status"
         >
-          {state.message}
-        </p>
+          <Callout.Text>{state.message}</Callout.Text>
+        </Callout.Root>
       ) : null}
 
       {isEmpty ? <p className="history-empty">Nenhum registro ainda.</p> : null}
@@ -352,16 +371,17 @@ function MeasurementHistory({
       ) : null}
 
       {state.hasMore ? (
-        <button
-          className="secondary-action load-more-action"
+        <Button
           disabled={state.status === "loading"}
+          fullWidth
           onClick={() =>
             setVisibleLimit((currentLimit) => currentLimit + HISTORY_PAGE_SIZE)
           }
           type="button"
+          variant="secondary"
         >
           {state.status === "loading" ? "Carregando..." : "Carregar mais"}
-        </button>
+        </Button>
       ) : null}
 
       <DeleteConfirmationDialog
@@ -499,31 +519,27 @@ export function AuthenticatedDashboard({
         </section>
 
         <div className="header-actions">
-          <button
-            className="primary-action"
-            onClick={() => onOpenMeasurementForm()}
-            type="button"
-          >
+          <Button onClick={() => onOpenMeasurementForm()} type="button">
             Registrar medida
-          </button>
-          <button
-            className="secondary-action"
+          </Button>
+          <Button
             disabled={exportState === "loading"}
             onClick={handleExportCsv}
             type="button"
+            variant="secondary"
           >
             {exportState === "loading" ? "Exportando..." : "Exportar CSV"}
-          </button>
-          <button
-            className="secondary-action"
+          </Button>
+          <Button
             disabled={importState.status === "loading"}
             onClick={() => importFileInputRef.current?.click()}
             type="button"
+            variant="secondary"
           >
             {importState.status === "loading"
               ? "Importando..."
               : "Importar CSV"}
-          </button>
+          </Button>
           <input
             ref={importFileInputRef}
             accept=".csv,text/csv"
@@ -531,52 +547,58 @@ export function AuthenticatedDashboard({
             onChange={(event) => handleImportCsv(event.target.files?.[0])}
             type="file"
           />
-          <button className="secondary-action" onClick={onLogout} type="button">
+          <Button onClick={onLogout} type="button" variant="secondary">
             Sair
-          </button>
+          </Button>
         </div>
       </header>
 
       {savedMessage ? (
-        <p className="form-success" role="status">
-          {savedMessage}
-        </p>
+        <Callout.Root color="green" role="status">
+          <Callout.Text>{savedMessage}</Callout.Text>
+        </Callout.Root>
       ) : null}
 
       {exportState === "error" ? (
-        <p className="dashboard-message" role="alert">
-          Não foi possível exportar o CSV.
-        </p>
+        <Callout.Root color="red" role="alert">
+          <Callout.Text>Não foi possível exportar o CSV.</Callout.Text>
+        </Callout.Root>
       ) : null}
 
       {importState.status === "error" ? (
-        <p className="dashboard-message" role="alert">
-          {importState.message}
-        </p>
+        <Callout.Root color="red" role="alert">
+          <Callout.Text>{importState.message}</Callout.Text>
+        </Callout.Root>
       ) : null}
 
       {importState.summary && importState.status !== "error" ? (
         importState.summary.errors.length > 0 ? (
-          <p className="dashboard-message" role="alert">
-            {formatImportPartialMessage(importState.summary)}
-          </p>
+          <Callout.Root color="red" role="alert">
+            <Callout.Text>
+              {formatImportPartialMessage(importState.summary)}
+            </Callout.Text>
+          </Callout.Root>
         ) : (
-          <p className="form-success" role="status">
-            {formatImportSuccessMessage(importState.summary)}
-          </p>
+          <Callout.Root color="green" role="status">
+            <Callout.Text>
+              {formatImportSuccessMessage(importState.summary)}
+            </Callout.Text>
+          </Callout.Root>
         )
       ) : null}
 
       {state.status === "error" ? (
-        <section className="dashboard-message" role="alert">
-          Não foi possível carregar o resumo semanal.
-        </section>
+        <Callout.Root color="red" role="alert">
+          <Callout.Text>
+            Não foi possível carregar o resumo semanal.
+          </Callout.Text>
+        </Callout.Root>
       ) : null}
 
       {state.status === "loading" && !dashboard ? (
-        <section className="dashboard-message" role="status">
-          Carregando resumo semanal...
-        </section>
+        <Callout.Root role="status">
+          <Callout.Text>Carregando resumo semanal...</Callout.Text>
+        </Callout.Root>
       ) : null}
 
       {dashboard ? (

@@ -1,5 +1,6 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
+import { Theme } from "@radix-ui/themes"
 
 import { App } from "./App"
 import "@radix-ui/themes/styles.css"
@@ -13,6 +14,14 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <Theme
+      accentColor="gray"
+      appearance="dark"
+      grayColor="slate"
+      hasBackground={false}
+      radius="small"
+    >
+      <App />
+    </Theme>
   </StrictMode>,
 )

@@ -100,10 +100,16 @@ export function getReliability(measurementCount: number): {
   }
 }
 
+export type OutcomeClass =
+  | "metric-card-negative"
+  | "metric-card-positive"
+  | "metric-card-stable"
+  | "metric-card-unavailable"
+
 export function getOutcomeClass(
   metric: DashboardCardModel["directionMetric"],
   direction: MetricDirection | null,
-): string {
+): OutcomeClass {
   if (direction === null) {
     return "metric-card-unavailable"
   }

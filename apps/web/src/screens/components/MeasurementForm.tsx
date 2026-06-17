@@ -6,7 +6,9 @@ import {
   type SubmitEvent,
   type SetStateAction,
 } from "react"
+import { Badge, Dialog, Flex, TextField } from "@radix-ui/themes"
 
+import { Button } from "../../components/Button"
 import {
   getMeasurementByDate,
   saveMeasurementByDate,
@@ -150,36 +152,36 @@ export function MeasurementForm({
   }
 
   const modeLabel = existingMeasurement ? "Editando" : "Criando"
-  const modeClassName = existingMeasurement
-    ? "mode-badge mode-badge-editing"
-    : "mode-badge mode-badge-creating"
+  const modeColor = existingMeasurement ? "amber" : "green"
 
   return (
-    <div className="modal-backdrop">
-      <section
-        aria-labelledby="measurement-form-title"
-        aria-modal="true"
-        className="measurement-modal"
-        role="dialog"
-      >
-        <header className="modal-header">
-          <div>
-            <h2 id="measurement-form-title">Medida corporal</h2>
-          </div>
-          <span className={modeClassName}>{modeLabel}</span>
-          <span
-            aria-live="polite"
-            className="modal-loading-status"
-            role={isLoading ? "status" : undefined}
-          >
-            {isLoading ? "Carregando dados" : ""}
-          </span>
-        </header>
+    <Dialog.Root
+      onOpenChange={(open) => {
+        if (!open) {
+          onClose()
+        }
+      }}
+      open
+    >
+      <Dialog.Content maxWidth="520px">
+        <Flex align="start" gap="4" justify="between" mb="4">
+          <Dialog.Title mb="0">Medida corporal</Dialog.Title>
+          <Badge color={modeColor} variant="outline" radius="full">
+            {modeLabel}
+          </Badge>
+        </Flex>
+        <span
+          aria-live="polite"
+          className="modal-loading-status"
+          role={isLoading ? "status" : undefined}
+        >
+          {isLoading ? "Carregando dados" : ""}
+        </span>
 
         <form className="measurement-form" onSubmit={handleSubmit}>
           <label>
             Data
-            <input
+            <TextField.Root
               autoComplete="off"
               disabled={isSubmitting}
               inputMode="numeric"
@@ -196,7 +198,7 @@ export function MeasurementForm({
 
           <label>
             Peso (kg)
-            <input
+            <TextField.Root
               autoComplete="off"
               disabled={isLoading || isSubmitting}
               inputMode="decimal"
@@ -210,7 +212,7 @@ export function MeasurementForm({
 
           <label>
             Gordura corporal (%)
-            <input
+            <TextField.Root
               autoComplete="off"
               disabled={isLoading || isSubmitting}
               inputMode="decimal"
@@ -223,7 +225,7 @@ export function MeasurementForm({
 
           <label>
             Músculo (%)
-            <input
+            <TextField.Root
               autoComplete="off"
               disabled={isLoading || isSubmitting}
               inputMode="decimal"
@@ -236,7 +238,7 @@ export function MeasurementForm({
 
           <label>
             Metabolismo de repouso (kcal)
-            <input
+            <TextField.Root
               autoComplete="off"
               disabled={isLoading || isSubmitting}
               inputMode="numeric"
@@ -257,26 +259,22 @@ export function MeasurementForm({
             </p>
           ) : null}
 
-          <div className="modal-actions">
-            <button
-              className="secondary-action"
+          <Flex className="modal-actions" gap="3">
+            <Button
               disabled={isSubmitting}
               onClick={onClose}
               type="button"
+              variant="secondary"
             >
               Cancelar
-            </button>
-            <button
-              className="primary-action"
-              disabled={isLoading || isSubmitting}
-              type="submit"
-            >
+            </Button>
+            <Button disabled={isLoading || isSubmitting} type="submit">
               {isSubmitting ? "Salvando..." : "Salvar medida"}
-            </button>
-          </div>
+            </Button>
+          </Flex>
         </form>
-      </section>
-    </div>
+      </Dialog.Content>
+    </Dialog.Root>
   )
 }
 

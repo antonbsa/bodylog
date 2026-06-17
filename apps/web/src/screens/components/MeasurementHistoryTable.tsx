@@ -1,5 +1,6 @@
-import { ScrollArea, Table, Theme } from "@radix-ui/themes"
+import { ScrollArea, Table } from "@radix-ui/themes"
 
+import { Button } from "../../components/Button"
 import type { ListedMeasurement } from "../../api/measurements"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
 import {
@@ -65,23 +66,25 @@ function MeasurementHistoryRow({
       </Table.Cell>
       <Table.Cell>
         <div className="history-actions">
-          <button
-            className="secondary-action compact-action"
+          <Button
             disabled={isDeleting}
             onClick={() => onEditMeasurement(measurement.date)}
+            size="compact"
             type="button"
+            variant="secondary"
           >
             Editar
-          </button>
-          <button
+          </Button>
+          <Button
             aria-label={`Excluir medida de ${displayDate}`}
-            className="danger-action compact-action"
             disabled={isDeleting}
             onClick={() => onDeleteMeasurement(measurement)}
+            size="compact"
             type="button"
+            variant="danger"
           >
             {isDeleting ? "Excluindo..." : "Excluir"}
-          </button>
+          </Button>
         </div>
       </Table.Cell>
     </Table.Row>
@@ -95,58 +98,46 @@ export function MeasurementHistoryTable({
   onEditMeasurement,
 }: MeasurementHistoryTableProps) {
   return (
-    <Theme
-      accentColor="gray"
-      appearance="dark"
-      asChild
-      grayColor="slate"
-      hasBackground={false}
-      radius="small"
+    <ScrollArea
+      className="history-table-scroll"
+      scrollbars="horizontal"
+      size="2"
+      type="always"
     >
-      <ScrollArea
-        className="history-table-scroll"
-        scrollbars="horizontal"
-        size="2"
-        type="always"
-      >
-        <div className="history-table-content">
-          <table className="history-table">
-            <caption className="visually-hidden">Histórico de medidas</caption>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Data</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Peso</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>IMC</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>BF (%)</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>BF (kg)</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Músculo (%)</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Músculo (kg)</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>RM</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Ações</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {measurements.map((measurement) => (
-                <MeasurementHistoryRow
-                  deletingMeasurementId={deletingMeasurementId}
-                  key={measurement.id}
-                  measurement={measurement}
-                  onDeleteMeasurement={onDeleteMeasurement}
-                  onEditMeasurement={onEditMeasurement}
-                />
-              ))}
-            </Table.Body>
-            <tfoot aria-hidden="true">
-              <Table.Row>
-                <Table.Cell
-                  className="history-table-scroll-spacer"
-                  colSpan={9}
-                />
-              </Table.Row>
-            </tfoot>
-          </table>
-        </div>
-      </ScrollArea>
-    </Theme>
+      <div className="history-table-content">
+        <table className="history-table">
+          <caption className="visually-hidden">Histórico de medidas</caption>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Data</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Peso</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>IMC</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>BF (%)</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>BF (kg)</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Músculo (%)</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Músculo (kg)</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>RM</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Ações</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {measurements.map((measurement) => (
+              <MeasurementHistoryRow
+                deletingMeasurementId={deletingMeasurementId}
+                key={measurement.id}
+                measurement={measurement}
+                onDeleteMeasurement={onDeleteMeasurement}
+                onEditMeasurement={onEditMeasurement}
+              />
+            ))}
+          </Table.Body>
+          <tfoot aria-hidden="true">
+            <Table.Row>
+              <Table.Cell className="history-table-scroll-spacer" colSpan={9} />
+            </Table.Row>
+          </tfoot>
+        </table>
+      </div>
+    </ScrollArea>
   )
 }

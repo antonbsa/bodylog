@@ -2,7 +2,7 @@
 
 ## Status
 
-To Do
+Done
 
 ## Description
 
@@ -125,27 +125,52 @@ apps/web/src/
 
 ## Validation
 
-Run the relevant automated checks for the changed area. If automated coverage is not practical yet, record the manual validation performed in this task.
+Ran the relevant automated checks for the changed area:
+
+- `npm run lint` — clean (two `prettier/prettier` formatting errors found mid-implementation were auto-fixed with `eslint --fix`).
+- `npm run --prefix apps/web typecheck` — clean.
+- `npm run build:web` — production build succeeds.
+- `npx vitest run --config vitest.config.ts` — 65 API tests passed (unrelated to this change, confirms no regression in domain logic).
+- `npx playwright test` — all 17 existing E2E tests passed unmodified against the migrated UI, confirming behavior preservation (dialog roles, accessible names, button roles/labels, and CSS hooks used by tests such as `.history-table-scroll` and `.modal-loading-status` all still resolve correctly).
+
+No E2E test changes were required: existing tests already asserted against accessible roles/names/text (e.g. `getByRole("dialog", { name: "Medida corporal" })`, `getByRole("alertdialog", { name: "Excluir medida" })`, `getByRole("button", { name: "..." })`) rather than implementation classNames, so they continued to pass against the Radix-rendered markup.
+
+Manual notes on intentional minor behavior changes (accessibility improvements, consistent with task scope):
+
+- `MeasurementForm`'s modal now closes on `Escape` and on overlay click, via Radix `Dialog`'s built-in dismiss behavior. Previously the hand-rolled modal had no such affordance.
+- `DeleteConfirmationDialog`'s `AlertDialog` retains its prior behavior (no outside-click dismiss), consistent with Radix's intentional design for confirmation dialogs.
+
+### Modified files
+
+- `apps/web/src/components/Button.tsx` (new)
+- `apps/web/src/main.tsx`
+- `apps/web/src/styles.css`
+- `apps/web/src/screens/LoginScreen.tsx`
+- `apps/web/src/screens/components/MeasurementHistoryTable.tsx`
+- `apps/web/src/screens/components/DeleteConfirmationDialog.tsx`
+- `apps/web/src/screens/components/MeasurementForm.tsx`
+- `apps/web/src/screens/components/AuthenticatedDashboard.tsx`
+- `apps/web/src/utils/dashboard-summary.ts` (added exported `OutcomeClass` type, narrowed `getOutcomeClass` return type from `string`)
 
 ## Acceptance Criteria
 
-- [ ] `apps/web/src/components/Button.tsx` exists and covers all variant/size combinations in use.
-- [ ] `<Theme>` provider is at root in `main.tsx`; no inline `Theme` remains in `MeasurementHistoryTable`.
-- [ ] `DeleteConfirmationDialog` uses Radix Themes `AlertDialog` (not the raw primitive).
-- [ ] `MeasurementForm` uses `Dialog` from Radix Themes for the modal wrapper.
-- [ ] Form inputs in `MeasurementForm` and `LoginScreen` use `TextField` from Radix Themes.
-- [ ] All call sites across the app use `<Button>` from `apps/web/src/components/Button.tsx`.
-- [ ] `AuthenticatedDashboard` uses `Callout`, `Card`, and `Badge` from Radix Themes.
-- [ ] Existing visual direction is preserved.
-- [ ] Existing product behavior is preserved.
-- [ ] Relevant E2E or component-level tests are updated.
-- [ ] No unrelated UI redesign is introduced.
+- [x] `apps/web/src/components/Button.tsx` exists and covers all variant/size combinations in use.
+- [x] `<Theme>` provider is at root in `main.tsx`; no inline `Theme` remains in `MeasurementHistoryTable`.
+- [x] `DeleteConfirmationDialog` uses Radix Themes `AlertDialog` (not the raw primitive).
+- [x] `MeasurementForm` uses `Dialog` from Radix Themes for the modal wrapper.
+- [x] Form inputs in `MeasurementForm` and `LoginScreen` use `TextField` from Radix Themes.
+- [x] All call sites across the app use `<Button>` from `apps/web/src/components/Button.tsx`.
+- [x] `AuthenticatedDashboard` uses `Callout`, `Card`, and `Badge` from Radix Themes.
+- [x] Existing visual direction is preserved.
+- [x] Existing product behavior is preserved.
+- [x] Relevant E2E or component-level tests are updated. (No changes needed — all 17 existing E2E tests pass unmodified.)
+- [x] No unrelated UI redesign is introduced.
 
 ## Definition of Done
 
-- [ ] Acceptance criteria are met
-- [ ] Implementation matches the approved spec or plan
-- [ ] Relevant docs or specs were updated when needed
-- [ ] Tests or manual validation were completed
-- [ ] No unrelated changes were introduced
-- [ ] Task notes include validation results
+- [x] Acceptance criteria are met
+- [x] Implementation matches the approved spec or plan
+- [x] Relevant docs or specs were updated when needed
+- [x] Tests or manual validation were completed
+- [x] No unrelated changes were introduced
+- [x] Task notes include validation results
