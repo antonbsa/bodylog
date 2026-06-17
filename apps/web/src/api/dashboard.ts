@@ -1,4 +1,4 @@
-import { apiFetch } from "./client"
+import { api } from "./client"
 
 export type MetricDirection = "up" | "down" | "stable"
 
@@ -40,7 +40,7 @@ export type WeeklyDashboard = {
 }
 
 export async function getWeeklyDashboard(): Promise<WeeklyDashboard> {
-  const response = await apiFetch("/api/dashboard/weekly", { method: "GET" })
+  const response = await api("/api/dashboard/weekly", { method: "GET" })
 
   if (!response.ok) {
     throw new Error("Weekly dashboard lookup failed")

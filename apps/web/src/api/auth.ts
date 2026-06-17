@@ -1,4 +1,4 @@
-import { apiFetch } from "./client"
+import { api } from "./client"
 
 export type LoginResult =
   | {
@@ -11,7 +11,7 @@ export type LoginResult =
 
 export async function checkSession(): Promise<boolean> {
   try {
-    const response = await apiFetch("/api/auth/session", { method: "GET" })
+    const response = await api("/api/auth/session", { method: "GET" })
 
     return response.ok
   } catch {
@@ -21,7 +21,7 @@ export async function checkSession(): Promise<boolean> {
 
 export async function login(password: string): Promise<LoginResult> {
   try {
-    const response = await apiFetch("/api/auth/login", {
+    const response = await api("/api/auth/login", {
       body: JSON.stringify({ password }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -51,7 +51,7 @@ export async function login(password: string): Promise<LoginResult> {
 }
 
 export async function logout(): Promise<void> {
-  const response = await apiFetch("/api/auth/logout", { method: "POST" })
+  const response = await api("/api/auth/logout", { method: "POST" })
 
   if (!response.ok) {
     throw new Error("Logout request failed")

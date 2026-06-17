@@ -1,4 +1,4 @@
-import { apiFetch } from "./client"
+import { api } from "./client"
 
 export type Measurement = {
   id: string
@@ -52,7 +52,7 @@ export async function listMeasurements(options: {
     limit: String(options.limit),
     offset: String(options.offset ?? 0),
   })
-  const response = await apiFetch(`/api/measurements?${query}`, {
+  const response = await api(`/api/measurements?${query}`, {
     method: "GET",
   })
 
@@ -70,7 +70,7 @@ export async function listMeasurements(options: {
 export async function getMeasurementByDate(
   date: string,
 ): Promise<Measurement | null> {
-  const response = await apiFetch(`/api/measurements/by-date/${date}`, {
+  const response = await api(`/api/measurements/by-date/${date}`, {
     method: "GET",
   })
 
@@ -93,7 +93,7 @@ export async function saveMeasurementByDate(
   date: string,
   input: SaveMeasurementInput,
 ): Promise<Measurement> {
-  const response = await apiFetch(`/api/measurements/by-date/${date}`, {
+  const response = await api(`/api/measurements/by-date/${date}`, {
     body: JSON.stringify(input),
     headers: { "content-type": "application/json" },
     method: "PUT",
@@ -111,7 +111,7 @@ export async function saveMeasurementByDate(
 }
 
 export async function deleteMeasurement(id: string): Promise<void> {
-  const response = await apiFetch(`/api/measurements/${id}`, {
+  const response = await api(`/api/measurements/${id}`, {
     method: "DELETE",
   })
 
@@ -121,7 +121,7 @@ export async function deleteMeasurement(id: string): Promise<void> {
 }
 
 export async function exportMeasurementsCsv(): Promise<Blob> {
-  const response = await apiFetch("/api/export/csv", { method: "GET" })
+  const response = await api("/api/export/csv", { method: "GET" })
 
   if (!response.ok) {
     throw new Error("Measurement CSV export failed")
@@ -137,7 +137,7 @@ export async function importMeasurementsCsv(
 
   formData.append("file", file)
 
-  const response = await apiFetch("/api/import/csv", {
+  const response = await api("/api/import/csv", {
     body: formData,
     method: "POST",
   })
