@@ -1,4 +1,6 @@
-import { AlertDialog } from "radix-ui"
+import { AlertDialog, Flex } from "@radix-ui/themes"
+
+import { Button } from "../../components/Button"
 
 type DeleteConfirmationDialogProps = {
   cancelLabel?: string
@@ -19,42 +21,31 @@ export function DeleteConfirmationDialog({
 }: DeleteConfirmationDialogProps) {
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className="confirmation-dialog-overlay" />
-        <AlertDialog.Content className="confirmation-dialog">
-          <AlertDialog.Title className="confirmation-dialog-title">
-            Excluir medida
-          </AlertDialog.Title>
-          <AlertDialog.Description className="confirmation-dialog-description">
-            {description}
-          </AlertDialog.Description>
+      <AlertDialog.Content maxWidth="420px">
+        <AlertDialog.Title>Excluir medida</AlertDialog.Title>
+        <AlertDialog.Description>{description}</AlertDialog.Description>
 
-          <div className="confirmation-dialog-actions">
-            <AlertDialog.Cancel asChild>
-              <button
-                className="secondary-action"
-                disabled={isConfirming}
-                type="button"
-              >
-                {cancelLabel}
-              </button>
-            </AlertDialog.Cancel>
-            <AlertDialog.Action asChild>
-              <button
-                className="danger-action"
-                disabled={isConfirming}
-                onClick={(event) => {
-                  event.preventDefault()
-                  onConfirm()
-                }}
-                type="button"
-              >
-                {isConfirming ? "Excluindo..." : "Excluir medida"}
-              </button>
-            </AlertDialog.Action>
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
+        <Flex gap="3" justify="end" mt="4">
+          <AlertDialog.Cancel>
+            <Button disabled={isConfirming} type="button" variant="secondary">
+              {cancelLabel}
+            </Button>
+          </AlertDialog.Cancel>
+          <AlertDialog.Action>
+            <Button
+              disabled={isConfirming}
+              onClick={(event) => {
+                event.preventDefault()
+                onConfirm()
+              }}
+              type="button"
+              variant="danger"
+            >
+              {isConfirming ? "Excluindo..." : "Excluir medida"}
+            </Button>
+          </AlertDialog.Action>
+        </Flex>
+      </AlertDialog.Content>
     </AlertDialog.Root>
   )
 }

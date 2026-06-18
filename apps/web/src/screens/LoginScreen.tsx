@@ -1,5 +1,7 @@
 import { useState, type SubmitEvent } from "react"
+import { TextField } from "@radix-ui/themes"
 
+import { Button } from "../components/Button"
 import { login } from "../api/auth"
 
 type LoginScreenProps = {
@@ -60,7 +62,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           />
 
           <label htmlFor="password">Senha</label>
-          <input
+          <TextField.Root
             autoCapitalize="none"
             autoComplete="password"
             autoCorrect="off"
@@ -79,9 +81,9 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             </p>
           ) : null}
 
-          <button disabled={isSubmitting} type="submit">
+          <Button disabled={isSubmitting} type="submit">
             {isSubmitting ? "Entrando..." : "Entrar"}
-          </button>
+          </Button>
         </form>
       </section>
     </main>
