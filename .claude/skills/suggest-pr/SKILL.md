@@ -1,1 +1,1 @@
-.codex/skills/suggest-pr/SKILL.md
+../../../.codex/skills/suggest-pr/SKILL.md
