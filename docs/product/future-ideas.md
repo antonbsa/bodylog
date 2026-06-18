@@ -33,10 +33,6 @@ Support alternative CSV headers from the existing spreadsheet export.
 
 ## V2 Candidates
 
-### Measurement Form Loading Polish
-
-Improve the measurement form loading state with a subtle rotating indicator for date lookups, no form-field layout shift, and no distracting flash when lookup responses resolve immediately.
-
 ### Google Sheets Automatic Backup
 
 Automatically back up records to Google Sheets.
