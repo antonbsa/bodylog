@@ -2,7 +2,7 @@
 
 ## Status
 
-To Do
+Done
 
 ## Description
 
@@ -66,21 +66,72 @@ Run the relevant automated checks:
 
 ## Acceptance Criteria
 
-- [ ] `Measurement` domain object computes derived values internally.
-- [ ] Repository returns `Measurement` domain objects, not raw DB row types.
-- [ ] Service layer no longer calls `derived-calculations.ts` free functions
+- [x] `Measurement` domain object computes derived values internally.
+- [x] Repository returns `Measurement` domain objects, not raw DB row types.
+- [x] Service layer no longer calls `derived-calculations.ts` free functions
       directly.
-- [ ] `WeekSummary` and `WeekComparison` value objects encapsulate averaging,
+- [x] `WeekSummary` and `WeekComparison` value objects encapsulate averaging,
       direction, and comparison rules.
-- [ ] Domain types have no dependency on D1-specific types.
-- [ ] Existing API behavior and response shapes are unchanged.
-- [ ] Existing automated tests pass and cover domain object behavior.
+- [x] Domain types have no dependency on D1-specific types.
+- [x] Existing API behavior and response shapes are unchanged.
+- [x] Existing automated tests pass and cover domain object behavior.
 
 ## Definition of Done
 
-- [ ] Acceptance criteria are met
-- [ ] Implementation matches the approved spec or plan
-- [ ] Relevant docs or specs were updated when needed
-- [ ] Tests or manual validation were completed
-- [ ] No unrelated changes were introduced
-- [ ] Task notes include validation results
+- [x] Acceptance criteria are met
+- [x] Implementation matches the approved spec or plan
+- [x] Relevant docs or specs were updated when needed
+- [x] Tests or manual validation were completed
+- [x] No unrelated changes were introduced
+- [x] Task notes include validation results
+
+## Implementation Notes
+
+Introduced `apps/api/src/domain/`:
+
+- `measurement.ts` — `Measurement` class. Holds raw fields and exposes
+  `getDerivedValues(heightCm)` (bmi/bodyFatKg/muscleKg) and `toJSON()` for
+  API serialization. Height stays a caller-supplied config value (not stored
+  on the instance), matching the documented rule that height lives outside
+  the measurement record.
+- `week-range.ts` — pure date-range helpers (`getWeekRange`,
+  `getPreviousWeekRange`), extracted from the old `weekly-logic.ts`.
+- `week-summary.ts` — `WeekSummary` value object. Static factory
+  `WeekSummary.forRange(measurements, range, options)` encapsulates the
+  averaging rules (ignore missing days, ignore missing optional values per
+  metric, null average when no values).
+- `week-comparison.ts` — `WeekComparison` value object. Static
+  `WeekComparison.compare(current, previous)` encapsulates absolute
+  variation, relative percentage, percentage-point display for
+  percentage-based metrics, and direction thresholds.
+
+`MeasurementRepository` now constructs and returns `Measurement` domain
+objects instead of a plain row-shaped type. `weekly-dashboard-service.ts`
+orchestrates `WeekSummary`/`WeekComparison` to build the current/previous/
+display/variation response instead of calling free functions from
+`weekly-logic.ts`. `index.ts` calls `measurement.getDerivedValues(heightCm)`
+for the measurement list endpoint instead of the removed
+`calculateDerivedMeasurementValues` function.
+
+`derived-calculations.ts` and `weekly-logic.ts` were deleted; their logic
+now lives in the domain objects above. `types.ts` no longer exports a plain
+`Measurement` type — only the create/update/import input types remain.
+
+Domain types have no D1-specific dependencies (D1 row mapping stays inside
+`measurement-repository.ts`).
+
+## Validation
+
+- `npm run test:api` — 11 files, 67 tests passed. Added
+  `tests/api/measurement.test.ts`, `week-range.test.ts`,
+  `week-summary.test.ts`, `week-comparison.test.ts`, and
+  `weekly-dashboard-service.test.ts` to cover the domain objects directly;
+  removed `derived-calculations.test.ts` and `weekly-logic.test.ts` (logic
+  moved). Existing `measurement-api.test.ts` and `weekly-dashboard-api.test.ts`
+  pass unchanged, confirming the API response shape is unchanged.
+- `npm run typecheck` — passes.
+- `npm run lint` — passes (after `eslint --fix` for two formatting issues).
+- `npm run build:api` — script does not exist in this repo (root only has
+  `build:web`; `apps/api` has no `build` script). Pre-existing gap, unrelated
+  to this task; skipped.
+- `git diff --check` — no whitespace errors.

@@ -5,8 +5,10 @@ import {
   createSessionCookieValue,
   SESSION_COOKIE_NAME,
 } from "../../apps/api/src/auth/session"
-import { getCurrentDateOnly } from "../../apps/api/src/dashboard/weekly-dashboard-service"
-import type { WeeklyComparison } from "../../apps/api/src/measurements/weekly-logic"
+import {
+  getCurrentDateOnly,
+  type WeeklyComparison,
+} from "../../apps/api/src/dashboard/weekly-dashboard-service"
 
 type MeasurementRow = {
   id: string
