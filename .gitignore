@@ -17,3 +17,4 @@ coverage/
 # AI
 .agent-state/
 .claude/worktrees/
+.codex/worktrees/
