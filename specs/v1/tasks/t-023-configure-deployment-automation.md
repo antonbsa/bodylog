@@ -74,7 +74,8 @@ Results:
 ## Implementation Notes
 
 - Added `.github/workflows/deploy.yml`.
-- The deploy workflow runs on direct pushes to `main` and manual dispatch.
+- The deploy workflow runs after successful CI runs from pushes to `main`, and
+  on manual dispatch.
 - The workflow validates required GitHub secrets and variables before running checks.
 - The workflow runs typecheck, lint, API tests, E2E tests, and a production frontend build before deploy.
 - The workflow deploys the API Worker with `PRODUCTION_FRONTEND_ORIGIN` from the GitHub `PRODUCTION_FRONTEND_ORIGIN` variable.

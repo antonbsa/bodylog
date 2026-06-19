@@ -37,7 +37,8 @@ Local validation notes:
 - Added a single GitHub Actions workflow at `.github/workflows/ci.yml`.
 - The workflow runs for pull requests targeting `main`.
 - The workflow runs for direct pushes to `main`.
-- Push events on `main` that are associated with a pull request are skipped by a scope guard job.
+- Push events on `main` run the full CI suite, including merge commits created
+  when pull requests are merged. This keeps deployment gated by post-merge CI.
 - The workflow splits checks into a lint/typecheck job and a tests job.
 - The lint/typecheck job installs dependencies with `npm ci`, then runs typecheck and lint.
 - The tests job installs dependencies with `npm ci`, installs Playwright Chromium dependencies, then runs API tests, frontend build, and E2E tests.

@@ -17,58 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  scope:
-    name: Determine CI scope
-    runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.scope.outputs.should_run }}
-    steps:
-      - name: Check event source
-        id: scope
-        uses: actions/github-script@v8
-        with:
-          script: |
-            if (context.eventName === "pull_request") {
-              core.setOutput("should_run", "true");
-              core.info("Running CI for a pull request targeting main.");
-              return;
-            }
-
-            if (context.eventName !== "push") {
-              core.setOutput("should_run", "false");
-              core.info(`Skipping unsupported event: ${context.eventName}`);
-              return;
-            }
-
-            const { owner, repo } = context.repo;
-            const associatedPullRequests = await github.paginate(
-              github.rest.repos.listPullRequestsAssociatedWithCommit,
-              {
-                owner,
-                repo,
-                commit_sha: context.sha,
-                per_page: 100,
-              },
-            );
-
-            const mainPullRequests = associatedPullRequests.filter(
-              (pullRequest) => pullRequest.base?.ref === "main",
-            );
-
-            const shouldRun = mainPullRequests.length === 0;
-            core.setOutput("should_run", shouldRun ? "true" : "false");
-
-            if (shouldRun) {
-              core.info("Running CI for a direct push to main.");
-            } else {
-              core.info("Skipping CI because this main push is associated with a pull request.");
-            }
-
   lint-typecheck:
     name: Lint and typecheck
-    needs:
-      - scope
-    if: needs.scope.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -92,9 +42,6 @@ jobs:
 
   tests:
     name: Tests
-    needs:
-      - scope
-    if: needs.scope.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
