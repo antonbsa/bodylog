@@ -69,6 +69,7 @@ type MeasurementHistoryState = {
 type AuthenticatedDashboardProps = {
   onLogout: () => void
   onOpenMeasurementForm: (date?: string) => void
+  onRefreshData: () => void
   refreshKey: number
   savedMessage: string | null
 }
@@ -402,6 +403,7 @@ function MeasurementHistory({
 export function AuthenticatedDashboard({
   onLogout,
   onOpenMeasurementForm,
+  onRefreshData,
   refreshKey,
   savedMessage,
 }: AuthenticatedDashboardProps) {
@@ -521,6 +523,14 @@ export function AuthenticatedDashboard({
         <div className="header-actions">
           <Button onClick={() => onOpenMeasurementForm()} type="button">
             Registrar medida
+          </Button>
+          <Button
+            disabled={state.status === "loading"}
+            onClick={onRefreshData}
+            type="button"
+            variant="secondary"
+          >
+            Atualizar dados
           </Button>
           <Button
             disabled={exportState === "loading"}
