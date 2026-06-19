@@ -4,7 +4,6 @@ import type {
   ImportedMeasurementInput,
   UpdateMeasurementByDateInput,
 } from "../types"
-import type { Measurement } from "../../../../types/measurements"
 
 type MeasurementRow = {
   id: string

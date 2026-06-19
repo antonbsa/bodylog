@@ -1,10 +1,10 @@
+import {
+  WeeklyDashboardRepository,
+  getWeeklyDashboard,
+} from "../../apps/api/src/dashboard/weekly-dashboard-service"
 import { describe, expect, it } from "vitest"
 
 import { Measurement } from "../../apps/api/src/domain/measurement"
-import {
-  getWeeklyDashboard,
-  type WeeklyDashboardRepository,
-} from "../../apps/api/src/dashboard/weekly-dashboard-service"
 
 const USER_HEIGHT_CM = 168
 

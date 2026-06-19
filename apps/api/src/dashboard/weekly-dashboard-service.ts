@@ -8,12 +8,12 @@ import {
 import { getPreviousWeekRange, getWeekRange } from "../domain/week-range"
 import { WeekSummary } from "../domain/week-summary"
 
-type WeeklyDashboardRepository = Pick<MeasurementRepository, "list">
-
 type WeeklyDashboardConfig = {
   currentDate: string
   heightCm: number
 }
+
+export type WeeklyDashboardRepository = Pick<MeasurementRepository, "list">
 
 export type WeeklyDisplayMode = "current-week" | "latest-recorded-week"
 
