@@ -17,8 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-typecheck:
-    name: Lint and typecheck
+  install-deps:
+    name: Install dependencies
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,8 +31,46 @@ jobs:
           node-version: 24
           cache: npm
 
+      - name: Cache node_modules
+        id: cache-node-modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/web/node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: npm ci
+
+      - name: Upload node_modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-modules
+          path: |
+            node_modules
+            apps/web/node_modules
+          retention-days: 1
+
+  lint-typecheck:
+    name: Lint and typecheck
+    needs: install-deps
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
 
       - name: Typecheck
         run: npm run typecheck
@@ -42,6 +80,7 @@ jobs:
 
   api:
     name: API tests
+    needs: install-deps
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -52,16 +91,18 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24
-          cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
 
       - name: Unit and API tests
         run: npm run test:api
 
   e2e:
     name: E2E tests
+    needs: install-deps
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -72,10 +113,11 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 24
-          cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Download node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node-modules
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
