@@ -201,8 +201,10 @@ test("renders a measurement history error state", async ({ page }) => {
   await page.route("**/api/measurements?*", async (route) => {
     await route.fulfill({
       body: JSON.stringify({
-        error: "SERVER_ERROR",
-        ok: false,
+        action: "Atualize a página e tente novamente.",
+        message: "Não foi possível carregar o histórico.",
+        name: "InternalServerError",
+        statusCode: 500,
       }),
       contentType: "application/json",
       status: 500,

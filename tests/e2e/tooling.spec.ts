@@ -3,9 +3,18 @@ import { expect, test, type Page } from "@playwright/test"
 async function mockSession(page: Page, authenticated: boolean) {
   await page.route("**/api/auth/session", async (route) => {
     await route.fulfill({
-      body: JSON.stringify({
-        authenticated,
-      }),
+      body: JSON.stringify(
+        authenticated
+          ? {
+              authenticated: true,
+            }
+          : {
+              action: "Entre novamente para continuar.",
+              message: "Sessão inválida ou expirada.",
+              name: "UnauthorizedError",
+              statusCode: 401,
+            },
+      ),
       contentType: "application/json",
       status: authenticated ? 200 : 401,
     })
@@ -173,8 +182,10 @@ test("login screen shows invalid password errors", async ({ page }) => {
   await page.route("**/api/auth/login", async (route) => {
     await route.fulfill({
       body: JSON.stringify({
-        error: "INVALID_PASSWORD",
-        ok: false,
+        action: "Verifique a senha configurada e tente novamente.",
+        message: "Senha inválida.",
+        name: "UnauthorizedError",
+        statusCode: 401,
       }),
       contentType: "application/json",
       status: 401,
@@ -186,7 +197,7 @@ test("login screen shows invalid password errors", async ({ page }) => {
   await page.getByRole("button", { name: "Entrar" }).click()
 
   await expect(page.getByRole("alert")).toHaveText(
-    "Senha inválida. Tente novamente.",
+    "Senha inválida. Verifique a senha configurada e tente novamente.",
   )
 })
 
@@ -224,9 +235,18 @@ test("authenticated session survives a page reload", async ({ page }) => {
 
   await page.route("**/api/auth/session", async (route) => {
     await route.fulfill({
-      body: JSON.stringify({
-        authenticated: isAuthenticated,
-      }),
+      body: JSON.stringify(
+        isAuthenticated
+          ? {
+              authenticated: true,
+            }
+          : {
+              action: "Entre novamente para continuar.",
+              message: "Sessão inválida ou expirada.",
+              name: "UnauthorizedError",
+              statusCode: 401,
+            },
+      ),
       contentType: "application/json",
       status: isAuthenticated ? 200 : 401,
     })

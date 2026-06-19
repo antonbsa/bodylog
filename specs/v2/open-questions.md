@@ -19,7 +19,7 @@ Notable decisions, for quick reference:
 - **T-034:** component named `ConfirmationDialog`.
 - **T-035:** structured errors fully replace the old ad hoc shapes (no
   backward-compatibility constraint, no release shipped yet); error module
-  source lives directly in `infra/errors/`.
+  source lives directly in `infra/errors.ts`.
 - **T-036:** keep current component files, Phosphor Icons (no Lucide/Feather
   migration), self-hosted fonts, copied token values (not a package
   dependency), dark theme only; mobile history-table column trimming + detail

@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { Badge, Callout, Card } from "@radix-ui/themes"
 
+import {
+  CsvImportError,
+  formatApiErrorMessage,
+} from "../../../../../infra/errors"
 import { Button } from "../../components/Button"
 import {
   getWeeklyDashboard,
@@ -9,7 +13,6 @@ import {
 } from "../../api/dashboard"
 import {
   deleteMeasurement,
-  CsvImportError,
   exportMeasurementsCsv,
   importMeasurementsCsv,
   listMeasurements,
@@ -42,10 +45,19 @@ const HISTORY_PAGE_SIZE = 20
 
 type DashboardState = {
   dashboard: WeeklyDashboard | null
+  message: string | null
   status: "error" | "loaded" | "loading"
 }
 
-type ExportState = "error" | "idle" | "loading"
+type ExportState =
+  | {
+      message: string
+      status: "error"
+    }
+  | {
+      message: null
+      status: "idle" | "loading"
+    }
 type ImportState =
   | {
       message: string
@@ -63,6 +75,7 @@ type MeasurementHistoryState = {
   hasMore: boolean
   items: ListedMeasurement[]
   message: string | null
+  messageKind: "error" | "success" | null
   status: "error" | "loaded" | "loading"
 }
 
@@ -236,6 +249,7 @@ function MeasurementHistory({
     hasMore: false,
     items: [],
     message: null,
+    messageKind: null,
     status: "loading",
   })
 
@@ -260,13 +274,16 @@ function MeasurementHistory({
           hasMore: items.length > visibleLimit,
           items: items.slice(0, visibleLimit),
           message: null,
+          messageKind: null,
           status: "loaded",
         })
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (isCurrentRequest) {
           setState((currentState) => ({
             ...currentState,
+            message: formatApiErrorMessage(error),
+            messageKind: "error",
             status: "error",
           }))
         }
@@ -311,6 +328,7 @@ function MeasurementHistory({
       ...currentState,
       deletingId: measurement.id,
       message: null,
+      messageKind: null,
     }))
 
     deleteMeasurement(measurement.id)
@@ -322,16 +340,18 @@ function MeasurementHistory({
             (item) => item.id !== measurement.id,
           ),
           message: `Medida de ${displayDate} excluída.`,
+          messageKind: "success",
           status: "loaded",
         }))
         setPendingDeleteMeasurement(null)
         onDeletedMeasurement()
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         setState((currentState) => ({
           ...currentState,
           deletingId: null,
-          message: "Não foi possível excluir a medida.",
+          message: formatApiErrorMessage(error),
+          messageKind: "error",
         }))
       })
   }
@@ -340,7 +360,9 @@ function MeasurementHistory({
     <section className="history-section" aria-label="Histórico de medidas">
       {state.status === "error" ? (
         <Callout.Root color="red" role="alert">
-          <Callout.Text>Não foi possível carregar o histórico.</Callout.Text>
+          <Callout.Text>
+            {state.message ?? "Não foi possível carregar o histórico."}
+          </Callout.Text>
         </Callout.Root>
       ) : null}
 
@@ -350,9 +372,9 @@ function MeasurementHistory({
         </Callout.Root>
       ) : null}
 
-      {state.message ? (
+      {state.message && state.status !== "error" ? (
         <Callout.Root
-          color={state.message.startsWith("Não foi possível") ? "red" : "green"}
+          color={state.messageKind === "error" ? "red" : "green"}
           role="status"
         >
           <Callout.Text>{state.message}</Callout.Text>
@@ -407,11 +429,15 @@ export function AuthenticatedDashboard({
 }: AuthenticatedDashboardProps) {
   const [state, setState] = useState<DashboardState>({
     dashboard: null,
+    message: null,
     status: "loading",
   })
   const [deletedRefreshKey, setDeletedRefreshKey] = useState(0)
   const [importRefreshKey, setImportRefreshKey] = useState(0)
-  const [exportState, setExportState] = useState<ExportState>("idle")
+  const [exportState, setExportState] = useState<ExportState>({
+    message: null,
+    status: "idle",
+  })
   const [importState, setImportState] = useState<ImportState>({
     message: null,
     status: "idle",
@@ -424,6 +450,7 @@ export function AuthenticatedDashboard({
 
     setState((currentState) => ({
       dashboard: currentState.dashboard,
+      message: null,
       status: "loading",
     }))
 
@@ -432,14 +459,16 @@ export function AuthenticatedDashboard({
         if (isCurrentRequest) {
           setState({
             dashboard,
+            message: null,
             status: "loaded",
           })
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (isCurrentRequest) {
           setState({
             dashboard: null,
+            message: formatApiErrorMessage(error),
             status: "error",
           })
         }
@@ -453,7 +482,10 @@ export function AuthenticatedDashboard({
   const dashboard = state.dashboard
 
   function handleExportCsv() {
-    setExportState("loading")
+    setExportState({
+      message: null,
+      status: "loading",
+    })
 
     exportMeasurementsCsv()
       .then((csvBlob) => {
@@ -464,10 +496,16 @@ export function AuthenticatedDashboard({
         link.download = "bodylog-measurements.csv"
         link.click()
         URL.revokeObjectURL(url)
-        setExportState("idle")
+        setExportState({
+          message: null,
+          status: "idle",
+        })
       })
-      .catch(() => {
-        setExportState("error")
+      .catch((error: unknown) => {
+        setExportState({
+          message: formatApiErrorMessage(error),
+          status: "error",
+        })
       })
   }
 
@@ -495,7 +533,10 @@ export function AuthenticatedDashboard({
         const summary = error instanceof CsvImportError ? error.summary : null
 
         setImportState({
-          message: formatImportFailureMessage(summary),
+          message:
+            error instanceof CsvImportError
+              ? formatApiErrorMessage(error)
+              : formatImportFailureMessage(summary),
           status: "error",
           summary,
         })
@@ -523,12 +564,14 @@ export function AuthenticatedDashboard({
             Registrar medida
           </Button>
           <Button
-            disabled={exportState === "loading"}
+            disabled={exportState.status === "loading"}
             onClick={handleExportCsv}
             type="button"
             variant="secondary"
           >
-            {exportState === "loading" ? "Exportando..." : "Exportar CSV"}
+            {exportState.status === "loading"
+              ? "Exportando..."
+              : "Exportar CSV"}
           </Button>
           <Button
             disabled={importState.status === "loading"}
@@ -559,9 +602,9 @@ export function AuthenticatedDashboard({
         </Callout.Root>
       ) : null}
 
-      {exportState === "error" ? (
+      {exportState.status === "error" ? (
         <Callout.Root color="red" role="alert">
-          <Callout.Text>Não foi possível exportar o CSV.</Callout.Text>
+          <Callout.Text>{exportState.message}</Callout.Text>
         </Callout.Root>
       ) : null}
 
@@ -590,7 +633,7 @@ export function AuthenticatedDashboard({
       {state.status === "error" ? (
         <Callout.Root color="red" role="alert">
           <Callout.Text>
-            Não foi possível carregar o resumo semanal.
+            {state.message ?? "Não foi possível carregar o resumo semanal."}
           </Callout.Text>
         </Callout.Root>
       ) : null}

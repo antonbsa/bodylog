@@ -59,8 +59,10 @@ describe("auth login", () => {
     expect(response.status).toBe(401)
     expect(response.headers.get("set-cookie")).toBeNull()
     expect(await response.json()).toEqual({
-      error: "INVALID_PASSWORD",
-      ok: false,
+      action: "Verifique a senha configurada e tente novamente.",
+      message: "Senha inválida.",
+      name: "UnauthorizedError",
+      statusCode: 401,
     })
   })
 
@@ -182,7 +184,10 @@ describe("auth session", () => {
 
     expect(response.status).toBe(401)
     expect(await response.json()).toEqual({
-      authenticated: false,
+      action: "Entre novamente para continuar.",
+      message: "Sessão inválida ou expirada.",
+      name: "UnauthorizedError",
+      statusCode: 401,
     })
   })
 
@@ -222,8 +227,10 @@ describe("protected api routes", () => {
 
       expect(response.status).toBe(401)
       expect(await response.json()).toEqual({
-        error: "UNAUTHENTICATED",
-        ok: false,
+        action: "Entre novamente para continuar.",
+        message: "Sessão inválida ou expirada.",
+        name: "UnauthorizedError",
+        statusCode: 401,
       })
     }
   })
@@ -241,8 +248,10 @@ describe("protected api routes", () => {
 
     expect(response.status).toBe(401)
     expect(await response.json()).toEqual({
-      error: "UNAUTHENTICATED",
-      ok: false,
+      action: "Entre novamente para continuar.",
+      message: "Sessão inválida ou expirada.",
+      name: "UnauthorizedError",
+      statusCode: 401,
     })
   })
 

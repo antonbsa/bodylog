@@ -33,12 +33,12 @@ conflict.
   serving stale cached data (manifest-only, no service worker).
 - **T-032 — Increase History Window to 30 Items**.
 - **T-033 — Restructure `infra/` Folder**: move `migrations/`, local-db
-  `scripts/`, and add an `errors/` location, updating all references.
+  `scripts/`, and add `infra/errors.ts`, updating all references.
 - **T-034 — Reusable Confirmation Dialog**: generalize the delete dialog and use
   it for both delete and logout.
 - **T-035 — Structured Error Handling**: shared error module + consistent
   `{ name, message, action, statusCode }` shape across API and frontend (lives in
-  T-033's `infra/errors/`).
+  T-033's `infra/errors.ts`).
 
 **The redesign:**
 

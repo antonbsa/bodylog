@@ -1,3 +1,10 @@
+import {
+  CsvImportError,
+  type CsvImportErrorSummary,
+  createFallbackApiError,
+  parseApiError,
+  throwApiError,
+} from "../../../../infra/errors"
 import { api } from "./client"
 
 export type Measurement = {
@@ -28,21 +35,7 @@ export type SaveMeasurementInput = {
   weightKg: number
 }
 
-export type CsvImportSummary = {
-  created: number
-  errors: Array<{
-    message: string
-    row: number
-  }>
-  skipped: number
-  updated: number
-}
-
-export class CsvImportError extends Error {
-  constructor(readonly summary: CsvImportSummary | null) {
-    super("Measurement CSV import failed")
-  }
-}
+export type CsvImportSummary = CsvImportErrorSummary
 
 export async function listMeasurements(options: {
   limit: number
@@ -57,7 +50,10 @@ export async function listMeasurements(options: {
   })
 
   if (!response.ok) {
-    throw new Error("Measurement list failed")
+    await throwApiError(response, {
+      action: "Atualize a página e tente novamente.",
+      message: "Não foi possível carregar o histórico.",
+    })
   }
 
   const payload = (await response.json()) as {
@@ -79,7 +75,10 @@ export async function getMeasurementByDate(
   }
 
   if (!response.ok) {
-    throw new Error("Measurement lookup failed")
+    await throwApiError(response, {
+      action: "Verifique a data selecionada e tente novamente.",
+      message: "Não foi possível carregar a medida dessa data.",
+    })
   }
 
   const payload = (await response.json()) as {
@@ -100,7 +99,10 @@ export async function saveMeasurementByDate(
   })
 
   if (!response.ok) {
-    throw new Error("Measurement save failed")
+    await throwApiError(response, {
+      action: "Revise os campos da medida e tente novamente.",
+      message: "Não foi possível salvar a medida.",
+    })
   }
 
   const payload = (await response.json()) as {
@@ -116,7 +118,10 @@ export async function deleteMeasurement(id: string): Promise<void> {
   })
 
   if (!response.ok) {
-    throw new Error("Measurement delete failed")
+    await throwApiError(response, {
+      action: "Atualize o histórico e tente novamente.",
+      message: "Não foi possível excluir a medida.",
+    })
   }
 }
 
@@ -124,7 +129,10 @@ export async function exportMeasurementsCsv(): Promise<Blob> {
   const response = await api("/api/export/csv", { method: "GET" })
 
   if (!response.ok) {
-    throw new Error("Measurement CSV export failed")
+    await throwApiError(response, {
+      action: "Tente exportar novamente em instantes.",
+      message: "Não foi possível exportar o CSV.",
+    })
   }
 
   return response.blob()
@@ -141,18 +149,29 @@ export async function importMeasurementsCsv(
     body: formData,
     method: "POST",
   })
-  const payload = (await response.json().catch(() => null)) as
-    | (CsvImportSummary & {
-        ok?: false
-      })
-    | null
 
   if (!response.ok) {
-    throw new CsvImportError(payload)
+    throw new CsvImportError(
+      null,
+      await parseApiError(response, {
+        action: "Revise o arquivo CSV e tente novamente.",
+        message: "Não foi possível importar o CSV.",
+      }),
+    )
   }
 
+  const payload = (await response
+    .json()
+    .catch(() => null)) as CsvImportSummary | null
+
   if (!payload) {
-    throw new CsvImportError(null)
+    throw new CsvImportError(
+      null,
+      createFallbackApiError({
+        action: "Tente importar o arquivo novamente.",
+        message: "A resposta da importação está inválida.",
+      }),
+    )
   }
 
   return payload

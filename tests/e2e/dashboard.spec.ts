@@ -205,16 +205,10 @@ test("shows a descriptive CSV import failure", async ({ page }) => {
   await page.route("**/api/import/csv", async (route) => {
     await route.fulfill({
       body: JSON.stringify({
-        created: 0,
-        errors: [
-          {
-            message: "Invalid CSV headers",
-            row: 1,
-          },
-        ],
-        ok: false,
-        skipped: 1,
-        updated: 0,
+        action: "Corrija a linha 1: Invalid CSV headers.",
+        message: "Nenhum registro foi importado.",
+        name: "ValidationError",
+        statusCode: 400,
       }),
       contentType: "application/json",
       status: 400,
@@ -232,7 +226,7 @@ test("shows a descriptive CSV import failure", async ({ page }) => {
   await expect(
     page.getByRole("alert").filter({
       hasText:
-        "Importação falhou: nenhum registro foi importado. 1 ignorados, 1 erros. Primeiro erro: linha 1, Invalid CSV headers.",
+        "Nenhum registro foi importado. Corrija a linha 1: Invalid CSV headers.",
     }),
   ).toBeVisible()
 })
