@@ -72,12 +72,12 @@ body_metrics_tracker
 
 ### Migrations
 
-Migrations should be versioned in the repository.
+Migrations should be versioned in the repository under `infra/migrations/`.
 
 Example:
 
 ```txt
-migrations/
+infra/migrations/
   0001_create_measurements.sql
 ```
 

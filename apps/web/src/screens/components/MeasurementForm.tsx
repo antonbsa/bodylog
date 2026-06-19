@@ -12,7 +12,6 @@ import { Button } from "../../components/Button"
 import {
   getMeasurementByDate,
   saveMeasurementByDate,
-  type Measurement,
 } from "../../api/measurements"
 import {
   formatDisplayDateFromIso,
@@ -20,6 +19,7 @@ import {
   parseDisplayDate,
 } from "../../utils/date-format"
 import { formatInputNumber, parseDecimalInput } from "../../utils/number-format"
+import type { Measurement } from "../../../../../types/measurements"
 
 type MeasurementFormProps = {
   initialDate?: string

@@ -4,7 +4,7 @@ import {
   createWeeklyComparison,
   getWeekRange,
 } from "../../apps/api/src/measurements/weekly-logic"
-import type { Measurement } from "../../apps/api/src/measurements/types"
+import type { Measurement } from "../../types/measurements"
 
 const USER_HEIGHT_CM = 168
 

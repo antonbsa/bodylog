@@ -2,19 +2,13 @@ import { useEffect, useRef, useState } from "react"
 import { Badge, Callout, Card } from "@radix-ui/themes"
 
 import { Button } from "../../components/Button"
-import {
-  getWeeklyDashboard,
-  type MetricDirection,
-  type WeeklyDashboard,
-} from "../../api/dashboard"
+import { getWeeklyDashboard } from "../../api/dashboard"
 import {
   deleteMeasurement,
   CsvImportError,
   exportMeasurementsCsv,
   importMeasurementsCsv,
   listMeasurements,
-  type CsvImportSummary,
-  type ListedMeasurement,
 } from "../../api/measurements"
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog"
 import { MeasurementHistoryTable } from "./MeasurementHistoryTable"
@@ -28,8 +22,6 @@ import {
   getDirectionLabel,
   getOutcomeClass,
   getReliability,
-  type DashboardCardModel,
-  type OutcomeClass,
 } from "../../utils/dashboard-summary"
 import {
   formatImportFailureMessage,
@@ -37,6 +29,16 @@ import {
   formatImportSuccessMessage,
 } from "../../utils/csv-import-summary"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
+import type {
+  MetricDirection,
+  WeeklyDashboard,
+} from "../../../../../types/dashboard"
+import type { CsvImportSummary } from "../../../../../types/measurements"
+import type {
+  DashboardCardModel,
+  ListedMeasurement,
+  OutcomeClass,
+} from "../../types"
 
 const HISTORY_PAGE_SIZE = 20
 

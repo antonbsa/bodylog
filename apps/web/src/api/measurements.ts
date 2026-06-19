@@ -1,42 +1,9 @@
 import { api } from "./client"
-
-export type Measurement = {
-  id: string
-  date: string
-  weightKg: number
-  bodyFatPercentage: number | null
-  musclePercentage: number | null
-  restingMetabolismKcal: number | null
-  createdAt: string
-  updatedAt: string
-}
-
-export type MeasurementDerivedValues = {
-  bmi: number
-  bodyFatKg: number | null
-  muscleKg: number | null
-}
-
-export type ListedMeasurement = Measurement & {
-  derived: MeasurementDerivedValues
-}
-
-export type SaveMeasurementInput = {
-  bodyFatPercentage: number | null
-  musclePercentage: number | null
-  restingMetabolismKcal: number | null
-  weightKg: number
-}
-
-export type CsvImportSummary = {
-  created: number
-  errors: Array<{
-    message: string
-    row: number
-  }>
-  skipped: number
-  updated: number
-}
+import type {
+  CsvImportSummary,
+  Measurement,
+} from "../../../../types/measurements"
+import type { ListedMeasurement, SaveMeasurementInput } from "../types"
 
 export class CsvImportError extends Error {
   constructor(readonly summary: CsvImportSummary | null) {

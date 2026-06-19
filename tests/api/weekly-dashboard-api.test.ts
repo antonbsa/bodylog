@@ -6,7 +6,7 @@ import {
   SESSION_COOKIE_NAME,
 } from "../../apps/api/src/auth/session"
 import { getCurrentDateOnly } from "../../apps/api/src/dashboard/weekly-dashboard-service"
-import type { WeeklyComparison } from "../../apps/api/src/measurements/weekly-logic"
+import type { WeeklyDashboard } from "../../types/dashboard"
 
 type MeasurementRow = {
   id: string
@@ -192,7 +192,7 @@ describe("weekly dashboard api", () => {
       },
       env,
     )
-    const body = (await response.json()) as WeeklyComparison
+    const body = (await response.json()) as WeeklyDashboard
 
     expect(response.status).toBe(200)
     expect(body.current.weekStartDate).toBe("2026-06-08")

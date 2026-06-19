@@ -1,4 +1,4 @@
-import type { CsvImportSummary } from "../api/measurements"
+import type { CsvImportSummary } from "../../../../types/measurements"
 
 export function formatImportSuccessMessage(summary: CsvImportSummary): string {
   return `Importação concluída: ${summary.created} criados, ${summary.updated} atualizados, ${summary.skipped} ignorados.`

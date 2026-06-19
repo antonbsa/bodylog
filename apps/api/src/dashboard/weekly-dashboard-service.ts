@@ -1,12 +1,10 @@
 import type { MeasurementRepository } from "../measurements/measurement-repository"
-import {
-  createWeeklyComparison,
-  type WeeklyComparison,
-} from "../measurements/weekly-logic"
+import { createWeeklyComparison } from "../measurements/weekly-logic"
+import type { WeeklyDashboard } from "../../../../types/dashboard"
 
-export type WeeklyDashboardRepository = Pick<MeasurementRepository, "list">
+type WeeklyDashboardRepository = Pick<MeasurementRepository, "list">
 
-export type WeeklyDashboardConfig = {
+type WeeklyDashboardConfig = {
   currentDate: string
   heightCm: number
 }
@@ -14,7 +12,7 @@ export type WeeklyDashboardConfig = {
 export async function getWeeklyDashboard(
   repository: WeeklyDashboardRepository,
   config: WeeklyDashboardConfig,
-): Promise<WeeklyComparison> {
+): Promise<WeeklyDashboard> {
   const measurements = await repository.list()
 
   return createWeeklyComparison(measurements, config)

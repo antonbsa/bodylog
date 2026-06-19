@@ -1,12 +1,10 @@
-export type Measurement = {
-  id: string
-  date: string
-  weightKg: number
-  bodyFatPercentage: number | null
-  musclePercentage: number | null
-  restingMetabolismKcal: number | null
-  createdAt: string
-  updatedAt: string
+export type AppBindings = {
+  APP_PASSWORD: string
+  DB: D1Database
+  PRODUCTION_FRONTEND_ORIGIN?: string
+  SESSION_SECRET: string
+  USER_HEIGHT_CM: string
+  USER_TIME_ZONE: string
 }
 
 export type CreateMeasurementInput = {

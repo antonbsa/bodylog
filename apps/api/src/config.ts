@@ -1,11 +1,4 @@
-export type AppBindings = {
-  APP_PASSWORD: string
-  DB: D1Database
-  PRODUCTION_FRONTEND_ORIGIN?: string
-  SESSION_SECRET: string
-  USER_HEIGHT_CM: string
-  USER_TIME_ZONE: string
-}
+import type { AppBindings } from "./types"
 
 export function getAppPassword(env: Pick<AppBindings, "APP_PASSWORD">): string {
   if (!env.APP_PASSWORD) {

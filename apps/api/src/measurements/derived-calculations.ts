@@ -1,12 +1,9 @@
-import type { Measurement } from "./types"
+import type {
+  Measurement,
+  MeasurementDerivedValues,
+} from "../../../../types/measurements"
 
-export type DerivedMeasurementValues = {
-  bmi: number
-  bodyFatKg: number | null
-  muscleKg: number | null
-}
-
-export type DerivedCalculationConfig = {
+type DerivedCalculationConfig = {
   heightCm: number
 }
 
@@ -16,7 +13,7 @@ export function calculateDerivedMeasurementValues(
     "weightKg" | "bodyFatPercentage" | "musclePercentage"
   >,
   config: DerivedCalculationConfig,
-): DerivedMeasurementValues {
+): MeasurementDerivedValues {
   const heightM = heightCmToM(config.heightCm)
 
   return {

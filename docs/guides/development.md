@@ -73,4 +73,4 @@ The seed script generates dates relative to the current date. For deterministic 
 npm run db:seed:local -- --today 2026-06-11
 ```
 
-See `scripts/local-db/README.md` for the seed data shape and command details.
+See `infra/scripts/local-db/README.md` for the seed data shape and command details.

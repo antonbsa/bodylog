@@ -1,13 +1,13 @@
 import { ScrollArea, Table } from "@radix-ui/themes"
 
 import { Button } from "../../components/Button"
-import type { ListedMeasurement } from "../../api/measurements"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
 import {
   formatDisplayNumber,
   formatOptionalPreciseDisplayNumber,
   formatPreciseDisplayNumber,
 } from "../../utils/number-format"
+import type { ListedMeasurement } from "../../types"
 
 type MeasurementHistoryTableProps = {
   deletingMeasurementId: string | null
