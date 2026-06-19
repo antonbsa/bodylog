@@ -19,7 +19,7 @@ import {
   type CsvImportSummary,
   type ListedMeasurement,
 } from "../../api/measurements"
-import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog"
+import { ConfirmationDialog } from "./ConfirmationDialog"
 import { MeasurementHistoryTable } from "./MeasurementHistoryTable"
 import {
   createDashboardCardModels,
@@ -41,7 +41,7 @@ import {
 } from "../../utils/csv-import-summary"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
 
-const HISTORY_PAGE_SIZE = 20
+const HISTORY_PAGE_SIZE = 30
 
 type DashboardState = {
   dashboard: WeeklyDashboard | null
@@ -80,8 +80,9 @@ type MeasurementHistoryState = {
 }
 
 type AuthenticatedDashboardProps = {
-  onLogout: () => void
+  onLogout: () => Promise<void> | void
   onOpenMeasurementForm: (date?: string) => void
+  onRefreshData: () => void
   refreshKey: number
   savedMessage: string | null
 }
@@ -406,7 +407,9 @@ function MeasurementHistory({
         </Button>
       ) : null}
 
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
+        confirmLabel="Excluir medida"
+        confirmingLabel="Excluindo..."
         description={
           pendingDeleteDisplayDate
             ? `Excluir a medida de ${pendingDeleteDisplayDate}? Esta ação não pode ser desfeita.`
@@ -416,6 +419,7 @@ function MeasurementHistory({
         onConfirm={handleConfirmDeleteMeasurement}
         onOpenChange={handleDeleteDialogOpenChange}
         open={pendingDeleteMeasurement !== null}
+        title="Excluir medida"
       />
     </section>
   )
@@ -424,6 +428,7 @@ function MeasurementHistory({
 export function AuthenticatedDashboard({
   onLogout,
   onOpenMeasurementForm,
+  onRefreshData,
   refreshKey,
   savedMessage,
 }: AuthenticatedDashboardProps) {
@@ -443,6 +448,8 @@ export function AuthenticatedDashboard({
     status: "idle",
     summary: null,
   })
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const importFileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -548,6 +555,26 @@ export function AuthenticatedDashboard({
       })
   }
 
+  function handleLogoutDialogOpenChange(open: boolean) {
+    if (isLoggingOut) {
+      return
+    }
+
+    setIsLogoutDialogOpen(open)
+  }
+
+  function handleConfirmLogout() {
+    setIsLoggingOut(true)
+
+    try {
+      const logoutResult = onLogout()
+
+      Promise.resolve(logoutResult).catch(() => setIsLoggingOut(false))
+    } catch {
+      setIsLoggingOut(false)
+    }
+  }
+
   return (
     <>
       <header className="app-header">
@@ -562,6 +589,14 @@ export function AuthenticatedDashboard({
         <div className="header-actions">
           <Button onClick={() => onOpenMeasurementForm()} type="button">
             Registrar medida
+          </Button>
+          <Button
+            disabled={state.status === "loading"}
+            onClick={onRefreshData}
+            type="button"
+            variant="secondary"
+          >
+            Atualizar dados
           </Button>
           <Button
             disabled={exportState.status === "loading"}
@@ -590,11 +625,27 @@ export function AuthenticatedDashboard({
             onChange={(event) => handleImportCsv(event.target.files?.[0])}
             type="file"
           />
-          <Button onClick={onLogout} type="button" variant="secondary">
+          <Button
+            onClick={() => setIsLogoutDialogOpen(true)}
+            type="button"
+            variant="secondary"
+          >
             Sair
           </Button>
         </div>
       </header>
+
+      <ConfirmationDialog
+        confirmLabel="Sair"
+        confirmVariant="danger"
+        confirmingLabel="Saindo..."
+        description="Deseja encerrar a sessão atual?"
+        isConfirming={isLoggingOut}
+        onConfirm={handleConfirmLogout}
+        onOpenChange={handleLogoutDialogOpenChange}
+        open={isLogoutDialogOpen}
+        title="Sair do BodyLog"
+      />
 
       {savedMessage ? (
         <Callout.Root color="green" role="status">

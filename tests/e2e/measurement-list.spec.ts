@@ -19,7 +19,7 @@ type ListedMeasurementPayload = {
 test("renders recent measurements, loads more, and opens an item for editing", async ({
   page,
 }) => {
-  const measurements = createMeasurements(21)
+  const measurements = createMeasurements(32)
   const deletedMeasurementIds: string[] = []
   let dashboardRequestCount = 0
   let requestedListLimits: number[] = []
@@ -29,7 +29,7 @@ test("renders recent measurements, loads more, and opens an item for editing", a
   })
   await page.route("**/api/measurements?*", async (route) => {
     const url = new URL(route.request().url())
-    const limit = Number(url.searchParams.get("limit") ?? "20")
+    const limit = Number(url.searchParams.get("limit") ?? "30")
 
     requestedListLimits = [...requestedListLimits, limit]
 
@@ -95,7 +95,7 @@ test("renders recent measurements, loads more, and opens an item for editing", a
   await expect(table).toBeVisible()
   await expect(table.getByRole("columnheader").first()).toHaveText("Data")
   await expect(table.getByRole("columnheader").last()).toHaveText("Ações")
-  await expect(table.locator("tbody tr")).toHaveCount(20)
+  await expect(table.locator("tbody tr")).toHaveCount(30)
   await expectHorizontalScrollbarToBeVisible(page)
   await expectHorizontalScrollbarToClearLastRow(page)
   await expectNoTrailingTableScrollSpace(page)
@@ -136,7 +136,7 @@ test("renders recent measurements, loads more, and opens an item for editing", a
   ).toBeVisible()
   await deleteDialog.getByRole("button", { name: "Cancelar" }).click()
   await expect(deleteDialog).toBeHidden()
-  await expect(table.locator("tbody tr")).toHaveCount(20)
+  await expect(table.locator("tbody tr")).toHaveCount(30)
   expect(deletedMeasurementIds).toEqual([])
 
   await deletableItem
@@ -167,12 +167,12 @@ test("renders recent measurements, loads more, and opens an item for editing", a
 
   await page.getByRole("button", { name: "Carregar mais" }).click()
 
-  await expect(table.locator("tbody tr")).toHaveCount(20)
+  await expect(table.locator("tbody tr")).toHaveCount(31)
   await expect(page.getByRole("button", { name: "Carregar mais" })).toHaveCount(
     0,
   )
-  expect(requestedListLimits).toContain(21)
-  expect(requestedListLimits[requestedListLimits.length - 1]).toBe(41)
+  expect(requestedListLimits).toContain(31)
+  expect(requestedListLimits[requestedListLimits.length - 1]).toBe(61)
 
   await newestItem.getByRole("button", { name: "Editar" }).click()
 

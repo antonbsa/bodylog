@@ -139,6 +139,16 @@ The project owner handles local dev servers manually.
 
 Agents may still run finite validation commands such as typecheck, lint, tests, builds, migrations, and one-off CLI checks when they are relevant to the task.
 
+## Worktree Configuration
+
+All agents and sub-agents must configure git worktrees under `.agent-state/worktrees/` to keep temporary worktrees organized and hidden from search and file navigation.
+
+When using git worktree operations (including tools like Gitlens Start Work or Gitlens Start Review):
+
+- Specify the worktree path as `.agent-state/worktrees/<descriptive-name>` relative to the repository root
+- This keeps the workspace clean and prevents cluttering the editor's file explorer and search results
+- The `.agent-state` folder is already excluded in `.vscode/settings.json`
+
 ## Commit Message Rules
 
 Use Conventional Commits.

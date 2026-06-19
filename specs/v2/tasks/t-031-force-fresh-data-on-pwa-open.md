@@ -2,7 +2,7 @@
 
 ## Status
 
-To Do
+Done
 
 ## Description
 
@@ -58,36 +58,65 @@ forces manual reloads, making it slower than the spreadsheet it replaces.
 
 ## Validation
 
-Run the relevant automated checks:
+Automated checks completed:
 
-- `npm run typecheck`
-- `npm run lint`
-- `npm run test:web`
-- `npm run build`
-- `git diff --check`
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run test:web`
+- [x] `npm run build`
+- [x] `git diff --check`
 
-Manual validation:
+Manual validation status:
 
-- Reopening the installed PWA (or returning it to the foreground) shows fresh
-  data without a manual reload.
-- A new deploy is picked up without manually clearing the cache.
+- Not performed against an installed PWA or deployed Cloudflare Pages
+  environment in this local worktree.
+- Automated browser coverage simulates returning to the foreground with a
+  `focus` event and verifies dashboard/history data refresh.
+- Automated static coverage verifies the Cloudflare Pages `_headers` file
+  revalidates `/` and `/index.html`.
+
+## Implementation Notes
+
+- The authenticated app now increments the existing dashboard/history
+  `refreshKey` when the window receives `focus`, when `pageshow` fires, or when
+  `document.visibilityState` returns to `visible`.
+- Resume-triggered refreshes are deduplicated within 500ms so common
+  focus/visibility event bursts do not fire duplicate fetches.
+- The dashboard header includes a manual `Atualizar dados` button that uses the
+  same refresh path.
+- The shared web API client now defaults data requests to `cache: "no-store"`.
+- Cloudflare Pages receives `apps/web/public/_headers`, copied into `dist/` by
+  Vite, to keep the HTML entry revalidated without adding a service worker.
+- Added `npm run test:web` as an alias for the existing Playwright web suite so
+  the task's requested validation command is available.
+
+## Modified Files
+
+- `apps/web/src/api/client.ts`
+- `apps/web/src/screens/AuthenticatedApp.tsx`
+- `apps/web/src/screens/components/AuthenticatedDashboard.tsx`
+- `apps/web/public/_headers`
+- `package.json`
+- `tests/e2e/dashboard.spec.ts`
+- `tests/e2e/tooling.spec.ts`
+- `specs/v2/tasks/t-031-force-fresh-data-on-pwa-open.md`
 
 ## Acceptance Criteria
 
-- [ ] Opening or resuming the PWA reliably loads fresh dashboard/history/weekly
+- [x] Opening or resuming the PWA reliably loads fresh dashboard/history/weekly
       data.
-- [ ] Data requests are not served from a stale HTTP cache.
-- [ ] `index.html` is not cached in a way that keeps serving stale asset
+- [x] Data requests are not served from a stale HTTP cache.
+- [x] `index.html` is not cached in a way that keeps serving stale asset
       references after a deploy.
-- [ ] No service worker or offline behavior was added.
-- [ ] A manual "refresh data" affordance is available as a fallback.
-- [ ] All listed automated checks pass.
+- [x] No service worker or offline behavior was added.
+- [x] A manual "refresh data" affordance is available as a fallback.
+- [x] All listed automated checks pass.
 
 ## Definition of Done
 
-- [ ] Acceptance criteria are met
-- [ ] Implementation matches the approved spec or plan
-- [ ] Relevant docs or specs were updated when needed
-- [ ] Tests or manual validation were completed
-- [ ] No unrelated changes were introduced
-- [ ] Task notes include validation results
+- [x] Acceptance criteria are met
+- [x] Implementation matches the approved spec or plan
+- [x] Relevant docs or specs were updated when needed
+- [x] Tests or manual validation were completed
+- [x] No unrelated changes were introduced
+- [x] Task notes include validation results

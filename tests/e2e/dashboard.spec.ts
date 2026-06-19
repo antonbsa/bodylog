@@ -118,6 +118,89 @@ test("shows latest recorded metrics when the current week has no measurements", 
   await expect(weightCard).toContainText("IMC médio: 26,22")
 })
 
+test("refreshes dashboard and history manually and when returning to foreground", async ({
+  page,
+}) => {
+  const currentWeek = getWeekRange(getTodayDateInputValue())
+  const previousWeek = getPreviousWeekRange(currentWeek.weekStartDate)
+  let dashboardWeightKg = 73
+  let measurementDate = "2026-06-10"
+  let dashboardRequestCount = 0
+  let measurementRequestCount = 0
+
+  await page.route("**/api/auth/session", async (route) => {
+    await route.fulfill({
+      body: JSON.stringify({
+        authenticated: true,
+      }),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
+  await page.route("**/api/dashboard/weekly", async (route) => {
+    dashboardRequestCount += 1
+    expect(route.request().headers()["cache-control"]).toBe("no-store")
+
+    await route.fulfill({
+      body: JSON.stringify(
+        createWeeklyDashboardPayload({
+          currentWeek,
+          previousWeek,
+          weightKg: dashboardWeightKg,
+        }),
+      ),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
+  await page.route("**/api/measurements?*", async (route) => {
+    measurementRequestCount += 1
+    expect(route.request().headers()["cache-control"]).toBe("no-store")
+
+    await route.fulfill({
+      body: JSON.stringify({
+        items: [createListedMeasurement(measurementDate, dashboardWeightKg)],
+      }),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+
+  await expect(
+    page.locator(".metric-card").filter({ hasText: "Peso médio" }),
+  ).toContainText("73 kg")
+  await expect(page.getByText("10/06/2026")).toBeVisible()
+
+  dashboardWeightKg = 74
+  measurementDate = "2026-06-11"
+
+  await page.getByRole("button", { name: "Atualizar dados" }).click()
+
+  await expect(
+    page.locator(".metric-card").filter({ hasText: "Peso médio" }),
+  ).toContainText("74 kg")
+  await expect(page.getByText("11/06/2026")).toBeVisible()
+  expect(dashboardRequestCount).toBeGreaterThanOrEqual(2)
+  expect(measurementRequestCount).toBeGreaterThanOrEqual(2)
+
+  dashboardWeightKg = 75
+  measurementDate = "2026-06-12"
+
+  await page.waitForTimeout(600)
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("focus"))
+  })
+
+  await expect(
+    page.locator(".metric-card").filter({ hasText: "Peso médio" }),
+  ).toContainText("75 kg")
+  await expect(page.getByText("12/06/2026")).toBeVisible()
+  expect(dashboardRequestCount).toBeGreaterThanOrEqual(3)
+  expect(measurementRequestCount).toBeGreaterThanOrEqual(3)
+})
+
 test("exports measurements CSV from the dashboard action", async ({ page }) => {
   const currentWeek = getWeekRange(getTodayDateInputValue())
   const previousWeek = getPreviousWeekRange(currentWeek.weekStartDate)
@@ -416,6 +499,96 @@ function emptyAverages() {
     musclePercentage: null,
     muscleKg: null,
     restingMetabolismKcal: null,
+  }
+}
+
+function createWeeklyDashboardPayload({
+  currentWeek,
+  previousWeek,
+  weightKg,
+}: {
+  currentWeek: WeekRange
+  previousWeek: WeekRange
+  weightKg: number
+}) {
+  const currentAverages = {
+    weightKg,
+    bmi: 25.87,
+    bodyFatPercentage: 14,
+    bodyFatKg: 10.36,
+    musclePercentage: 44,
+    muscleKg: 32.56,
+    restingMetabolismKcal: 1700,
+  }
+
+  return {
+    current: {
+      weekStartDate: currentWeek.weekStartDate,
+      weekEndDate: currentWeek.weekEndDate,
+      measurementCount: 2,
+      isCurrentWeek: true,
+      isPartialWeek: true,
+      averages: currentAverages,
+    },
+    display: {
+      mode: "current-week",
+      summary: {
+        weekStartDate: currentWeek.weekStartDate,
+        weekEndDate: currentWeek.weekEndDate,
+        measurementCount: 2,
+        isCurrentWeek: true,
+        isPartialWeek: true,
+        averages: currentAverages,
+      },
+      variation: {
+        weightKg: {
+          absolute: 1,
+          relativePercentage: 1.39,
+          direction: "up",
+        },
+      },
+    },
+    previous: {
+      weekStartDate: previousWeek.weekStartDate,
+      weekEndDate: previousWeek.weekEndDate,
+      measurementCount: 2,
+      isCurrentWeek: false,
+      isPartialWeek: false,
+      averages: {
+        weightKg: 72,
+        bmi: 25.51,
+        bodyFatPercentage: 16.2,
+        bodyFatKg: 11.67,
+        musclePercentage: 42.75,
+        muscleKg: 30.79,
+        restingMetabolismKcal: 1690,
+      },
+    },
+    variation: {
+      weightKg: {
+        absolute: 1,
+        relativePercentage: 1.39,
+        direction: "up",
+      },
+    },
+  }
+}
+
+function createListedMeasurement(date: string, weightKg: number) {
+  return {
+    id: `measurement-${date}`,
+    date,
+    weightKg,
+    bodyFatPercentage: 14,
+    musclePercentage: 44,
+    restingMetabolismKcal: 1700,
+    derived: {
+      bmi: 25.87,
+      bodyFatKg: 10.36,
+      muscleKg: 32.56,
+    },
+    createdAt: `${date}T12:00:00.000Z`,
+    updatedAt: `${date}T12:00:00.000Z`,
   }
 }
 

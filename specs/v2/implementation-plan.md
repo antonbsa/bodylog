@@ -61,4 +61,6 @@ Goal: deliver deferred MVP features that do not require multi-user or Postgres.
 
 Focus areas:
 
-- TBD based on priority during V2 planning.
+- **T-039 — Offline-first Logging**: make the installed PWA open offline after a
+  previous successful load, show last-known data, queue measurement
+  create/edit/delete actions locally, and sync them after reconnecting.

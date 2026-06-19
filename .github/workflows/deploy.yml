@@ -23,11 +23,15 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to Cloudflare
-    # For workflow_run: only proceed when CI actually passed.
+    # For workflow_run: only proceed when CI passed on a main push.
     # For workflow_dispatch: always allow (manual operator decision).
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

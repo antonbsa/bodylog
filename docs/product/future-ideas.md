@@ -45,6 +45,8 @@ Allow measurements to be recorded without an active connection and synced later.
 
 This is valuable because the daily logging flow should be fast and resilient, but it adds complexity and is not required for V1.
 
+Selected for V2 as `specs/v2/tasks/t-039-offline-first-logging.md`.
+
 ### Desktop-friendly Dashboard
 
 Improve desktop layout for deeper analysis.

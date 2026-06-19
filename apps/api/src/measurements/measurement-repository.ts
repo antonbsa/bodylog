@@ -1,7 +1,7 @@
+import { Measurement } from "../domain/measurement"
 import type {
   CreateMeasurementInput,
   ImportedMeasurementInput,
-  Measurement,
   UpdateMeasurementByDateInput,
 } from "./types"
 
@@ -53,7 +53,7 @@ export class MeasurementRepository {
 
   async create(input: CreateMeasurementInput): Promise<Measurement> {
     const timestamp = this.currentTimestamp()
-    const measurement: Measurement = {
+    const measurement = new Measurement({
       id: this.createId(),
       date: input.date,
       weightKg: input.weightKg,
@@ -62,7 +62,7 @@ export class MeasurementRepository {
       restingMetabolismKcal: input.restingMetabolismKcal ?? null,
       createdAt: timestamp,
       updatedAt: timestamp,
-    }
+    })
 
     await this.db
       .prepare(
@@ -184,7 +184,7 @@ export class MeasurementRepository {
       }
     }
 
-    const measurement: Measurement = {
+    const measurement = new Measurement({
       id: this.createId(),
       date: input.date,
       weightKg: input.weightKg,
@@ -193,7 +193,7 @@ export class MeasurementRepository {
       restingMetabolismKcal: input.restingMetabolismKcal ?? null,
       createdAt: input.createdAt,
       updatedAt: input.updatedAt,
-    }
+    })
 
     await this.db
       .prepare(
@@ -298,7 +298,7 @@ export class MeasurementRepository {
 }
 
 function mapMeasurementRow(row: MeasurementRow): Measurement {
-  return {
+  return new Measurement({
     id: row.id,
     date: row.date,
     weightKg: row.weight_kg,
@@ -307,5 +307,5 @@ function mapMeasurementRow(row: MeasurementRow): Measurement {
     restingMetabolismKcal: row.resting_metabolism_kcal,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-  }
+  })
 }

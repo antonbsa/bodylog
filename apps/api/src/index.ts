@@ -28,7 +28,6 @@ import {
 } from "./dashboard/weekly-dashboard-service"
 import { importMeasurementsCsv } from "./measurements/csv-import"
 import { serializeMeasurementsCsv } from "./measurements/csv-export"
-import { calculateDerivedMeasurementValues } from "./measurements/derived-calculations"
 import { MeasurementRepository } from "./measurements/measurement-repository"
 
 export const app = new Hono<{ Bindings: AppBindings }>()
@@ -260,10 +259,8 @@ app.get("/api/measurements", async (c) => {
 
   return c.json({
     items: measurements.map((measurement) => ({
-      ...measurement,
-      derived: calculateDerivedMeasurementValues(measurement, {
-        heightCm,
-      }),
+      ...measurement.toJSON(),
+      derived: measurement.getDerivedValues(heightCm),
     })),
   })
 })
