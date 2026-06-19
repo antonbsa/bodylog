@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises"
+
 import { expect, test, type Page } from "@playwright/test"
 
 async function mockSession(page: Page, authenticated: boolean) {
@@ -404,4 +406,14 @@ test("basic PWA manifest and icons are reachable", async ({
   }
 
   expect(installability.installabilityErrors).toEqual([])
+})
+
+test("Cloudflare Pages headers revalidate the HTML entry", async () => {
+  const headers = await readFile(
+    new URL("../../apps/web/public/_headers", import.meta.url),
+    "utf8",
+  )
+
+  expect(headers).toContain("/index.html\n  Cache-Control: no-cache")
+  expect(headers).toContain("/\n  Cache-Control: no-cache")
 })
