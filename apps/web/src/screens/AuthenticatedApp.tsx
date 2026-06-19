@@ -6,7 +6,7 @@ import { formatDisplayDateFromIso } from "../utils/date-format"
 import { MeasurementForm } from "./components/MeasurementForm"
 
 type AuthenticatedAppProps = {
-  onLogout: () => void
+  onLogout: () => Promise<void> | void
 }
 
 export function AuthenticatedApp({ onLogout }: AuthenticatedAppProps) {
