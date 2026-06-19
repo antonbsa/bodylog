@@ -38,7 +38,7 @@ import {
 } from "../../utils/csv-import-summary"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
 
-const HISTORY_PAGE_SIZE = 20
+const HISTORY_PAGE_SIZE = 30
 
 type DashboardState = {
   dashboard: WeeklyDashboard | null
