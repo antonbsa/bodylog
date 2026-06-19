@@ -280,6 +280,8 @@ test("authenticated session survives a page reload", async ({ page }) => {
       status: 200,
     })
   })
+  await mockWeeklyDashboard(page)
+  await mockMeasurementList(page)
 
   await page.goto("/")
   await page.getByLabel("Senha").fill("senha-correta")

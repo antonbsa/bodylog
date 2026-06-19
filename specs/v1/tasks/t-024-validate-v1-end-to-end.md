@@ -56,9 +56,14 @@ Do not add multi-user behavior, advanced analytics, Google Sheets integration, o
 
 - `eslint.config.mjs` — added `apps/api/.wrangler/**` to ESLint `ignores`. The wrangler local-dev bundle in `apps/api/.wrangler/tmp/` was not covered by the existing `.wrangler/**` glob (which only matches at the repo root). The directory is gitignored so CI was unaffected, but local `npm run lint` was broken.
 
+### Follow-up fix (2026-06-19)
+
+- `tests/e2e/tooling.spec.ts` — added the missing dashboard and measurement-list route mocks to the authenticated reload test. The test passed before because the dashboard heading renders before API data resolves, but background requests missed Playwright mocks and fell through to the Vite `/api` proxy, causing noisy `ECONNREFUSED 127.0.0.1:8787` web server logs.
+
 ## Modified files
 
 - `eslint.config.mjs`
+- `tests/e2e/tooling.spec.ts`
 - `specs/v1/tasks/t-024-validate-v1-end-to-end.md`
 
 ## Acceptance Criteria
