@@ -1,41 +1,15 @@
 import {
   CsvImportError,
-  type CsvImportErrorSummary,
   createFallbackApiError,
   parseApiError,
   throwApiError,
 } from "../../../../infra/errors"
 import { api } from "./client"
-
-export type Measurement = {
-  id: string
-  date: string
-  weightKg: number
-  bodyFatPercentage: number | null
-  musclePercentage: number | null
-  restingMetabolismKcal: number | null
-  createdAt: string
-  updatedAt: string
-}
-
-export type MeasurementDerivedValues = {
-  bmi: number
-  bodyFatKg: number | null
-  muscleKg: number | null
-}
-
-export type ListedMeasurement = Measurement & {
-  derived: MeasurementDerivedValues
-}
-
-export type SaveMeasurementInput = {
-  bodyFatPercentage: number | null
-  musclePercentage: number | null
-  restingMetabolismKcal: number | null
-  weightKg: number
-}
-
-export type CsvImportSummary = CsvImportErrorSummary
+import type {
+  CsvImportSummary,
+  Measurement,
+} from "../../../../types/measurements"
+import type { ListedMeasurement, SaveMeasurementInput } from "../types"
 
 export async function listMeasurements(options: {
   limit: number

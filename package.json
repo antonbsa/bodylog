@@ -23,17 +23,18 @@
     "db:migrate:remote": "wrangler d1 migrations apply body_metrics_tracker --config apps/api/wrangler.toml --remote",
     "db:query:local": "wrangler d1 execute body_metrics_tracker --config apps/api/wrangler.toml --local --command",
     "db:query:remote": "wrangler d1 execute body_metrics_tracker --config apps/api/wrangler.toml --remote --command",
-    "db:setup:local": "tsx scripts/local-db/cli.ts setup",
-    "db:seed:local": "tsx scripts/local-db/cli.ts seed",
-    "db:reset:local": "tsx scripts/local-db/cli.ts reset",
+    "db:setup:local": "tsx infra/scripts/local-db/cli.ts setup",
+    "db:seed:local": "tsx infra/scripts/local-db/cli.ts seed",
+    "db:reset:local": "tsx infra/scripts/local-db/cli.ts reset",
     "test:api": "vitest run --config vitest.config.ts",
     "test:e2e": "playwright test",
-    "typecheck": "npm run typecheck:api && npm run typecheck:web && npm run typecheck:tests && npm run typecheck:e2e && npm run typecheck:scripts",
+    "typecheck": "npm run typecheck:shared && npm run typecheck:api && npm run typecheck:web && npm run typecheck:tests && npm run typecheck:e2e && npm run typecheck:scripts",
+    "typecheck:shared": "tsc -p tsconfig.json --noEmit",
     "typecheck:api": "npm --workspace @bodylog/api run typecheck",
     "typecheck:web": "npm --workspace @bodylog/web run typecheck",
     "typecheck:tests": "tsc -p tests/tsconfig.json --noEmit",
     "typecheck:e2e": "tsc -p tests/e2e/tsconfig.json --noEmit",
-    "typecheck:scripts": "tsc -p scripts/tsconfig.json --noEmit"
+    "typecheck:scripts": "tsc -p infra/scripts/tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250525.0",

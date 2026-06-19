@@ -3,25 +3,14 @@ import type {
   MetricVariation,
   WeeklyDashboard,
   WeekSummary,
-} from "../api/dashboard"
+} from "../../../../types/dashboard"
+import type { DashboardCardModel, OutcomeClass } from "../types"
 import { getDateOnlyDifferenceInDays, getTodayIsoDate } from "./date-format"
 import {
   formatDisplayNumber,
   formatOptionalPreciseDisplayNumber,
   formatSignedDisplayNumber,
 } from "./number-format"
-
-export type DashboardCardModel = {
-  directionMetric: "bodyFat" | "muscle" | "weight"
-  label: string
-  secondaryLabel: string
-  secondaryValue: number | null
-  type: "percentage" | "weight"
-  value: number | null
-  variation: MetricVariation | undefined
-  variationSecondary: MetricVariation | undefined
-  variationSecondaryType: "absoluteKg" | "relativePercentage"
-}
 
 export function createDashboardCardModels(
   dashboard: WeeklyDashboard,
@@ -99,12 +88,6 @@ export function getReliability(measurementCount: number): {
     label: "Alta",
   }
 }
-
-export type OutcomeClass =
-  | "metric-card-negative"
-  | "metric-card-positive"
-  | "metric-card-stable"
-  | "metric-card-unavailable"
 
 export function getOutcomeClass(
   metric: DashboardCardModel["directionMetric"],

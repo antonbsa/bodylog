@@ -81,14 +81,14 @@ Static SQL seed files are not a good fit for this project because dates are cent
 
 ## Implementation Notes
 
-- Split local DB tooling under `scripts/local-db/` instead of keeping one large script.
+- Split local DB tooling under `infra/scripts/local-db/` instead of keeping one large script.
 - Added `npm run db:setup:local` to apply local migrations and seed default mocked measurements only when the local database is empty.
 - Added `npm run db:seed:local` for explicit default mocked data.
 - Added `npm run db:reset:local` to clear local measurements and recreate the default mocked data.
 - Kept `npm run dev` unchanged; it does not run migrations or seed data.
 - Added `tsx` and `@types/node` as dev dependencies for TypeScript local tooling.
-- Added `scripts/tsconfig.json` and included script typechecking in the root `npm run typecheck` command.
-- Added `scripts/local-db/seed-template.sql` so the SQL shape stays readable while dates and values are generated in TypeScript.
+- Added `infra/scripts/tsconfig.json` and included script typechecking in the root `npm run typecheck` command.
+- Added `infra/scripts/local-db/seed-template.sql` so the SQL shape stays readable while dates and values are generated in TypeScript.
 
 ## Seed Support
 
@@ -109,7 +109,7 @@ Commands run:
 ```sh
 npm run typecheck:scripts
 npm run typecheck
-npx eslint scripts/local-db
+npx eslint infra/scripts/local-db
 npm run test:api
 npm run lint
 BODYLOG_D1_PERSIST_TO=/tmp/tmp.Np5xpK2LMb npm run db:setup:local -- --today 2026-06-11
@@ -122,7 +122,7 @@ npx wrangler d1 execute body_metrics_tracker --local --persist-to /tmp/tmp.Np5xp
 
 Results:
 
-- `npm run typecheck`, `npx eslint scripts/local-db`, `npm run test:api`, and `npm run lint` passed.
+- `npm run typecheck`, `npx eslint infra/scripts/local-db`, `npm run test:api`, and `npm run lint` passed.
 - First setup applied local migrations and seeded 11 default records.
 - Second setup found 11 records and skipped seeding.
 - Explicit seed did not create duplicate dates; count and distinct date count both remained 11.
@@ -135,14 +135,14 @@ Modified files:
 - `docs/guides/development.md`
 - `package.json`
 - `package-lock.json`
-- `scripts/local-db/README.md`
-- `scripts/local-db/cli.ts`
-- `scripts/local-db/dates.ts`
-- `scripts/local-db/seed-data.ts`
-- `scripts/local-db/seed-sql.ts`
-- `scripts/local-db/seed-template.sql`
-- `scripts/local-db/types.ts`
-- `scripts/local-db/wrangler.ts`
-- `scripts/tsconfig.json`
+- `infra/scripts/local-db/README.md`
+- `infra/scripts/local-db/cli.ts`
+- `infra/scripts/local-db/dates.ts`
+- `infra/scripts/local-db/seed-data.ts`
+- `infra/scripts/local-db/seed-sql.ts`
+- `infra/scripts/local-db/seed-template.sql`
+- `infra/scripts/local-db/types.ts`
+- `infra/scripts/local-db/wrangler.ts`
+- `infra/scripts/tsconfig.json`
 - `specs/v1/tasks/README.md`
 - `specs/v1/tasks/t-026-prepare-local-development-data-setup.md`

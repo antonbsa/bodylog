@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 
-import type { Measurement } from "../api/measurements"
 import { AuthenticatedDashboard } from "./components/AuthenticatedDashboard"
 import { formatDisplayDateFromIso } from "../utils/date-format"
 import { MeasurementForm } from "./components/MeasurementForm"
+import type { Measurement } from "../../../../types/measurements"
 
 type AuthenticatedAppProps = {
   onLogout: () => Promise<void> | void

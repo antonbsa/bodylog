@@ -1,3 +1,5 @@
+import type { MeasurementRepository } from "../measurements/measurement-repository"
+import type { WeeklyDashboard } from "../../../../types/dashboard"
 import type { Measurement } from "../domain/measurement"
 import {
   WeekComparison,
@@ -5,14 +7,13 @@ import {
 } from "../domain/week-comparison"
 import { getPreviousWeekRange, getWeekRange } from "../domain/week-range"
 import { WeekSummary } from "../domain/week-summary"
-import type { MeasurementRepository } from "../measurements/measurement-repository"
 
-export type WeeklyDashboardRepository = Pick<MeasurementRepository, "list">
-
-export type WeeklyDashboardConfig = {
+type WeeklyDashboardConfig = {
   currentDate: string
   heightCm: number
 }
+
+export type WeeklyDashboardRepository = Pick<MeasurementRepository, "list">
 
 export type WeeklyDisplayMode = "current-week" | "latest-recorded-week"
 
@@ -32,7 +33,7 @@ export type WeeklyComparison = {
 export async function getWeeklyDashboard(
   repository: WeeklyDashboardRepository,
   config: WeeklyDashboardConfig,
-): Promise<WeeklyComparison> {
+): Promise<WeeklyDashboard> {
   const measurements = await repository.list()
   const currentRange = getWeekRange(config.currentDate)
   const previousRange = getPreviousWeekRange(currentRange.weekStartDate)

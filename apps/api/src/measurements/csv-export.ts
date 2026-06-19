@@ -1,4 +1,4 @@
-import type { Measurement } from "../domain/measurement"
+import type { Measurement } from "../../../../types/measurements"
 
 export const measurementCsvHeaders = [
   "date",

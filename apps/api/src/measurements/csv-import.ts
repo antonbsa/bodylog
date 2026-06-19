@@ -1,5 +1,9 @@
 import type { MeasurementRepository } from "./measurement-repository"
-import type { ImportedMeasurementInput } from "./types"
+import type { ImportedMeasurementInput } from "../types"
+import type {
+  CsvImportRowError,
+  CsvImportSummary,
+} from "../../../../types/measurements"
 
 const requiredHeaders = [
   "date",
@@ -15,25 +19,13 @@ type ImportCsvOptions = {
   importedAt?: Date
 }
 
-export type CsvImportRowIssue = {
-  message: string
-  row: number
-}
-
-export type CsvImportSummary = {
-  created: number
-  errors: CsvImportRowIssue[]
-  skipped: number
-  updated: number
-}
-
 type CsvRowResult =
   | {
       input: ImportedMeasurementInput
       ok: true
     }
   | {
-      errors: CsvImportRowIssue[]
+      errors: CsvImportRowError[]
       ok: false
     }
 
@@ -157,7 +149,7 @@ function parseMeasurementCsvRow(
   const expectedLength = options.hasAuditTimestamps
     ? fullHeaders.length
     : requiredHeaders.length
-  const errors: CsvImportRowIssue[] = []
+  const errors: CsvImportRowError[] = []
 
   if (row.length !== expectedLength) {
     return {

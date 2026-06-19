@@ -118,7 +118,7 @@ Variables:
 - `docs/technical/architecture.md`
 - `docs/technical/deployment.md`
 - `package.json`
-- `scripts/local-db/wrangler.ts`
+- `infra/scripts/local-db/wrangler.ts`
 - `specs/v1/open-questions.md`
 - `specs/v1/tasks/README.md`
 - `specs/v1/tasks/t-013-implement-login.md`

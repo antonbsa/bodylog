@@ -145,7 +145,7 @@ npm run db:seed:local -- --today 2026-06-11
 npm run db:reset:local -- --today 2026-06-11
 ```
 
-Local seed data is development-only. It generates measurement dates relative to the current date so weekly dashboard development remains useful over time. See `scripts/local-db/README.md` for details.
+Local seed data is development-only. It generates measurement dates relative to the current date so weekly dashboard development remains useful over time. See `infra/scripts/local-db/README.md` for details.
 
 Run ad hoc (manual) D1 queries:
 

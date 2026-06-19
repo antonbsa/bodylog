@@ -14,7 +14,6 @@ import {
   getSessionSecret,
   getUserHeightCm,
   getUserTimeZone,
-  type AppBindings,
 } from "./config"
 import {
   createSessionCookieValue,
@@ -29,6 +28,7 @@ import {
 import { importMeasurementsCsv } from "./measurements/csv-import"
 import { serializeMeasurementsCsv } from "./measurements/csv-export"
 import { MeasurementRepository } from "./measurements/measurement-repository"
+import type { AppBindings } from "./types"
 
 export const app = new Hono<{ Bindings: AppBindings }>()
 

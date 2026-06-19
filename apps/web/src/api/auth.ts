@@ -6,7 +6,7 @@ import {
 } from "../../../../infra/errors"
 import { api } from "./client"
 
-export type LoginResult =
+type LoginResult =
   | {
       ok: true
     }

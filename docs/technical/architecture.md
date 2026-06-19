@@ -25,7 +25,11 @@ apps/
 tests/
   api/      API and backend behavior tests
   e2e/      Playwright E2E tests
-migrations/ Cloudflare D1 migrations
+infra/
+  migrations/ Cloudflare D1 migrations
+  scripts/    local infrastructure tooling
+  errors/     shared structured error definitions
+types/      shared API/web TypeScript shapes
 ```
 
 The root package owns shared scripts for installation, typechecking, tests, D1 commands, and deployment entry points.
