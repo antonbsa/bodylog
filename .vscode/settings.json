@@ -1,3 +1,6 @@
 {
-  "cSpell.words": ["bodylog"]
+  "cSpell.words": ["bodylog"],
+  "search.exclude": {
+    ".agent-state/worktrees": true
+  }
 }

@@ -26,9 +26,14 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 - [T-037 — Measurement Form Polish](./t-037-measurement-form-polish.md)
 - [T-038 — Replace Callouts with Toast Notifications](./t-038-replace-callouts-with-toast-notifications.md)
 
-The three groups are sequencing-sensitive and must run in order — all
+### Final V2 offline-first task
+
+- [T-039 — Offline-first Logging](./t-039-offline-first-logging.md)
+
+The task groups are sequencing-sensitive and must run in order — all
 before-redesign tasks (T-030…T-035), then the redesign (T-036), then the
-after-redesign tasks (T-037, T-038) — to avoid conflicts over the same files.
+after-redesign tasks (T-037, T-038), then the final offline-first task (T-039)
+— to avoid conflicts over the same files.
 Within the before-redesign group, T-035 (structured errors) builds on T-033
-(`infra/errors/`), and T-038 consumes T-035's error shape and T-036's toast
+(`infra/errors.ts`), and T-038 consumes T-035's error shape and T-036's toast
 styling. See `../implementation-plan.md`.

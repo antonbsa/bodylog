@@ -2,45 +2,37 @@ import { describe, expect, it } from "vitest"
 
 import { app } from "../../apps/api/src/index"
 
+const env = {
+  DB: {
+    prepare: () => {
+      throw new Error("Root liveness route must not query D1")
+    },
+  } as unknown as D1Database,
+}
+
 describe("api base", () => {
-  it("responds to the health route", async () => {
-    const response = await app.request("/api/health")
+  it("responds to the public root route with a liveness response", async () => {
+    const response = await app.request("/", {}, env)
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
       ok: true,
-      service: "bodylog-api",
     })
   })
 
-  it("runs middleware for api routes", async () => {
-    const response = await app.request("/api/health")
-
-    expect(response.headers.get("x-bodylog-api")).toBe("ok")
-  })
-
-  it("executes the D1 health query through the api", async () => {
+  it("does not emit the old api identity header", async () => {
     const response = await app.request(
-      "/api/health/d1",
+      "/api/auth/session",
       {},
       {
-        DB: {
-          prepare: (query: string) => {
-            expect(query).toBe("SELECT 1 AS result")
-
-            return {
-              first: async () => ({ result: 1 }),
-            }
-          },
-        } as unknown as D1Database,
+        ...env,
+        APP_PASSWORD: "correct-password",
+        SESSION_SECRET: "test-session-secret",
+        USER_HEIGHT_CM: "168",
+        USER_TIME_ZONE: "America/Sao_Paulo",
       },
     )
 
-    expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
-      ok: true,
-      database: "body_metrics_tracker",
-      result: 1,
-    })
+    expect(response.headers.get("x-bodylog-api")).toBeNull()
   })
 })

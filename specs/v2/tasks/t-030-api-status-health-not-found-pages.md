@@ -1,26 +1,24 @@
-# T-030 — API Status / Health / Not-Found Pages
+# T-030 — API Liveness / Not-Found Pages
 
 ## Status
 
-To Do
+Done
 
 ## Description
 
-Rework the API's status/health surface and add a frontend not-found page.
+Rework the API's public liveness surface and add a frontend not-found page.
 
 Today the API health response leaks a service identity and the frontend has no
 fallback page for unknown routes. This task:
 
-- removes the `service: "bodylog-api"` field from the health response
-  (`apps/api/src/index.ts:178`) and the `x-bodylog-api: ok` middleware header
-  (`apps/api/src/index.ts:172`);
+- removes the old `service: "bodylog-api"` field from the former health
+  response and the `x-bodylog-api: ok` middleware header;
 - adds a public root route `GET /` returning `200` with
-  `{ ok: true, health: <api_endpoint_health> }` (no `/` route exists today; Hono
-  currently falls through to a default 404);
-- moves the existing health endpoints off the `/api` prefix —
-  `GET /api/health` (`apps/api/src/index.ts:175`) → `GET /health` and
-  `GET /api/health/d1` (`apps/api/src/index.ts:182`) → `GET /health/d1` — and
-  enriches the health payload with cheap, non-secret signals;
+  `{ ok: true }` as a lightweight liveness response (no `/` route exists in the
+  pre-task API; Hono falls through to a default 404);
+- removes the health endpoints instead of replacing them. At this project size,
+  a dependency-readiness contract is unnecessary; `GET /` only answers whether
+  the Worker can respond;
 - adds a default frontend not-found page for unknown routes, with a single
   button that redirects to `/`. The frontend has **no router** today
   (`apps/web/src/App.tsx` switches only on auth state), so this introduces
@@ -29,37 +27,29 @@ fallback page for unknown routes. This task:
 ## Why
 
 The `service`/`x-bodylog-api` identifiers expose deployment internals to
-unauthenticated callers with no product value. A predictable root + health
-contract makes uptime/monitoring checks straightforward, and a not-found page
-gives users a clear path back instead of a blank or broken screen. Doing this
-before the T-036 redesign avoids reworking the API entry point and frontend
-shell twice.
+unauthenticated callers with no product value. A predictable root liveness
+response makes it easy to know the API is running without adding premature
+dependency health semantics. A not-found page gives users a clear path back
+instead of a blank or broken screen. Doing this before the T-036 redesign avoids
+reworking the API entry point and frontend shell twice.
 
 ## Scope
 
-- Remove `service: "bodylog-api"` from the health response and the
+- Remove the old `service: "bodylog-api"` health payload field and the
   `c.header("x-bodylog-api", "ok")` middleware header.
 - Add `GET /` (public, unauthenticated) returning `200` with:
 
   ```json
   {
-    "d1": true,
-    "health": "https://api.bodylog.antonbsa.dev/health"
+    "ok": true
   }
   ```
 
-  where `d1` is a boolean D1 connectivity check and `health` is the absolute URL
-  of the relocated `/health` endpoint, built from the API's own base URL (the
-  same value the frontend reads as `VITE_API_BASE_URL` —
-  `apps/web/src/env.d.ts:4`, `apps/web/src/api/client.ts:1` — so the API needs
-  its own configured base URL, e.g. an environment variable, to construct this
-  absolute link).
-- Move `GET /api/health` → `GET /health` and `GET /api/health/d1` →
-  `GET /health/d1`, kept public. Confirm the `/api/*` auth and CORS middleware
-  still behave for the remaining data routes after the move.
-- Enrich the `/health` payload with cheap, non-secret signals (at minimum D1
-  connectivity; consider configured time zone and schema/migration
-  reachability).
+  This is a pure liveness response and does not check D1.
+- Remove `GET /api/health` and `GET /api/health/d1` without adding replacement
+  `/health` routes. Confirm the old health paths fall through as not found and
+  the `/api/*` auth and CORS middleware still behave for the remaining data
+  routes after the removal.
 - Re-verify the full route table. Routes that must stay under `/api`:
   `/api/dashboard/weekly`, `/api/export/csv`, `/api/import/csv`,
   `/api/measurements`, `/api/measurements/by-date/:date`,
@@ -81,11 +71,10 @@ shell twice.
 
 ## Assumptions
 
-- Health endpoints move to top-level `/health` and `/health/d1` and stay fully
-  public/unauthenticated. **Resolved.**
-- `GET /` returns exactly `{ d1: boolean, health: string }` — confirmed by the
-  owner. The exact extra fields (if any) inside `/health` itself beyond `d1`
-  remain at the implementer's discretion, kept cheap and secret-free.
+- `GET /` returns exactly `{ ok: true }` as a pure liveness response. It does
+  not check D1 or return an API health link. **Resolved.**
+- No health endpoints remain. If dependency checks are needed later, add a
+  dedicated readiness endpoint in a separate task. **Resolved.**
 - The not-found page is a default "404 Not Found" screen with a single button
   that redirects to `/`. **Resolved.** Frontend routing still uses the smallest
   viable approach (lightweight history-based switch or a tiny router), not a
@@ -103,32 +92,81 @@ Run the relevant automated checks:
 
 Manual validation:
 
-- `GET /` returns `200` with `{ d1: boolean, health: "<absolute /health URL>" }`.
-- `GET /health` and `GET /health/d1` respond; `GET /api/health*` no longer
-  exists.
+- `GET /` returns `200` with `{ "ok": true }`.
+- `GET /health`, `GET /health/d1`, and `GET /api/health*` do not exist.
 - No response includes `service: "bodylog-api"` or the `x-bodylog-api` header.
 - An unknown frontend route renders the "404 Not Found" page with a button that
   redirects to `/`; the auth-gated shell still works.
 
 ## Acceptance Criteria
 
-- [ ] Health response no longer exposes `service`, and the `x-bodylog-api`
+- [x] Public API responses no longer expose `service`, and the `x-bodylog-api`
       header is removed.
-- [ ] `GET /` returns `200` with `{ d1: boolean, health: string }`, public and
+- [x] `GET /` returns `200` with `{ ok: true }`, public and
       unauthenticated.
-- [ ] Health endpoints are reachable without the `/api` prefix and carry richer,
-      non-secret data; remaining `/api/*` data routes and middleware still work.
-- [ ] Unknown frontend routes render a default "404 Not Found" page with a
+- [x] Health endpoints are removed; remaining `/api/*` data routes and
+      middleware still work.
+- [x] Unknown frontend routes render a default "404 Not Found" page with a
       single button that redirects to `/`, without breaking the auth-gated
       shell.
-- [ ] Existing data-route API behavior and response shapes are unchanged.
-- [ ] All listed automated checks pass.
+- [x] Existing data-route API behavior and response shapes are unchanged.
+- [x] All listed automated checks pass.
 
 ## Definition of Done
 
-- [ ] Acceptance criteria are met
-- [ ] Implementation matches the approved spec or plan
-- [ ] Relevant docs or specs were updated when needed
-- [ ] Tests or manual validation were completed
-- [ ] No unrelated changes were introduced
-- [ ] Task notes include validation results
+- [x] Acceptance criteria are met
+- [x] Implementation matches the approved spec or plan
+- [x] Relevant docs or specs were updated when needed
+- [x] Tests or manual validation were completed
+- [x] No unrelated changes were introduced
+- [x] Task notes include validation results
+
+## Implementation Notes
+
+- Removed the `x-bodylog-api` middleware response header and the old
+  `service: "bodylog-api"` health payload field.
+- Added public `GET /` as a pure liveness route returning exactly `{ ok: true }`.
+  It does not query D1.
+- Removed `/health`, `/health/d1`, `/api/health`, and `/api/health/d1` as public
+  health surfaces. Removed the `API_BASE_URL` configuration that only existed to
+  build the old health link.
+- Added a minimal frontend route switch in `apps/web/src/App.tsx`: `/` keeps the
+  auth-gated shell, and every other path renders a mobile-first default
+  "404 Not Found" screen with a single button back to `/`.
+- Updated API contract/deployment docs, README route references, deployment
+  workflow configuration, and local development env configuration.
+
+## Validation Notes
+
+- `npm run typecheck` — passed.
+- `npm run lint` — passed.
+- `npm run test:api` — passed; 8 files, 64 tests.
+- `npm run build` — passed.
+- `git diff --check` — passed.
+- Initial `npm run test:api` failed before dependency installation because
+  `node_modules` was missing and `vitest` was not found. Ran `npm install` with
+  Node `v24.16.0`, then validation passed. `npm install` reported existing npm
+  audit findings; no dependency versions were changed for this task.
+- Playwright/E2E was not run locally because the project rule forbids starting
+  dev servers/watchers, and Playwright's config starts the Vite dev server. The
+  not-found route coverage was added to `tests/e2e/tooling.spec.ts` and was
+  typechecked.
+
+## Modified Files
+
+- `.env.development`
+- `.github/workflows/deploy.yml`
+- `README.md`
+- `apps/api/src/index.ts`
+- `apps/api/wrangler.toml`
+- `apps/web/src/App.tsx`
+- `apps/web/src/screens/NotFoundScreen.tsx`
+- `apps/web/src/styles.css`
+- `docs/technical/api.md`
+- `docs/technical/deployment.md`
+- `specs/v2/implementation-plan.md`
+- `specs/v2/open-questions.md`
+- `specs/v2/tasks/t-030-api-status-health-not-found-pages.md`
+- `tests/api/auth.test.ts`
+- `tests/api/index.test.ts`
+- `tests/e2e/tooling.spec.ts`

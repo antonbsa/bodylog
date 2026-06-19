@@ -12,6 +12,7 @@ V2 includes:
 
 - backend domain model refactor to encapsulate business rules in domain objects;
 - UI/UX polish and Radix UI adoption across all components;
+- offline-first logging for the installed PWA;
 - non-blocking MVP features deferred from V1.
 
 V2 excludes:
@@ -19,7 +20,6 @@ V2 excludes:
 - multi-user support;
 - complex authentication;
 - Google Sheets integration;
-- offline-first behavior;
 - health recommendations or automatic interpretation;
 - serverless Postgres migration (planned for V3).
 

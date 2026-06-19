@@ -8,6 +8,7 @@ import {
 } from "react"
 import { Badge, Dialog, Flex, TextField } from "@radix-ui/themes"
 
+import { formatApiErrorMessage } from "../../../../../infra/errors"
 import { Button } from "../../components/Button"
 import {
   getMeasurementByDate,
@@ -103,9 +104,9 @@ export function MeasurementForm({
             : createEmptyFields(fields.date)
         })
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (isCurrentLookup) {
-          setErrorMessage("Não foi possível carregar a medida dessa data.")
+          setErrorMessage(formatApiErrorMessage(error))
         }
       })
       .finally(() => {
@@ -144,8 +145,8 @@ export function MeasurementForm({
 
       measurementByDateCache.current.set(parsedFields.date, measurement)
       onSaved(measurement)
-    } catch {
-      setErrorMessage("Não foi possível salvar a medida.")
+    } catch (error) {
+      setErrorMessage(formatApiErrorMessage(error))
     } finally {
       setIsSubmitting(false)
     }

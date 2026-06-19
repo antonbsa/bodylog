@@ -26,19 +26,19 @@ conflict.
 
 **Before the redesign:**
 
-- **T-030 — API Status / Health / Not-Found Pages**: drop the `service` field /
-  `x-bodylog-api` header, add `GET /`, move health off the `/api` prefix, and add
-  a frontend not-found page.
+- **T-030 — API Liveness / Not-Found Pages**: drop the `service` field /
+  `x-bodylog-api` header, add `GET /` as a liveness endpoint, remove health
+  endpoints, and add a frontend not-found page.
 - **T-031 — Force Fresh Data on Every PWA Open**: refetch on open/resume and stop
   serving stale cached data (manifest-only, no service worker).
 - **T-032 — Increase History Window to 30 Items**.
 - **T-033 — Restructure `infra/` Folder**: move `migrations/`, local-db
-  `scripts/`, and add an `errors/` location, updating all references.
+  `scripts/`, and add `infra/errors.ts`, updating all references.
 - **T-034 — Reusable Confirmation Dialog**: generalize the delete dialog and use
   it for both delete and logout.
 - **T-035 — Structured Error Handling**: shared error module + consistent
   `{ name, message, action, statusCode }` shape across API and frontend (lives in
-  T-033's `infra/errors/`).
+  T-033's `infra/errors.ts`).
 
 **The redesign:**
 
@@ -61,4 +61,6 @@ Goal: deliver deferred MVP features that do not require multi-user or Postgres.
 
 Focus areas:
 
-- TBD based on priority during V2 planning.
+- **T-039 — Offline-first Logging**: make the installed PWA open offline after a
+  previous successful load, show last-known data, queue measurement
+  create/edit/delete actions locally, and sync them after reconnecting.

@@ -201,8 +201,7 @@ VITE_API_BASE_URL
 Current API base:
 
 ```txt
-GET /api/health
-GET /api/health/d1
+GET /
 POST /api/auth/login
 ```
 
