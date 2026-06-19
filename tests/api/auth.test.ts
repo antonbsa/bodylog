@@ -267,7 +267,7 @@ describe("protected api routes", () => {
   })
 
   it("keeps public api routes accessible without a session", async () => {
-    const response = await app.request("/api/health")
+    const response = await app.request("/", {}, env)
 
     expect(response.status).toBe(200)
   })

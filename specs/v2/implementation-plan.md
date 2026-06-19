@@ -26,9 +26,9 @@ conflict.
 
 **Before the redesign:**
 
-- **T-030 — API Status / Health / Not-Found Pages**: drop the `service` field /
-  `x-bodylog-api` header, add `GET /`, move health off the `/api` prefix, and add
-  a frontend not-found page.
+- **T-030 — API Liveness / Not-Found Pages**: drop the `service` field /
+  `x-bodylog-api` header, add `GET /` as a liveness endpoint, remove health
+  endpoints, and add a frontend not-found page.
 - **T-031 — Force Fresh Data on Every PWA Open**: refetch on open/resume and stop
   serving stale cached data (manifest-only, no service worker).
 - **T-032 — Increase History Window to 30 Items**.
