@@ -6,6 +6,10 @@ task's `## Assumptions` section (marked "confirmed by the owner") rather than
 in a separate open-questions file — there are no remaining open items for these
 tasks.
 
+T-039 was added afterward as the final V2 offline-first task. Implementation
+details that need a decision before coding, such as the first conflict policy
+for queued measurement changes, are recorded in that task file.
+
 Notable decisions, for quick reference:
 
 - **T-030:** `GET /` returns `{ d1: boolean, health: string }`; `/`, `/health`,
@@ -29,3 +33,6 @@ Notable decisions, for quick reference:
   app-level store; zoom prevention proceeds as originally assumed.
 - **T-038:** use Radix's `@radix-ui/react-toast` primitive; toast durations and
   error-detail exposure proceed as originally assumed.
+- **T-039:** selected as the final V2 task; add an offline-capable app shell,
+  last-known local data, offline measurement mutation queueing, and sync on
+  reconnect/open/resume, with Background Sync as a progressive enhancement.
