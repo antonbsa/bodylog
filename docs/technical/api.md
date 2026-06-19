@@ -4,6 +4,23 @@
 
 All data routes require authentication.
 
+## Status
+
+### GET /
+
+Returns the public API liveness response. This endpoint confirms the Worker can
+respond; it does not check database connectivity.
+
+#### Response 200
+
+```json
+{
+  "ok": true
+}
+```
+
+---
+
 ## Auth
 
 ### POST /api/auth/login

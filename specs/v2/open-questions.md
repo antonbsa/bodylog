@@ -12,9 +12,9 @@ for queued measurement changes, are recorded in that task file.
 
 Notable decisions, for quick reference:
 
-- **T-030:** `GET /` returns `{ d1: boolean, health: string }`; `/`, `/health`,
-  and `/health/d1` are fully public; not-found page is a default "404 Not
-  Found" screen with a single button back to `/`.
+- **T-030:** `GET /` returns `{ ok: true }` as a pure liveness response; no
+  health endpoints remain; not-found page is a default "404 Not Found" screen
+  with a single button back to `/`.
 - **T-031:** proceed with the refetch-on-open/resume strategy, plus a manual
   "refresh data" fallback button.
 - **T-033:** keep current package-script names; additionally audit and extract

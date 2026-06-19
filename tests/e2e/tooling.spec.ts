@@ -161,6 +161,19 @@ test("login screen renders first", async ({ page }) => {
   await expect(page.getByLabel("Senha")).toBeVisible()
 })
 
+test("unknown routes show the not-found screen", async ({ page }) => {
+  await mockSession(page, false)
+  await page.goto("/rota-inexistente")
+
+  await expect(
+    page.getByRole("heading", { name: "404 Not Found" }),
+  ).toBeVisible()
+
+  await page.getByRole("button", { name: "Voltar ao início" }).click()
+  await expect(page).toHaveURL("/")
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+})
+
 test("login form exposes password manager metadata", async ({ page }) => {
   await mockSession(page, false)
   await page.goto("/")
