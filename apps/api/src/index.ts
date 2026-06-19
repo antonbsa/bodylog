@@ -2,6 +2,13 @@ import { Hono } from "hono"
 import { deleteCookie, getCookie, setCookie } from "hono/cookie"
 
 import {
+  AppError,
+  InternalServerError,
+  NotFoundError,
+  UnauthorizedError,
+  ValidationError,
+} from "../../../infra/errors"
+import {
   getAppPassword,
   getFrontendOrigin,
   getSessionSecret,
@@ -34,6 +41,15 @@ const protectedApiRoutePrefixes = [
   "/api/export",
   "/api/import",
 ]
+
+app.onError((error, c) => {
+  const appError =
+    error instanceof AppError
+      ? error
+      : new InternalServerError({ cause: error })
+
+  return c.json(appError.toJSON(), appError.statusCode)
+})
 
 function isProtectedApiRoute(path: string): boolean {
   return protectedApiRoutePrefixes.some(
@@ -157,13 +173,7 @@ app.use("/api/*", async (c, next) => {
     )
 
     if (!hasValidSession) {
-      return c.json(
-        {
-          error: "UNAUTHENTICATED",
-          ok: false,
-        },
-        401,
-      )
+      throw new UnauthorizedError()
     }
   }
 
@@ -218,13 +228,10 @@ app.post("/api/import/csv", async (c) => {
   const file = body?.file
 
   if (!(file instanceof File)) {
-    return c.json(
-      {
-        error: "CSV_FILE_REQUIRED",
-        ok: false,
-      },
-      400,
-    )
+    throw new ValidationError({
+      action: "Selecione um arquivo CSV válido e tente novamente.",
+      message: "Arquivo CSV obrigatório.",
+    })
   }
 
   const repository = new MeasurementRepository(c.env.DB)
@@ -232,13 +239,7 @@ app.post("/api/import/csv", async (c) => {
   const importedCount = summary.created + summary.updated
 
   if (importedCount === 0 && summary.errors.length > 0) {
-    return c.json(
-      {
-        ...summary,
-        ok: false,
-      },
-      400,
-    )
+    throw createCsvImportValidationError(summary)
   }
 
   return c.json(summary)
@@ -248,18 +249,12 @@ app.get("/api/measurements", async (c) => {
   const query = c.req.query()
   const listQuery = parseMeasurementListQuery(query)
 
-  if (!listQuery.ok) {
-    return c.json(
-      {
-        error: listQuery.error,
-        ok: false,
-      },
-      400,
-    )
+  if (!listQuery.valid) {
+    throw createValidationError(listQuery.code)
   }
 
   const repository = new MeasurementRepository(c.env.DB)
-  const measurements = await repository.list(listQuery.value)
+  const measurements = await repository.list(listQuery.query)
   const heightCm = getUserHeightCm(c.env)
 
   return c.json({
@@ -274,25 +269,14 @@ app.get("/api/measurements/by-date/:date", async (c) => {
   const date = c.req.param("date")
 
   if (!isDateOnly(date)) {
-    return c.json(
-      {
-        error: "INVALID_DATE",
-        ok: false,
-      },
-      400,
-    )
+    throw createValidationError("INVALID_DATE")
   }
 
   const repository = new MeasurementRepository(c.env.DB)
   const measurement = await repository.getByDate(date)
 
   if (!measurement) {
-    return c.json(
-      {
-        item: null,
-      },
-      404,
-    )
+    throw createNotFoundError("MEASUREMENT_NOT_FOUND")
   }
 
   return c.json({
@@ -304,34 +288,22 @@ app.put("/api/measurements/by-date/:date", async (c) => {
   const date = c.req.param("date")
 
   if (!isDateOnly(date)) {
-    return c.json(
-      {
-        error: "INVALID_DATE",
-        ok: false,
-      },
-      400,
-    )
+    throw createValidationError("INVALID_DATE")
   }
 
   const input = await parseMeasurementInput(c.req.json())
 
-  if (!input.ok) {
-    return c.json(
-      {
-        error: input.error,
-        ok: false,
-      },
-      400,
-    )
+  if (!input.valid) {
+    throw createValidationError(input.code)
   }
 
   const repository = new MeasurementRepository(c.env.DB)
   const existingMeasurement = await repository.getByDate(date)
   const measurement = existingMeasurement
-    ? await repository.updateByDate(date, input.value)
+    ? await repository.updateByDate(date, input.measurement)
     : await repository.create({
         date,
-        ...input.value,
+        ...input.measurement,
       })
 
   return c.json({
@@ -343,26 +315,14 @@ app.delete("/api/measurements/:id", async (c) => {
   const id = c.req.param("id")
 
   if (!id) {
-    return c.json(
-      {
-        error: "INVALID_MEASUREMENT_ID",
-        ok: false,
-      },
-      400,
-    )
+    throw createValidationError("INVALID_MEASUREMENT_ID")
   }
 
   const repository = new MeasurementRepository(c.env.DB)
   const deleted = await repository.delete(id)
 
   if (!deleted) {
-    return c.json(
-      {
-        error: "MEASUREMENT_NOT_FOUND",
-        ok: false,
-      },
-      404,
-    )
+    throw createNotFoundError("MEASUREMENT_NOT_FOUND")
   }
 
   return c.json({
@@ -376,13 +336,10 @@ app.post("/api/auth/login", async (c) => {
   } | null
 
   if (body?.password !== getAppPassword(c.env)) {
-    return c.json(
-      {
-        error: "INVALID_PASSWORD",
-        ok: false,
-      },
-      401,
-    )
+    throw new UnauthorizedError({
+      action: "Verifique a senha configurada e tente novamente.",
+      message: "Senha inválida.",
+    })
   }
 
   const requestUrl = new URL(c.req.url)
@@ -409,12 +366,7 @@ app.get("/api/auth/session", async (c) => {
   )
 
   if (!hasValidSession) {
-    return c.json(
-      {
-        authenticated: false,
-      },
-      401,
-    )
+    throw new UnauthorizedError()
   }
 
   return c.json({
@@ -449,28 +401,99 @@ type MeasurementInput = {
 
 type MeasurementInputResult =
   | {
-      ok: true
-      value: MeasurementInput
+      measurement: MeasurementInput
+      valid: true
     }
   | {
-      error: "INVALID_MEASUREMENT_INPUT"
-      ok: false
+      code: "INVALID_MEASUREMENT_INPUT"
+      valid: false
     }
 
 type MeasurementListQueryResult =
   | {
-      ok: true
-      value: {
+      query: {
         from?: string
         limit?: number
         offset?: number
         to?: string
       }
+      valid: true
     }
   | {
-      error: "INVALID_MEASUREMENTS_QUERY"
-      ok: false
+      code: "INVALID_MEASUREMENTS_QUERY"
+      valid: false
     }
+
+type ValidationErrorCode =
+  | "INVALID_DATE"
+  | "INVALID_MEASUREMENT_ID"
+  | "INVALID_MEASUREMENT_INPUT"
+  | "INVALID_MEASUREMENTS_QUERY"
+
+type NotFoundErrorCode = "MEASUREMENT_NOT_FOUND"
+
+function createValidationError(code: ValidationErrorCode): ValidationError {
+  const errorOptions: Record<
+    ValidationErrorCode,
+    {
+      action: string
+      message: string
+    }
+  > = {
+    INVALID_DATE: {
+      action: "Use uma data no formato YYYY-MM-DD.",
+      message: "Data inválida.",
+    },
+    INVALID_MEASUREMENT_ID: {
+      action: "Atualize o histórico e tente novamente.",
+      message: "Identificador da medida inválido.",
+    },
+    INVALID_MEASUREMENT_INPUT: {
+      action: "Revise os campos da medida e tente novamente.",
+      message: "Dados da medida inválidos.",
+    },
+    INVALID_MEASUREMENTS_QUERY: {
+      action: "Revise os filtros de listagem e tente novamente.",
+      message: "Parâmetros de listagem inválidos.",
+    },
+  }
+
+  return new ValidationError(errorOptions[code])
+}
+
+function createNotFoundError(code: NotFoundErrorCode): NotFoundError {
+  const errorOptions: Record<
+    NotFoundErrorCode,
+    {
+      action: string
+      message: string
+    }
+  > = {
+    MEASUREMENT_NOT_FOUND: {
+      action: "Atualize o histórico e tente novamente.",
+      message: "Medida não encontrada.",
+    },
+  }
+
+  return new NotFoundError(errorOptions[code])
+}
+
+function createCsvImportValidationError(summary: {
+  errors: Array<{
+    message: string
+    row: number
+  }>
+}): ValidationError {
+  const firstError = summary.errors[0]
+  const firstErrorMessage = firstError?.message.replace(/\.+$/, "")
+
+  return new ValidationError({
+    action: firstErrorMessage
+      ? `Corrija a linha ${firstError.row}: ${firstErrorMessage}.`
+      : "Revise o arquivo CSV e tente novamente.",
+    message: "Nenhum registro foi importado.",
+  })
+}
 
 async function parseMeasurementInput(
   bodyPromise: Promise<unknown>,
@@ -482,8 +505,8 @@ async function parseMeasurementInput(
 
   if (!body || !isFiniteNumber(body.weightKg)) {
     return {
-      error: "INVALID_MEASUREMENT_INPUT",
-      ok: false,
+      code: "INVALID_MEASUREMENT_INPUT",
+      valid: false,
     }
   }
 
@@ -499,19 +522,19 @@ async function parseMeasurementInput(
     restingMetabolismKcal === undefined
   ) {
     return {
-      error: "INVALID_MEASUREMENT_INPUT",
-      ok: false,
+      code: "INVALID_MEASUREMENT_INPUT",
+      valid: false,
     }
   }
 
   return {
-    ok: true,
-    value: {
+    measurement: {
       bodyFatPercentage,
       musclePercentage,
       restingMetabolismKcal,
       weightKg: body.weightKg,
     },
+    valid: true,
   }
 }
 
@@ -536,19 +559,19 @@ function parseMeasurementListQuery(
     offset === null
   ) {
     return {
-      error: "INVALID_MEASUREMENTS_QUERY",
-      ok: false,
+      code: "INVALID_MEASUREMENTS_QUERY",
+      valid: false,
     }
   }
 
   return {
-    ok: true,
-    value: {
+    query: {
       ...(from === undefined ? {} : { from }),
       ...(limit === undefined ? {} : { limit }),
       ...(offset === undefined ? {} : { offset }),
       ...(to === undefined ? {} : { to }),
     },
+    valid: true,
   }
 }
 

@@ -29,7 +29,7 @@ T-036 redesign and gives the structured error module (T-035) a documented home.
   `migrations/0001_create_measurements.sql`).
 - Move `scripts/local-db/` (and `scripts/tsconfig.json`) → `infra/scripts/`
   (target `infra/scripts/local-db/` already exists as a skeleton).
-- Add an `infra/errors/` location for shared error definitions (consumed by
+- Add `infra/errors.ts` for shared error definitions (consumed by
   T-035 — see Dependencies).
 - Update **every** reference:
   - `apps/api/wrangler.toml`: `migrations_dir = "../../migrations"` →
@@ -60,7 +60,7 @@ T-036 redesign and gives the structured error module (T-035) a documented home.
   instead of one side importing a type that conceptually belongs to the other.
 - Keep this audit scoped to types that are actually duplicated/shared today;
   do not invent a shared-types layer for types that only exist on one side.
-- The shared types module is a typechecked sibling of `infra/errors/` (e.g.
+- The shared types module is a typechecked sibling of `infra/errors.ts` (e.g.
   `infra/types/`), included in a tsconfig project that both `apps/api` and
   `apps/web` reference — the same physical pattern as the error module.
 
@@ -69,7 +69,7 @@ T-036 redesign and gives the structured error module (T-035) a documented home.
 - Do not change migration SQL, local-db tooling behavior, or DB schema.
 - Do not rename package scripts (path changes only — see Assumptions).
 - Do not implement the error module itself (that is T-035; this task only
-  creates its `infra/errors/` home).
+  creates its `infra/errors.ts` home).
 - Do not refactor type-only differences (request/response DTOs, view models)
   that are not genuinely the same shape on both sides — only extract real
   duplication.
@@ -77,7 +77,7 @@ T-036 redesign and gives the structured error module (T-035) a documented home.
 ## Dependencies
 
 - **T-035 (structured error handling)** places its shared error definitions
-  under `infra/errors/`. This task creates that location; T-035 fills it.
+  in `infra/errors.ts`. This task creates that location; T-035 fills it.
   Coordinate the physical TypeScript source location so it stays typechecked
   (see Assumptions) — `infra/` is currently outside the `apps/*` tsconfig
   projects.
@@ -86,12 +86,12 @@ T-036 redesign and gives the structured error module (T-035) a documented home.
 
 - Package-script names are kept (`db:*:local`, `typecheck:scripts`); only paths
   change. **Confirmed by the owner.**
-- `infra/errors/` is the documented home for shared error definitions; the
+- `infra/errors.ts` is the documented home for shared error definitions; the
   TypeScript source lives directly there, included via a tsconfig that covers
-  `infra/errors` (see T-035, which the owner confirmed should use this
+  `infra/` (see T-035, which the owner confirmed should use this
   approach).
 - The shared-types audit (see Scope) follows the same physical pattern as
-  `infra/errors/` — a typechecked `infra/` location both apps import from.
+  `infra/errors.ts` — a typechecked `infra/` location both apps import from.
 
 ## Validation
 
@@ -114,7 +114,7 @@ Manual validation:
 
 - [ ] `migrations/` and `scripts/local-db/` (+ `scripts/tsconfig.json`) live
       under `infra/`.
-- [ ] An `infra/errors/` location exists for shared error definitions.
+- [ ] `infra/errors.ts` exists for shared error definitions.
 - [ ] All references (wrangler config, package scripts, tsconfig, seed/local-db
       script, CI/deploy, docs) are updated; no stale root-level paths remain.
 - [ ] Local DB tooling and migrations still work from the new locations.

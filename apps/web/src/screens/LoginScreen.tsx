@@ -1,6 +1,7 @@
 import { useState, type SubmitEvent } from "react"
 import { TextField } from "@radix-ui/themes"
 
+import { type ApiError, formatApiErrorMessage } from "../../../../infra/errors"
 import { Button } from "../components/Button"
 import { login } from "../api/auth"
 
@@ -8,12 +9,8 @@ type LoginScreenProps = {
   onLoginSuccess: () => void
 }
 
-function getLoginErrorMessage(error: "INVALID_PASSWORD" | "UNKNOWN_ERROR") {
-  if (error === "INVALID_PASSWORD") {
-    return "Senha inválida. Tente novamente."
-  }
-
-  return "Não foi possível entrar. Tente novamente."
+function getLoginErrorMessage(error: ApiError) {
+  return formatApiErrorMessage(error)
 }
 
 export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {

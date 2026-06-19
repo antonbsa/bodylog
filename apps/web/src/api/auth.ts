@@ -1,3 +1,9 @@
+import {
+  type ApiError,
+  createFallbackApiError,
+  parseApiError,
+  throwApiError,
+} from "../../../../infra/errors"
 import { api } from "./client"
 
 export type LoginResult =
@@ -5,7 +11,7 @@ export type LoginResult =
       ok: true
     }
   | {
-      error: "INVALID_PASSWORD" | "UNKNOWN_ERROR"
+      error: ApiError
       ok: false
     }
 
@@ -31,20 +37,19 @@ export async function login(password: string): Promise<LoginResult> {
       return { ok: true }
     }
 
-    if (response.status === 401) {
-      return {
-        error: "INVALID_PASSWORD",
-        ok: false,
-      }
-    }
-
     return {
-      error: "UNKNOWN_ERROR",
+      error: await parseApiError(response, {
+        action: "Verifique a senha e tente novamente.",
+        message: "Não foi possível entrar.",
+      }),
       ok: false,
     }
   } catch {
     return {
-      error: "UNKNOWN_ERROR",
+      error: createFallbackApiError({
+        action: "Verifique sua conexão e tente novamente.",
+        message: "Não foi possível entrar.",
+      }),
       ok: false,
     }
   }
@@ -54,6 +59,9 @@ export async function logout(): Promise<void> {
   const response = await api("/api/auth/logout", { method: "POST" })
 
   if (!response.ok) {
-    throw new Error("Logout request failed")
+    await throwApiError(response, {
+      action: "Entre novamente e tente sair mais uma vez.",
+      message: "Não foi possível encerrar a sessão.",
+    })
   }
 }

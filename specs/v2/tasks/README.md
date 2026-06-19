@@ -35,5 +35,5 @@ before-redesign tasks (T-030…T-035), then the redesign (T-036), then the
 after-redesign tasks (T-037, T-038), then the final offline-first task (T-039)
 — to avoid conflicts over the same files.
 Within the before-redesign group, T-035 (structured errors) builds on T-033
-(`infra/errors/`), and T-038 consumes T-035's error shape and T-036's toast
+(`infra/errors.ts`), and T-038 consumes T-035's error shape and T-036's toast
 styling. See `../implementation-plan.md`.

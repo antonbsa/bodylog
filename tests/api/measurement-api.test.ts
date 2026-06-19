@@ -39,7 +39,10 @@ describe("measurement api", () => {
 
     expect(response.status).toBe(404)
     expect(await response.json()).toEqual({
-      item: null,
+      action: "Atualize o histórico e tente novamente.",
+      message: "Medida não encontrada.",
+      name: "NotFoundError",
+      statusCode: 404,
     })
   })
 
@@ -164,8 +167,10 @@ describe("measurement api", () => {
 
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({
-      error: "INVALID_MEASUREMENT_INPUT",
-      ok: false,
+      action: "Revise os campos da medida e tente novamente.",
+      message: "Dados da medida inválidos.",
+      name: "ValidationError",
+      statusCode: 400,
     })
   })
 
@@ -254,8 +259,10 @@ describe("measurement api", () => {
 
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({
-      error: "INVALID_MEASUREMENTS_QUERY",
-      ok: false,
+      action: "Revise os filtros de listagem e tente novamente.",
+      message: "Parâmetros de listagem inválidos.",
+      name: "ValidationError",
+      statusCode: 400,
     })
   })
 
@@ -489,17 +496,11 @@ describe("measurement api", () => {
 
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({
-      created: 0,
-      errors: [
-        {
-          message:
-            "Expected 7 columns. Quote decimal-comma values or use dot decimals.",
-          row: 2,
-        },
-      ],
-      ok: false,
-      skipped: 1,
-      updated: 0,
+      action:
+        "Corrija a linha 2: Expected 7 columns. Quote decimal-comma values or use dot decimals.",
+      message: "Nenhum registro foi importado.",
+      name: "ValidationError",
+      statusCode: 400,
     })
   })
 
@@ -518,16 +519,10 @@ describe("measurement api", () => {
 
     expect(invalidHeadersResponse.status).toBe(400)
     expect(await invalidHeadersResponse.json()).toEqual({
-      created: 0,
-      errors: [
-        {
-          message: "Invalid CSV headers",
-          row: 1,
-        },
-      ],
-      ok: false,
-      skipped: 1,
-      updated: 0,
+      action: "Corrija a linha 1: Invalid CSV headers.",
+      message: "Nenhum registro foi importado.",
+      name: "ValidationError",
+      statusCode: 400,
     })
 
     const invalidRowsResponse = await app.request(
@@ -586,24 +581,10 @@ describe("measurement api", () => {
 
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({
-      created: 0,
-      errors: [
-        {
-          message: "Invalid date",
-          row: 2,
-        },
-        {
-          message: "Invalid weight value",
-          row: 2,
-        },
-        {
-          message: "Invalid body fat percentage",
-          row: 2,
-        },
-      ],
-      ok: false,
-      skipped: 1,
-      updated: 0,
+      action: "Corrija a linha 2: Invalid date.",
+      message: "Nenhum registro foi importado.",
+      name: "ValidationError",
+      statusCode: 400,
     })
   })
 
@@ -626,20 +607,10 @@ describe("measurement api", () => {
 
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({
-      created: 0,
-      errors: [
-        {
-          message: "Invalid date",
-          row: 2,
-        },
-        {
-          message: "Invalid date",
-          row: 3,
-        },
-      ],
-      ok: false,
-      skipped: 2,
-      updated: 0,
+      action: "Corrija a linha 2: Invalid date.",
+      message: "Nenhum registro foi importado.",
+      name: "ValidationError",
+      statusCode: 400,
     })
   })
 
@@ -753,8 +724,10 @@ describe("measurement api", () => {
 
     expect(response.status).toBe(404)
     expect(await response.json()).toEqual({
-      error: "MEASUREMENT_NOT_FOUND",
-      ok: false,
+      action: "Atualize o histórico e tente novamente.",
+      message: "Medida não encontrada.",
+      name: "NotFoundError",
+      statusCode: 404,
     })
   })
 })

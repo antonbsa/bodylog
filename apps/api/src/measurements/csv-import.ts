@@ -15,14 +15,14 @@ type ImportCsvOptions = {
   importedAt?: Date
 }
 
-export type CsvImportError = {
+export type CsvImportRowIssue = {
   message: string
   row: number
 }
 
 export type CsvImportSummary = {
   created: number
-  errors: CsvImportError[]
+  errors: CsvImportRowIssue[]
   skipped: number
   updated: number
 }
@@ -33,7 +33,7 @@ type CsvRowResult =
       ok: true
     }
   | {
-      errors: CsvImportError[]
+      errors: CsvImportRowIssue[]
       ok: false
     }
 
@@ -157,7 +157,7 @@ function parseMeasurementCsvRow(
   const expectedLength = options.hasAuditTimestamps
     ? fullHeaders.length
     : requiredHeaders.length
-  const errors: CsvImportError[] = []
+  const errors: CsvImportRowIssue[] = []
 
   if (row.length !== expectedLength) {
     return {
