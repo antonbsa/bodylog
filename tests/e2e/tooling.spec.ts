@@ -258,6 +258,8 @@ test("authenticated session survives a page reload", async ({ page }) => {
 })
 
 test("logout returns to the login screen", async ({ page }) => {
+  let logoutRequestCount = 0
+
   await mockSession(page, false)
   await page.route("**/api/auth/login", async (route) => {
     await route.fulfill({
@@ -272,6 +274,8 @@ test("logout returns to the login screen", async ({ page }) => {
     })
   })
   await page.route("**/api/auth/logout", async (route) => {
+    logoutRequestCount += 1
+
     await route.fulfill({
       body: JSON.stringify({
         ok: true,
@@ -290,7 +294,29 @@ test("logout returns to the login screen", async ({ page }) => {
   await page.getByRole("button", { name: "Entrar" }).click()
   await page.getByRole("button", { name: "Sair" }).click()
 
+  const logoutDialog = page.getByRole("alertdialog", {
+    name: "Sair do BodyLog",
+  })
+
+  await expect(logoutDialog).toBeVisible()
+  await expect(
+    logoutDialog.getByText("Deseja encerrar a sessão atual?"),
+  ).toBeVisible()
+  expect(logoutRequestCount).toBe(0)
+
+  await logoutDialog.getByRole("button", { name: "Cancelar" }).click()
+  await expect(logoutDialog).toBeHidden()
+  await expect(
+    page.getByRole("heading", { name: "Resumo da semana" }),
+  ).toBeVisible()
+  expect(logoutRequestCount).toBe(0)
+
+  await page.getByRole("button", { name: "Sair" }).click()
+  await expect(logoutDialog).toBeVisible()
+  await logoutDialog.getByRole("button", { name: "Sair", exact: true }).click()
+
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+  expect(logoutRequestCount).toBe(1)
 })
 
 test("basic PWA manifest and icons are reachable", async ({
