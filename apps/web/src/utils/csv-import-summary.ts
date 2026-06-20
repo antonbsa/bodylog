@@ -8,16 +8,6 @@ export function formatImportPartialMessage(summary: CsvImportSummary): string {
   return `Importação parcial: ${summary.created} criados, ${summary.updated} atualizados, ${summary.skipped} ignorados, ${summary.errors.length} erros. ${formatFirstImportError(summary)}`
 }
 
-export function formatImportFailureMessage(
-  summary: CsvImportSummary | null,
-): string {
-  if (!summary) {
-    return "Importação falhou: não foi possível ler o resultado da validação."
-  }
-
-  return `Importação falhou: nenhum registro foi importado. ${summary.skipped} ignorados, ${summary.errors.length} erros. ${formatFirstImportError(summary)}`
-}
-
 function formatFirstImportError(summary: CsvImportSummary): string {
   const firstError = summary.errors[0]
 

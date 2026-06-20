@@ -4,7 +4,6 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie"
 import {
   AppError,
   InternalServerError,
-  NotFoundError,
   UnauthorizedError,
   ValidationError,
 } from "../../../infra/errors"
@@ -28,6 +27,14 @@ import {
 import { importMeasurementsCsv } from "./measurements/csv-import"
 import { serializeMeasurementsCsv } from "./measurements/csv-export"
 import { MeasurementRepository } from "./measurements/measurement-repository"
+import {
+  createCsvImportValidationError,
+  createNotFoundError,
+  createValidationError,
+  isDateOnly,
+  parseMeasurementInput,
+  parseMeasurementListQuery,
+} from "./request-validation"
 import type { AppBindings } from "./types"
 
 export const app = new Hono<{ Bindings: AppBindings }>()
@@ -277,7 +284,8 @@ app.put("/api/measurements/by-date/:date", async (c) => {
     throw createValidationError("INVALID_DATE")
   }
 
-  const input = await parseMeasurementInput(c.req.json())
+  const body = await c.req.json().catch(() => null)
+  const input = parseMeasurementInput(body)
 
   if (!input.valid) {
     throw createValidationError(input.code)
@@ -377,228 +385,3 @@ app.post("/api/auth/logout", (c) => {
 })
 
 export default app
-
-type MeasurementInput = {
-  bodyFatPercentage: number | null
-  musclePercentage: number | null
-  restingMetabolismKcal: number | null
-  weightKg: number
-}
-
-type MeasurementInputResult =
-  | {
-      measurement: MeasurementInput
-      valid: true
-    }
-  | {
-      code: "INVALID_MEASUREMENT_INPUT"
-      valid: false
-    }
-
-type MeasurementListQueryResult =
-  | {
-      query: {
-        from?: string
-        limit?: number
-        offset?: number
-        to?: string
-      }
-      valid: true
-    }
-  | {
-      code: "INVALID_MEASUREMENTS_QUERY"
-      valid: false
-    }
-
-type ValidationErrorCode =
-  | "INVALID_DATE"
-  | "INVALID_MEASUREMENT_ID"
-  | "INVALID_MEASUREMENT_INPUT"
-  | "INVALID_MEASUREMENTS_QUERY"
-
-type NotFoundErrorCode = "MEASUREMENT_NOT_FOUND"
-
-function createValidationError(code: ValidationErrorCode): ValidationError {
-  const errorOptions: Record<
-    ValidationErrorCode,
-    {
-      action: string
-      message: string
-    }
-  > = {
-    INVALID_DATE: {
-      action: "Use uma data no formato YYYY-MM-DD.",
-      message: "Data inválida.",
-    },
-    INVALID_MEASUREMENT_ID: {
-      action: "Atualize o histórico e tente novamente.",
-      message: "Identificador da medida inválido.",
-    },
-    INVALID_MEASUREMENT_INPUT: {
-      action: "Revise os campos da medida e tente novamente.",
-      message: "Dados da medida inválidos.",
-    },
-    INVALID_MEASUREMENTS_QUERY: {
-      action: "Revise os filtros de listagem e tente novamente.",
-      message: "Parâmetros de listagem inválidos.",
-    },
-  }
-
-  return new ValidationError(errorOptions[code])
-}
-
-function createNotFoundError(code: NotFoundErrorCode): NotFoundError {
-  const errorOptions: Record<
-    NotFoundErrorCode,
-    {
-      action: string
-      message: string
-    }
-  > = {
-    MEASUREMENT_NOT_FOUND: {
-      action: "Atualize o histórico e tente novamente.",
-      message: "Medida não encontrada.",
-    },
-  }
-
-  return new NotFoundError(errorOptions[code])
-}
-
-function createCsvImportValidationError(summary: {
-  errors: Array<{
-    message: string
-    row: number
-  }>
-}): ValidationError {
-  const firstError = summary.errors[0]
-  const firstErrorMessage = firstError?.message.replace(/\.+$/, "")
-
-  return new ValidationError({
-    action: firstErrorMessage
-      ? `Corrija a linha ${firstError.row}: ${firstErrorMessage}.`
-      : "Revise o arquivo CSV e tente novamente.",
-    message: "Nenhum registro foi importado.",
-  })
-}
-
-async function parseMeasurementInput(
-  bodyPromise: Promise<unknown>,
-): Promise<MeasurementInputResult> {
-  const body = (await bodyPromise.catch(() => null)) as Record<
-    string,
-    unknown
-  > | null
-
-  if (!body || !isFiniteNumber(body.weightKg)) {
-    return {
-      code: "INVALID_MEASUREMENT_INPUT",
-      valid: false,
-    }
-  }
-
-  const bodyFatPercentage = parseOptionalFiniteNumber(body.bodyFatPercentage)
-  const musclePercentage = parseOptionalFiniteNumber(body.musclePercentage)
-  const restingMetabolismKcal = parseOptionalFiniteNumber(
-    body.restingMetabolismKcal,
-  )
-
-  if (
-    bodyFatPercentage === undefined ||
-    musclePercentage === undefined ||
-    restingMetabolismKcal === undefined
-  ) {
-    return {
-      code: "INVALID_MEASUREMENT_INPUT",
-      valid: false,
-    }
-  }
-
-  return {
-    measurement: {
-      bodyFatPercentage,
-      musclePercentage,
-      restingMetabolismKcal,
-      weightKg: body.weightKg,
-    },
-    valid: true,
-  }
-}
-
-function parseMeasurementListQuery(
-  query: Record<string, string>,
-): MeasurementListQueryResult {
-  const from = query.from
-  const to = query.to
-  const limit = parseOptionalNonNegativeInteger(query.limit, {
-    max: 100,
-    min: 1,
-  })
-  const offset = parseOptionalNonNegativeInteger(query.offset, {
-    max: 10000,
-    min: 0,
-  })
-
-  if (
-    (from !== undefined && !isDateOnly(from)) ||
-    (to !== undefined && !isDateOnly(to)) ||
-    limit === null ||
-    offset === null
-  ) {
-    return {
-      code: "INVALID_MEASUREMENTS_QUERY",
-      valid: false,
-    }
-  }
-
-  return {
-    query: {
-      ...(from === undefined ? {} : { from }),
-      ...(limit === undefined ? {} : { limit }),
-      ...(offset === undefined ? {} : { offset }),
-      ...(to === undefined ? {} : { to }),
-    },
-    valid: true,
-  }
-}
-
-function parseOptionalNonNegativeInteger(
-  value: string | undefined,
-  options: {
-    max: number
-    min: number
-  },
-): number | null | undefined {
-  if (value === undefined) {
-    return undefined
-  }
-
-  if (!/^\d+$/.test(value)) {
-    return null
-  }
-
-  const parsedValue = Number(value)
-
-  return parsedValue >= options.min && parsedValue <= options.max
-    ? parsedValue
-    : null
-}
-
-function isDateOnly(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value)
-}
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value)
-}
-
-function parseOptionalFiniteNumber(value: unknown): number | null | undefined {
-  if (value === null || value === undefined) {
-    return null
-  }
-
-  if (!isFiniteNumber(value)) {
-    return undefined
-  }
-
-  return value
-}
