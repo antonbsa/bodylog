@@ -25,6 +25,7 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 
 - [T-037 — Measurement Form Polish](./t-037-measurement-form-polish.md)
 - [T-038 — Replace Callouts with Toast Notifications](./t-038-replace-callouts-with-toast-notifications.md)
+- [T-040 — Floating Action Button & Settings Menu](./t-040-fab-and-settings-menu.md)
 
 ### Final V2 offline-first task
 
@@ -32,8 +33,11 @@ Keep task filenames stable. Do not move completed tasks to another folder just t
 
 The task groups are sequencing-sensitive and must run in order — all
 before-redesign tasks (T-030…T-035), then the redesign (T-036), then the
-after-redesign tasks (T-037, T-038), then the final offline-first task (T-039)
-— to avoid conflicts over the same files.
+after-redesign tasks (T-037, T-038, T-040), then the final offline-first task
+(T-039) — to avoid conflicts over the same files. T-040 (FAB + settings menu)
+is the structural/behavioral follow-up to the visual-only T-036 redesign and
+should run after the toast work (T-038) so action relocation and toast
+messaging do not collide.
 Within the before-redesign group, T-035 (structured errors) builds on T-033
 (`infra/errors.ts`), and T-038 consumes T-035's error shape and T-036's toast
 styling. See `../implementation-plan.md`.

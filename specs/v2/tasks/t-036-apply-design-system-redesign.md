@@ -133,14 +133,32 @@ only.
   preserving current behavior and `pt-BR` copy:
   - `apps/web/src/components/Button.tsx`
   - `apps/web/src/screens/LoginScreen.tsx`
+  - `apps/web/src/screens/NotFoundScreen.tsx` (from T-030)
   - `apps/web/src/screens/AuthenticatedApp.tsx`
-  - `apps/web/src/screens/components/AuthenticatedDashboard.tsx`
-  - `apps/web/src/screens/components/MeasurementForm.tsx`
+  - `apps/web/src/screens/components/AuthenticatedDashboard.tsx` — after the
+    `b8a1188` refactor this is the header, the row of action buttons
+    (`Registrar medida`, `Atualizar dados`, `Exportar CSV`, `Importar CSV`,
+    `Sair`), and the import/export/dashboard status `Callout`s. Restyle the
+    buttons (secondary except `Registrar medida`) and the header/eyebrow/hero.
+  - `apps/web/src/screens/components/WeeklyDashboardSummary.tsx` — owns the
+    summary metric cards, the week/records/reliability indicators
+    (`dashboard-context`), the comparison context, and `PlaceholderSummary`.
+    This is the home of the metric-tint summary surfaces (see below).
+  - `apps/web/src/screens/components/MeasurementHistory.tsx` — owns the history
+    section wrapper: status/error/empty `Callout`s, the `Carregar mais` button,
+    and the delete `ConfirmationDialog`.
   - `apps/web/src/screens/components/MeasurementHistoryTable.tsx`
-  - the confirmation dialog (from T-034) and any not-found screen (from T-030)
+  - `apps/web/src/screens/components/MeasurementForm.tsx`
+  - `apps/web/src/screens/components/ConfirmationDialog.tsx` (from T-034) — the
+    centered Radix `AlertDialog` used for logout and delete confirmation.
+    Restyle visually only: `--surface-raised` content over the backdrop, token
+    radius, danger confirm color (`--danger`) with a secondary cancel, error/
+    body text on the four-step ramp, pre-reserved space (no layout shift). Keep
+    it **centered** — bottom-sheet conversion is behavioral and out of scope.
   - `apps/web/src/styles.css`
 - Apply metric-tint summary surfaces with the weight card dominant (2-col span;
-  fat + muscle side-by-side beneath).
+  fat + muscle side-by-side beneath). These cards live in
+  `WeeklyDashboardSummary.tsx` (`summary-grid` / `metric-card`).
 - Apply the four-step text ramp, type scale (mono numbers/dates/wordmark), token
   spacing/radius, and semantic + metric-relative outcome colors.
 - Map design-system component intent onto the existing Radix Themes components
@@ -163,6 +181,16 @@ only.
   character fill, badge loading animation, persisted state), and replacing
   Callouts with toast notifications. T-036 may restyle the *current*
   presentation of these areas, but must not change how they behave.
+- **No app-structure changes.** The design system's app shell moves the primary
+  action into a FAB and the account actions (CSV export/import, logout) into a
+  top-right `SettingsMenu` gear dropdown, replacing today's row of header
+  buttons. That is a structural/behavioral change and is **deferred to T-040**.
+  T-036 keeps the existing button row and the centered Radix dialogs and only
+  restyles them; it does not introduce the FAB, the `SettingsMenu`, or
+  bottom-sheet overlays.
+- The `Atualizar dados` manual refresh button and the CSV export/import buttons
+  are restyled in place only. Their relocation/removal (the design system relies
+  on the existing auto-refresh-on-focus and the `SettingsMenu`) is part of T-040.
 - Do not change the API contract or data shapes.
 - Do not migrate the icon library away from Phosphor Icons.
 - Do not add new screens/routes/features beyond the mobile history detail view

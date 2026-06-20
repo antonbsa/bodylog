@@ -54,6 +54,11 @@ conflict.
 - **T-038 — Replace Callouts with Toast Notifications**: remove all `Callout`s;
   success/failure toasts for create/edit/delete/export/import, with failures
   staying open and exposing the full error (built on T-035's error shape).
+- **T-040 — Floating Action Button & Settings Menu**: the structural follow-up to
+  the visual-only T-036 redesign — move the primary action into a fixed FAB and
+  the account actions (CSV export/import, logout) into a top-right `SettingsMenu`
+  dropdown, and drop the manual refresh button. Runs after T-038 so action
+  relocation and toast messaging do not collide.
 
 ## Phase 3 — Non-Blocking MVP Features
 
