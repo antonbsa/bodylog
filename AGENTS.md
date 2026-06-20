@@ -75,6 +75,7 @@ Do:
 - Implement one requirement at a time.
 - Add automated tests together with implemented behavior.
 - Keep data access isolated behind a repository/service layer.
+- Declare cross-boundary request/response shapes once in the root `types/` package; do not redeclare per-app copies in `apps/web` or `apps/api`.
 - Update docs when implementation decisions change.
 - Prefer boring, explicit code over unnecessary abstraction.
 
