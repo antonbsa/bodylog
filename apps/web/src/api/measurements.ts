@@ -1,15 +1,11 @@
-import {
-  CsvImportError,
-  createFallbackApiError,
-  parseApiError,
-  throwApiError,
-} from "../../../../infra/errors"
+import { createFallbackApiError, throwApiError } from "../../../../infra/errors"
 import { api } from "./client"
 import type {
   CsvImportSummary,
   Measurement,
+  MeasurementInput,
 } from "../../../../types/measurements"
-import type { ListedMeasurement, SaveMeasurementInput } from "../types"
+import type { ListedMeasurement } from "../types"
 
 export async function listMeasurements(options: {
   limit: number
@@ -64,7 +60,7 @@ export async function getMeasurementByDate(
 
 export async function saveMeasurementByDate(
   date: string,
-  input: SaveMeasurementInput,
+  input: MeasurementInput,
 ): Promise<Measurement> {
   const response = await api(`/api/measurements/by-date/${date}`, {
     body: JSON.stringify(input),
@@ -125,13 +121,10 @@ export async function importMeasurementsCsv(
   })
 
   if (!response.ok) {
-    throw new CsvImportError(
-      null,
-      await parseApiError(response, {
-        action: "Revise o arquivo CSV e tente novamente.",
-        message: "Não foi possível importar o CSV.",
-      }),
-    )
+    await throwApiError(response, {
+      action: "Revise o arquivo CSV e tente novamente.",
+      message: "Não foi possível importar o CSV.",
+    })
   }
 
   const payload = (await response
@@ -139,13 +132,10 @@ export async function importMeasurementsCsv(
     .catch(() => null)) as CsvImportSummary | null
 
   if (!payload) {
-    throw new CsvImportError(
-      null,
-      createFallbackApiError({
-        action: "Tente importar o arquivo novamente.",
-        message: "A resposta da importação está inválida.",
-      }),
-    )
+    throw createFallbackApiError({
+      action: "Tente importar o arquivo novamente.",
+      message: "A resposta da importação está inválida.",
+    })
   }
 
   return payload

@@ -25,10 +25,3 @@ export type OutcomeClass =
   | "metric-card-positive"
   | "metric-card-stable"
   | "metric-card-unavailable"
-
-export type SaveMeasurementInput = {
-  bodyFatPercentage: number | null
-  musclePercentage: number | null
-  restingMetabolismKcal: number | null
-  weightKg: number
-}
