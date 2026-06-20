@@ -7,16 +7,6 @@ export type SerializedAppError = {
   statusCode: ErrorStatusCode
 }
 
-export type CsvImportErrorSummary = {
-  created: number
-  errors: Array<{
-    message: string
-    row: number
-  }>
-  skipped: number
-  updated: number
-}
-
 type ErrorFallback = {
   action: string
   message: string
@@ -151,15 +141,6 @@ export class ApiError extends Error {
     this.name = details.name
     this.action = details.action
     this.statusCode = details.statusCode
-  }
-}
-
-export class CsvImportError extends ApiError {
-  constructor(
-    readonly summary: CsvImportErrorSummary | null,
-    readonly apiError: ApiError,
-  ) {
-    super(apiError.details)
   }
 }
 

@@ -9,6 +9,13 @@ export type Measurement = {
   updatedAt: string
 }
 
+export type MeasurementInput = {
+  bodyFatPercentage: number | null
+  musclePercentage: number | null
+  restingMetabolismKcal: number | null
+  weightKg: number
+}
+
 export type MeasurementDerivedValues = {
   bmi: number
   bodyFatKg: number | null
