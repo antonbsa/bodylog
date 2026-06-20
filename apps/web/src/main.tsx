@@ -19,7 +19,8 @@ createRoot(rootElement).render(
       appearance="dark"
       grayColor="slate"
       hasBackground={false}
-      radius="small"
+      panelBackground="solid"
+      radius="medium"
     >
       <App />
     </Theme>

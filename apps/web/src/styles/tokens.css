@@ -1,0 +1,121 @@
+/* BodyLog design-system tokens, copied as CSS custom properties from
+   antonbsa/bodylog-design-system (tokens/colors.css, typography.css,
+   spacing.css, radius.css, shadows.css). Copied values, not a package
+   dependency — this file is the source of truth going forward. */
+:root {
+  color-scheme: dark;
+
+  /* ---- Surfaces & borders ---- */
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-raised: #1b222b;
+  --surface-inset: #0d1117;
+  --border: #30363d;
+  --border-subtle: #21262d;
+
+  /* ---- Text ---- */
+  --text-primary: #f0f6fc;
+  --text-secondary: #c9d1d9;
+  --text-muted: #8b949e;
+  --text-faint: #6e7681;
+
+  /* ---- Brand / info ---- */
+  --brand: #58a6ff;
+
+  /* ---- Semantic ---- */
+  --success: #3fb950;
+  --success-text: #7ee787;
+  --action: #238636;
+  --action-hover: #2ea043;
+  --danger: #f85149;
+  --danger-text: #ff7b72;
+  --danger-hover: #ffa198;
+  --warning: #d29922;
+  --on-accent: #ffffff;
+
+  /* ---- Metric tint surfaces ---- */
+  --tint-weight-bg: #1d130f;
+  --tint-weight-border: rgb(248 81 73 / 32%);
+  --tint-weight-label: #e2a39e;
+  --tint-fat-bg: #12200f;
+  --tint-fat-border: rgb(63 185 80 / 28%);
+  --tint-fat-label: #86c98e;
+  --tint-muscle-bg: #211c0f;
+  --tint-muscle-border: rgb(210 153 34 / 28%);
+  --tint-muscle-label: #d8be84;
+
+  /* ---- Soft fills ---- */
+  --fill-danger-soft: rgb(248 81 73 / 10%);
+  --fill-danger-border: rgb(248 81 73 / 30%);
+  --fill-warning-soft: rgb(210 153 34 / 15%);
+  --fill-success-soft: rgb(63 185 80 / 14%);
+
+  /* ---- Outcome (direction badge color, kept aligned with the existing
+     metric-relative positive/negative/stable classification) ---- */
+  --outcome-up: var(--success-text);
+  --outcome-down: var(--danger-text);
+  --outcome-flat: var(--warning);
+
+  /* ---- Typography ---- */
+  --font-sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --text-caption: 12px;
+  --text-body-sm: 13px;
+  --text-body: 14px;
+  --text-base: 15px;
+  --text-lg: 17px;
+  --text-xl: 19px;
+  --text-2xl: 21px;
+  --text-display-sm: 26px;
+  --text-display: 34px;
+  --text-metric: 46px;
+  --text-metric-lg: 60px;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.12em;
+
+  /* ---- Spacing ---- */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 10px;
+  --space-5: 12px;
+  --space-6: 14px;
+  --space-7: 16px;
+  --space-8: 18px;
+  --space-9: 20px;
+  --space-10: 22px;
+  --space-12: 26px;
+  --space-16: 32px;
+
+  --screen-gutter: 18px;
+  --card-padding: 16px;
+  --field-gap: 9px;
+
+  /* ---- Radius ---- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-device: 38px;
+  --radius-pill: 999px;
+
+  /* ---- Shadows ---- */
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 30%);
+  --shadow-dropdown: 0 16px 40px rgb(0 0 0 / 50%);
+  --shadow-sheet: 0 -8px 30px rgb(0 0 0 / 40%);
+  --shadow-toast: 0 10px 30px rgb(0 0 0 / 40%);
+  --shadow-fab: 0 6px 16px rgb(0 0 0 / 35%);
+  --shadow-device: 0 30px 70px rgb(0 0 0 / 40%);
+}

@@ -25,6 +25,15 @@ const OUTCOME_BADGE_COLOR: Record<OutcomeClass, "gray" | "green" | "red"> = {
   "metric-card-unavailable": "gray",
 }
 
+const METRIC_TINT_CLASS: Record<
+  DashboardCardModel["directionMetric"],
+  string
+> = {
+  bodyFat: "metric-tint-fat",
+  muscle: "metric-tint-muscle",
+  weight: "metric-tint-weight",
+}
+
 export function WeeklyDashboardSummary({
   dashboard,
 }: {
@@ -102,9 +111,15 @@ function SummaryCard({ metric }: { metric: DashboardCardModel }) {
     metric.directionMetric,
     metric.variation?.direction ?? null,
   )
+  const tintClass = METRIC_TINT_CLASS[metric.directionMetric]
+  const isHero = metric.directionMetric === "weight"
 
   return (
-    <Card className={`metric-card ${outcomeClass}`}>
+    <Card
+      className={`metric-card ${tintClass} ${outcomeClass} ${
+        isHero ? "metric-card-hero" : ""
+      }`}
+    >
       <div className="metric-card-header">
         <p>{metric.label}</p>
         <DirectionBadge
@@ -147,11 +162,17 @@ function DirectionBadge({
   )
 }
 
+const PLACEHOLDER_CARDS = [
+  { label: "Peso médio", tintClass: "metric-tint-weight metric-card-hero" },
+  { label: "Gordura corporal", tintClass: "metric-tint-fat" },
+  { label: "Massa muscular", tintClass: "metric-tint-muscle" },
+]
+
 export function PlaceholderSummary() {
   return (
     <section className="summary-grid" aria-label="Resumo semanal">
-      {["Peso médio", "Gordura corporal", "Massa muscular"].map((label) => (
-        <Card className="metric-card" key={label}>
+      {PLACEHOLDER_CARDS.map(({ label, tintClass }) => (
+        <Card className={`metric-card ${tintClass}`} key={label}>
           <div className="metric-card-header">
             <p>{label}</p>
           </div>
