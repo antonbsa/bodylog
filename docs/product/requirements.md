@@ -14,6 +14,7 @@ The system must allow the user to create a body measurement for a selected date.
 - [ ] `bodyFatPercentage` is optional.
 - [ ] `musclePercentage` is optional.
 - [ ] `restingMetabolismKcal` is optional.
+- [ ] `waistCm`, `sleepHours`, `disposition` (1–5) and `notes` are optional (ADR 0032).
 - [ ] The system stores at most one measurement per date.
 - [ ] If the selected date has no record, the form is empty and creates a new measurement.
 - [ ] If the selected date already has a record, the form loads the existing data for editing.
@@ -39,7 +40,7 @@ The system must allow the user to delete an existing measurement.
 
 #### Acceptance Criteria
 
-- [ ] A measurement can be deleted from the history list.
+- [ ] A measurement can be deleted from its edit screen (ADR 0033).
 - [ ] The user must confirm deletion before it happens.
 - [ ] Deleted records no longer appear in history.
 - [ ] Weekly averages and variations are recalculated after deletion.
@@ -93,8 +94,8 @@ The system must group measurements by week and calculate weekly averages.
 - [ ] Only days with measurements are included in averages.
 - [ ] Missing days are not counted as zero.
 - [ ] The system shows how many measurements were used in the current week.
-- [ ] The UI shows current week registration reliability based on absolute weekly record count.
-- [ ] Weekly averages include all available metrics and derived metrics.
+- [ ] The UI shows the current week registration count against a 7-day target, with the recorded days (ADR 0035).
+- [ ] Weekly averages include all available metrics and derived metrics, including waist, sleep and disposition.
 
 ---
 
@@ -112,7 +113,7 @@ The system must compare the current week against the previous week.
 - [ ] Percentage-based metrics display absolute changes in percentage points.
 - [ ] The system indicates whether each metric moved up, down, or stayed stable.
 - [ ] Stable direction uses the documented V1 thresholds for weight, body fat mass, and muscle mass.
-- [ ] The UI uses V1 expected-outcome color semantics without showing health advice, diagnosis, recommendations, or motivational interpretation.
+- [ ] The UI shows variations in one neutral tone, without health advice, diagnosis, recommendations, or motivational interpretation (ADR 0031).
 
 ---
 
@@ -128,9 +129,9 @@ The system must provide a dashboard as the main screen.
 - [ ] The dashboard shows comparison against the previous week.
 - [ ] The dashboard includes a button to open the measurement form.
 - [ ] The dashboard is mobile-first.
-- [ ] The authenticated V1 app uses one dashboard page with sections instead of separate dashboard/history pages.
-- [ ] The measurement form opens as a full-viewport modal on mobile and a constrained modal on larger screens.
-- [ ] The dashboard uses cards and tables instead of charts in V1.
+- [ ] The authenticated app uses separate screens (Início, Histórico, Tendências, Ajustes) with a bottom tab bar (ADR 0033).
+- [ ] The measurement form is a full-screen route opened from the central add button or from a history row.
+- [ ] Charts are limited to the Tendências screen (ADR 0030).
 
 ---
 
@@ -140,7 +141,7 @@ The system must allow the user to export measurements as CSV.
 
 #### Acceptance Criteria
 
-- [ ] The user can download a CSV file with all measurements.
+- [ ] The user can download a CSV file with all measurements, including the new optional fields.
 - [ ] The CSV includes raw stored fields.
 - [ ] The CSV format is documented.
 - [ ] Export works without Google Sheets integration.
@@ -198,10 +199,10 @@ The system must present the V1 interface using the documented UI direction.
 #### Acceptance Criteria
 
 - [ ] All visible labels and interface copy are in `pt-BR`.
-- [ ] The UI uses dark mode only in V1.
+- [ ] The UI supports light and dark themes, following the system with a manual override (ADR 0034).
 - [ ] Values use `pt-BR` display formatting.
 - [ ] Empty summary values display `-`.
-- [ ] The history table displays a plain empty placeholder when no records exist.
+- [ ] The history list displays a plain empty placeholder when no records exist.
 - [ ] The UI includes loading, empty, error, disabled, and submitting states where applicable.
 - [ ] The UI avoids strong gradients, heavy glassmorphism, gamified fitness visuals, floating AI assistant patterns, and generic motivational copy.
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by `0030-allow-charts-in-trends.md`, `0033-use-bottom-navigation.md` and `0034-support-light-dark-and-system-themes.md`
 
 ## Context
 
