@@ -29,6 +29,9 @@
   --amber: #98620f;
   --amber-fg: #ffffff;
   --amber-tint: #f5ead8;
+  --vivid: #0969da;
+  --vivid-fg: #ffffff;
+  --vivid-tint: #ddf4ff;
   --accent: var(--lime);
   --accent-fg: var(--lime-fg);
   --accent-tint: var(--lime-tint);
@@ -59,6 +62,9 @@
     --amber: #e0b062;
     --amber-fg: #2a1b04;
     --amber-tint: #38301e;
+    --vivid: #58a6ff;
+    --vivid-fg: #0b1a2e;
+    --vivid-tint: #172a42;
     color-scheme: dark;
   }
 }
@@ -86,10 +92,14 @@
   --amber: #e0b062;
   --amber-fg: #2a1b04;
   --amber-tint: #38301e;
+  --vivid: #58a6ff;
+  --vivid-fg: #0b1a2e;
+  --vivid-tint: #172a42;
   color-scheme: dark;
 }
 :root[data-accent="blue"] { --accent: var(--blue); --accent-fg: var(--blue-fg); --accent-tint: var(--blue-tint); }
 :root[data-accent="amber"] { --accent: var(--amber); --accent-fg: var(--amber-fg); --accent-tint: var(--amber-tint); }
+:root[data-accent="vivid"] { --accent: var(--vivid); --accent-fg: var(--vivid-fg); --accent-tint: var(--vivid-tint); }
 :root[data-accent="lime"] { --accent: var(--lime); --accent-fg: var(--lime-fg); --accent-tint: var(--lime-tint); }
 
 /* ---------- Base ---------- */
@@ -176,7 +186,8 @@ h2 { margin: 0; font-size: 17px; font-weight: 600; }
 .week-head .count { font-size: 17px; font-weight: 500; }
 .days { display: grid; grid-template-columns: repeat(7, 1fr); margin: 16px 0 8px; text-align: center; }
 .day { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 12px; color: var(--fg-2); }
-.day.is-today .l { color: var(--fg); font-weight: 700; }
+.day.is-today .l { color: var(--accent); font-weight: 700; }
+.day.is-today .dot { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
 .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--fg-3); }
 .dot.on { background: var(--fg); border-color: var(--fg); }
 .dot.future { opacity: 0.3; }
@@ -195,6 +206,10 @@ h2 { margin: 0; font-size: 17px; font-weight: 600; }
 .hlist { padding: 4px 0; }
 .hrow { width: 100%; min-height: 52px; border: 0; background: transparent; text-align: left; padding: 0 16px; border-radius: 12px; font-size: 15px; }
 .hrow + .hrow { box-shadow: inset 0 1px 0 var(--line); }
+.havg { min-height: 44px; margin: 4px 8px; padding: 0 8px; border-radius: 10px; background: var(--surface-2); font-size: 15px; font-weight: 600; }
+.havg .d { font-family: "Geist", system-ui, sans-serif; font-size: 13px; font-weight: 500; color: var(--fg-2); }
+.havg .n { text-align: right; }
+.havg .n small { font-size: 11px; font-weight: 400; color: var(--fg-2); margin-left: 2px; }
 .hrow .d { font-size: 14px; color: var(--fg-2); }
 .hrow .n { text-align: right; }
 .hrow .n small { font-size: 11px; color: var(--fg-2); margin-left: 2px; }
@@ -287,13 +302,14 @@ textarea#f-notes { display: block; width: 100%; min-height: 96px; margin: 12px 0
 .sheet .grp { margin: 18px 0 8px; font-size: 12px; font-weight: 600; color: var(--fg-2); letter-spacing: 0.04em; }
 .jump { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .jump button { min-height: 44px; border: 0; border-radius: 10px; background: var(--surface-2); font-size: 13px; padding: 4px 10px; text-align: left; }
-.swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .swatches button { min-height: 64px; border: 2px solid transparent; border-radius: 12px; background: var(--surface-2); font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
 .swatches button[aria-checked="true"] { border-color: var(--fg); }
 .sw { width: 22px; height: 22px; border-radius: 50%; }
 .sw-lime { background: var(--lime); }
 .sw-blue { background: var(--blue); }
 .sw-amber { background: var(--amber); }
+.sw-vivid { background: var(--vivid); }
 .proto-note { font-size: 12px; color: var(--fg-2); margin: 14px 0 0; }
 
 .fab { position: fixed; z-index: 90; top: calc(env(safe-area-inset-top, 0px) + 8px); right: max(calc(env(safe-area-inset-right, 0px) + 8px), calc(50% - 207px)); height: 28px; padding: 0 10px; border-radius: 999px; border: 1px dashed var(--fg-3); background: var(--bg); color: var(--fg-2); font: 500 12px "Geist Mono", ui-monospace, monospace; }
@@ -459,12 +475,12 @@ textarea#f-notes { display: block; width: 100%; min-height: 96px; margin: 12px 0
   }
 
   /* ---------- App state ---------- */
-  var state = { theme: "system", accent: "lime", route: "", pendingDate: null, lastMain: "#inicio", loginErrShown: false };
+  var state = { theme: "system", accent: "vivid", route: "", pendingDate: null, lastMain: "#inicio", loginErrShown: false };
   var root = document.documentElement;
   try {
     var saved = JSON.parse(localStorage.getItem("bodylog-proto") || "{}");
     if (["system", "light", "dark"].indexOf(saved.theme) >= 0) state.theme = saved.theme;
-    if (["lime", "blue", "amber"].indexOf(saved.accent) >= 0) state.accent = saved.accent;
+    if (["lime", "blue", "amber", "vivid"].indexOf(saved.accent) >= 0) state.accent = saved.accent;
   } catch (e) { /* storage unavailable */ }
   function applyLook() {
     if (state.theme === "system") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", state.theme);
@@ -634,14 +650,16 @@ textarea#f-notes { display: block; width: 100%; min-height: 96px; margin: 12px 0
     sortedDates().forEach(function (d) { var w = weekStart(d); if (w >= first) (weeks[w] = weeks[w] || []).push(records[d]); });
     var html = Object.keys(weeks).sort().reverse().map(function (w) {
       var list = weeks[w].slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
-      var avg = avgOf(list, function (r) { return r.weight; });
+      function avgCell(k, unit) { var a = avgOf(list, function (r) { return r[k]; }); return '<span class="n num">' + (a == null ? "—" : fmt(a, 1) + "<small>" + unit + "</small>") + "</span>"; }
+      // Weekly averages share the row grid so they line up with the daily columns instead of crowding the header
+      var avgRow = '<div class="havg hgrid"><span class="d">Média</span>' + avgCell("weight", "kg") + avgCell("fat", "%") + avgCell("muscle", "%") + "<span></span></div>";
       var rows = list.map(function (r) {
         return '<button type="button" class="hrow hgrid" id="hrow-' + r.date + '" data-row-date="' + r.date + '" aria-label="Editar medida de ' + rowDate(r.date) + '">' +
           '<span class="d num">' + rowDate(r.date) + '</span><span class="n num">' + fmt(r.weight, 1) + "<small>kg</small></span>" +
           '<span class="n num">' + (r.fat != null ? fmt(r.fat, 1) + "<small>%</small>" : "—") + '</span><span class="n num">' + (r.muscle != null ? fmt(r.muscle, 1) + "<small>%</small>" : "—") + "</span>" +
           '<span class="note">' + (r.notes ? ic("note", 16) + '<span class="sr-only">com nota</span>' : "") + "</span></button>";
       }).join("");
-      return '<div class="week-title"><span>' + weekLabel(w) + '</span><span class="num">média ' + fmt(avg, 1) + ' kg</span></div><div class="card hlist">' + rows + "</div>";
+      return '<div class="week-title"><span>' + weekLabel(w) + '</span><span class="num">' + list.length + '/7</span></div><div class="card hlist">' + avgRow + rows + "</div>";
     }).join("");
     screen.innerHTML = '<main class="main gut" id="main"><h1 class="title" tabindex="-1">Histórico</h1>' +
       '<div class="hcols hgrid" aria-hidden="true"><span></span><span>Peso</span><span>Gordura</span><span>Músculo</span><span></span></div>' + html + "</main>";
@@ -1033,7 +1051,7 @@ textarea#f-notes { display: block; width: 100%; min-height: 96px; margin: 12px 0
     var th = [["system", "Sistema"], ["light", "Claro"], ["dark", "Escuro"]].map(function (t) {
       return '<button type="button" role="radio" id="proto-theme-' + t[0] + '" data-theme-value="' + t[0] + '" aria-checked="' + (state.theme === t[0]) + '">' + t[1] + "</button>";
     }).join("");
-    var ac = [["lime", "Lima"], ["blue", "Azul"], ["amber", "Âmbar"]].map(function (a) {
+    var ac = [["lime", "Lima"], ["blue", "Azul"], ["amber", "Âmbar"], ["vivid", "Azul vivo"]].map(function (a) {
       return '<button type="button" role="radio" id="proto-accent-' + a[0] + '" data-accent-value="' + a[0] + '" aria-checked="' + (state.accent === a[0]) + '"><span class="sw sw-' + a[0] + '"></span>' + a[1] + "</button>";
     }).join("");
     openLayer('<div class="scrim" data-scrim></div><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="proto-title"><h2 id="proto-title">Protótipo</h2>' +
