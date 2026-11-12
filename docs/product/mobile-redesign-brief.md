@@ -104,10 +104,11 @@ Source of truth for the mobile redesign agreed on 2026-11-11, on branch `feat/mo
 
 ## Process
 
-- Task tracking lives exclusively in GitHub issues: one umbrella issue ("Mobile redesign") with native sub-issues, one per task, each with scope, acceptance criteria and validation (including a screenshot compared against the prototype). No new task files under `specs/`; existing task files stay untouched for the owner to remove later.
+- Task tracking lives exclusively in GitHub issues: one parent issue ("Mobile redesign") with native sub-issues, one per task, each with scope, acceptance criteria and validation (including a screenshot compared against the prototype). No new task files under `specs/`; existing task files stay untouched for the owner to remove later.
 - T-036, T-038 and T-040 are superseded by the new sub-issues; what still applies from T-037 is absorbed by the registration task. This is recorded in the issues, not in the old task files.
 - `AGENTS.md` is updated so agents track tasks only as GitHub issues and keep `docs/` for stable knowledge.
-- Git: everything on `feat/mobile-redesign`, one commit per task, a single PR at the end linked to the umbrella issue.
+- Git: everything on `feat/mobile-redesign`, one commit per task, a single PR at the end linked to the parent issue.
+- Each sub-issue commit ends with a `Refs: #<sub-issue>` footer (e.g. `Refs: #24`), so it shows on that issue's timeline once pushed. Docs-only commits that belong to no sub-issue carry no footer. The PR body lists `Closes #<n>` for #23 and every sub-issue, since closing the parent issue does not close its sub-issues.
 
 ## Sequence
 
