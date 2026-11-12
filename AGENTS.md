@@ -21,36 +21,41 @@ Before implementing any task, read these files:
 7. `specs/v1/spec.md`
 8. `specs/v1/implementation-plan.md`
 9. `specs/v1/acceptance-criteria.md`
-10. The selected task file under `specs/v1/tasks/`
+10. The selected GitHub issue and its parent umbrella issue (`gh issue view <n>`)
+11. For UI work, `docs/product/ui-direction.md` and the visual reference `docs/product/prototype/mobile-redesign.html`
 
 Use `docs/product/future-ideas.md` only to understand future ideas. Do not implement future ideas unless explicitly requested.
 
 ## Documentation and Task Conventions
 
 - Use `docs/` for stable product, technical, architectural, and planning knowledge.
-- Use `specs/` for version-level specifications, acceptance criteria, implementation strategy, open questions, and executable task files.
+- Use `specs/` for version-level specifications, acceptance criteria, implementation strategy, and open questions.
 - Keep requirements and architecture as current-state living documents.
 - Capture important decisions as ADR-style files under `docs/technical/decisions/`.
-- Do not add execution task tracking under `docs/`.
+- Do not add execution task tracking under `docs/` or `specs/`.
 
 ## Task Workflow
 
-This project uses plain markdown task files under `specs/v1/tasks/`.
+Executable work is tracked only as GitHub issues: one umbrella issue per initiative with native sub-issues, one per task. Each issue holds scope, acceptance criteria and validation; UI tasks are validated with a screenshot compared against `docs/product/prototype/mobile-redesign.html`.
 
 Before implementing a task:
 
 1. Read the related docs/specs.
-2. Read the selected task file under `specs/v1/tasks/`.
-3. Update the task with an implementation plan when the task is not clear enough.
-4. Implement only the selected task.
-5. Update the task with validation notes and modified files.
+2. Read the selected issue and its umbrella issue with `gh issue view <n>`.
+3. When the issue is not clear enough, show an implementation plan to the owner before coding.
+4. Implement only the selected issue.
+5. Report validation notes and modified files to the owner; post them on the issue only when the owner asks, since GitHub comments are public and are not reviewed first.
 6. Do not introduce unrelated changes.
 
 When creating new work:
 
 1. Add stable knowledge to `docs/`.
-2. Add feature/version scope to `specs/`.
-3. Add executable work as a markdown task under `specs/v1/tasks/`.
+2. Add version-level scope to `specs/`.
+3. Draft executable work as an issue and show the text to the owner. Create the issue only after the owner approves that text.
+
+Existing files under `specs/v1/tasks/` are history that the owner removes later. Do not edit them or add new task files; note superseded tasks in the issues instead.
+
+Work for one initiative goes on one feature branch with one commit per task and a single pull request linked to the umbrella issue.
 
 ## V1 Technical Decisions
 
@@ -84,7 +89,7 @@ Do not:
 - Turn the project into a generic fitness tracker.
 - Add multi-user support.
 - Add complex authentication.
-- Add charts in V1.
+- Add charts outside the Tendências screen (ADR 0030); there is one line chart at a time, with no ideal bands or targets.
 - Add Google Sheets integration in V1.
 - Add offline-first behavior in V1.
 - Add recommendations or automatic health interpretation.

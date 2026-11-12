@@ -42,7 +42,7 @@ Only weight is required in V1. Derived values such as BMI, body fat mass, muscle
 This repository uses a lightweight Spec-Driven Development workflow.
 
 - `docs/` contains stable product, technical, decision, and general documentation.
-- `specs/` contains version-level specifications, acceptance criteria, implementation strategy, open questions, and executable tasks.
+- `specs/` contains version-level specifications, acceptance criteria, implementation strategy, and open questions.
 
 Project documentation is stored under `docs/`.
 
@@ -60,7 +60,7 @@ Project documentation is stored under `docs/`.
 
 V1 spec files are stored under `specs/v1/`.
 
-Executable V1 tasks are tracked as plain markdown files under `specs/v1/tasks/`.
+Executable work is tracked only as GitHub issues (see ADR 0036); the files under `specs/v1/tasks/` are history.
 
 Agent-specific instructions are in [`AGENTS.md`](./AGENTS.md).
 
@@ -207,4 +207,4 @@ POST /api/auth/login
 
 ## Status
 
-Initial V1 validation tasks are marked `Done`; remaining V1 work is tracked under `specs/v1/tasks/`.
+Initial V1 validation tasks are marked `Done`; remaining work is tracked as GitHub issues.
