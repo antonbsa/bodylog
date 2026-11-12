@@ -1,25 +1,19 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { Callout } from "@radix-ui/themes"
 
-import { formatApiErrorMessage } from "../../../../../infra/errors"
-import { Button } from "../../components/Button"
+import { formatApiErrorMessage } from "../../../../infra/errors"
+import { PageTitle } from "./components/PageTitle"
+import { Button } from "../components/Button"
 import {
   exportMeasurementsCsv,
   importMeasurementsCsv,
-} from "../../api/measurements"
-import { ConfirmationDialog } from "./ConfirmationDialog"
-import { MeasurementHistory } from "./MeasurementHistory"
-import {
-  PlaceholderSummary,
-  WeeklyDashboardSummary,
-} from "./WeeklyDashboardSummary"
-import { useMeasurementHistory } from "../../hooks/useMeasurementHistory"
-import { useWeeklyDashboard } from "../../hooks/useWeeklyDashboard"
+} from "../api/measurements"
+import { ConfirmationDialog } from "./components/ConfirmationDialog"
 import {
   formatImportPartialMessage,
   formatImportSuccessMessage,
-} from "../../utils/csv-import-summary"
-import type { CsvImportSummary } from "../../../../../types/measurements"
+} from "../utils/csv-import-summary"
+import type { CsvImportSummary } from "../../../../types/measurements"
 
 type ExportState =
   | {
@@ -42,29 +36,11 @@ type ImportState =
       summary: CsvImportSummary | null
     }
 
-type AuthenticatedDashboardProps = {
+type SettingsScreenProps = {
   onLogout: () => Promise<void> | void
-  onOpenMeasurementForm: (date?: string) => void
-  onRefreshData: () => void
-  refreshKey: number
-  savedMessage: string | null
 }
 
-export function AuthenticatedDashboard({
-  onLogout,
-  onOpenMeasurementForm,
-  onRefreshData,
-  refreshKey,
-  savedMessage,
-}: AuthenticatedDashboardProps) {
-  const { reload: reloadDashboard, state: dashboardState } =
-    useWeeklyDashboard()
-  const {
-    loadMore: loadMoreHistory,
-    reload: reloadHistory,
-    remove: removeHistoryMeasurement,
-    state: historyState,
-  } = useMeasurementHistory({ onRemoved: reloadDashboard })
+export function SettingsScreen({ onLogout }: SettingsScreenProps) {
   const [exportState, setExportState] = useState<ExportState>({
     message: null,
     status: "idle",
@@ -77,19 +53,6 @@ export function AuthenticatedDashboard({
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const importFileInputRef = useRef<HTMLInputElement | null>(null)
-  const lastHandledRefreshKey = useRef(refreshKey)
-
-  // The hooks load on mount; this only reacts to external refresh signals
-  // (window focus / saved measurement) propagated through refreshKey.
-  useEffect(() => {
-    if (lastHandledRefreshKey.current === refreshKey) {
-      return
-    }
-
-    lastHandledRefreshKey.current = refreshKey
-    reloadDashboard()
-    reloadHistory()
-  }, [refreshKey, reloadDashboard, reloadHistory])
 
   function handleExportCsv() {
     setExportState({
@@ -137,8 +100,6 @@ export function AuthenticatedDashboard({
           status: "idle",
           summary,
         })
-        reloadDashboard()
-        reloadHistory()
       })
       .catch((error: unknown) => {
         setImportState({
@@ -176,26 +137,8 @@ export function AuthenticatedDashboard({
   return (
     <>
       <header className="app-header">
-        <section className="hero" aria-labelledby="page-title">
-          <p className="eyebrow">BodyLog</p>
-          <h1 id="page-title">Resumo da semana</h1>
-          <p className="intro">
-            Médias da semana atual e comparação com a semana anterior.
-          </p>
-        </section>
-
+        <PageTitle>Ajustes</PageTitle>
         <div className="header-actions">
-          <Button onClick={() => onOpenMeasurementForm()} type="button">
-            Registrar medida
-          </Button>
-          <Button
-            disabled={dashboardState.status === "loading"}
-            onClick={onRefreshData}
-            type="button"
-            variant="secondary"
-          >
-            Atualizar dados
-          </Button>
           <Button
             disabled={exportState.status === "loading"}
             onClick={handleExportCsv}
@@ -245,12 +188,6 @@ export function AuthenticatedDashboard({
         title="Sair do BodyLog"
       />
 
-      {savedMessage ? (
-        <Callout.Root color="green" role="status">
-          <Callout.Text>{savedMessage}</Callout.Text>
-        </Callout.Root>
-      ) : null}
-
       {exportState.status === "error" ? (
         <Callout.Root color="red" role="alert">
           <Callout.Text>{exportState.message}</Callout.Text>
@@ -278,34 +215,6 @@ export function AuthenticatedDashboard({
           </Callout.Root>
         )
       ) : null}
-
-      {dashboardState.status === "error" ? (
-        <Callout.Root color="red" role="alert">
-          <Callout.Text>
-            {dashboardState.message ??
-              "Não foi possível carregar o resumo semanal."}
-          </Callout.Text>
-        </Callout.Root>
-      ) : null}
-
-      {dashboardState.status === "loading" && !dashboardState.dashboard ? (
-        <Callout.Root role="status">
-          <Callout.Text>Carregando resumo semanal...</Callout.Text>
-        </Callout.Root>
-      ) : null}
-
-      {dashboardState.dashboard ? (
-        <WeeklyDashboardSummary dashboard={dashboardState.dashboard} />
-      ) : (
-        <PlaceholderSummary />
-      )}
-
-      <MeasurementHistory
-        onEditMeasurement={onOpenMeasurementForm}
-        onLoadMore={loadMoreHistory}
-        onRemove={removeHistoryMeasurement}
-        state={historyState}
-      />
     </>
   )
 }

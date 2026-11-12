@@ -118,7 +118,7 @@ test("shows latest recorded metrics when the current week has no measurements", 
   await expect(weightCard).toContainText("IMC médio: 26,22")
 })
 
-test("refreshes dashboard and history manually and when returning to foreground", async ({
+test("refreshes the dashboard manually and the dashboard and history when returning to foreground", async ({
   page,
 }) => {
   const currentWeek = getWeekRange(getTodayDateInputValue())
@@ -171,22 +171,17 @@ test("refreshes dashboard and history manually and when returning to foreground"
   await expect(
     page.locator(".metric-card").filter({ hasText: "Peso médio" }),
   ).toContainText("73 kg")
-  await expect(page.getByText("10/06/2026")).toBeVisible()
 
   dashboardWeightKg = 74
-  measurementDate = "2026-06-11"
 
   await page.getByRole("button", { name: "Atualizar dados" }).click()
 
   await expect(
     page.locator(".metric-card").filter({ hasText: "Peso médio" }),
   ).toContainText("74 kg")
-  await expect(page.getByText("11/06/2026")).toBeVisible()
   expect(dashboardRequestCount).toBeGreaterThanOrEqual(2)
-  expect(measurementRequestCount).toBeGreaterThanOrEqual(2)
 
   dashboardWeightKg = 75
-  measurementDate = "2026-06-12"
 
   await page.waitForTimeout(600)
   await page.evaluate(() => {
@@ -196,12 +191,28 @@ test("refreshes dashboard and history manually and when returning to foreground"
   await expect(
     page.locator(".metric-card").filter({ hasText: "Peso médio" }),
   ).toContainText("75 kg")
-  await expect(page.getByText("12/06/2026")).toBeVisible()
   expect(dashboardRequestCount).toBeGreaterThanOrEqual(3)
-  expect(measurementRequestCount).toBeGreaterThanOrEqual(3)
+
+  measurementDate = "2026-06-11"
+
+  await page.getByRole("link", { name: "Histórico" }).click()
+
+  await expect(page.getByText("11/06/2026")).toBeVisible()
+  expect(measurementRequestCount).toBeGreaterThanOrEqual(1)
+
+  const requestsBeforeResume = measurementRequestCount
+  measurementDate = "2026-06-12"
+
+  await page.waitForTimeout(600)
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("focus"))
+  })
+
+  await expect(page.getByText("12/06/2026")).toBeVisible()
+  expect(measurementRequestCount).toBeGreaterThan(requestsBeforeResume)
 })
 
-test("exports measurements CSV from the dashboard action", async ({ page }) => {
+test("exports measurements CSV from the settings screen", async ({ page }) => {
   const currentWeek = getWeekRange(getTodayDateInputValue())
   const previousWeek = getPreviousWeekRange(currentWeek.weekStartDate)
 
@@ -220,7 +231,7 @@ test("exports measurements CSV from the dashboard action", async ({ page }) => {
     })
   })
 
-  await page.goto("/")
+  await page.goto("/ajustes")
 
   const exportResponsePromise = page.waitForResponse((response) =>
     response.url().includes("/api/export/csv"),
@@ -232,7 +243,7 @@ test("exports measurements CSV from the dashboard action", async ({ page }) => {
   expect(exportResponse.status()).toBe(200)
 })
 
-test("imports measurements CSV from the dashboard action", async ({ page }) => {
+test("imports measurements CSV from the settings screen", async ({ page }) => {
   const currentWeek = getWeekRange(getTodayDateInputValue())
   const previousWeek = getPreviousWeekRange(currentWeek.weekStartDate)
   let importRequestBody: string | null = null
@@ -256,7 +267,7 @@ test("imports measurements CSV from the dashboard action", async ({ page }) => {
     })
   })
 
-  await page.goto("/")
+  await page.goto("/ajustes")
 
   await page.locator('input[type="file"]').setInputFiles({
     buffer: Buffer.from(
@@ -298,7 +309,7 @@ test("shows a descriptive CSV import failure", async ({ page }) => {
     })
   })
 
-  await page.goto("/")
+  await page.goto("/ajustes")
 
   await page.locator('input[type="file"]').setInputFiles({
     buffer: Buffer.from(["date,peso", "2026-06-10,72.9"].join("\n")),

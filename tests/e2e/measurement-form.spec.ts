@@ -140,7 +140,7 @@ test("creates a measurement from the dashboard form", async ({ page }) => {
   })
 
   await page.goto("/")
-  await page.getByRole("button", { name: "Registrar medida" }).click()
+  await page.getByRole("link", { name: "Registrar medida" }).click()
 
   const dialog = page.getByRole("dialog", { name: "Medida corporal" })
 
@@ -234,7 +234,7 @@ test("loads an existing date into the form before saving", async ({ page }) => {
   })
 
   await page.goto("/")
-  await page.getByRole("button", { name: "Registrar medida" }).click()
+  await page.getByRole("link", { name: "Registrar medida" }).click()
   await page.getByLabel("Data").fill(existingDisplayDate)
 
   await expect(page.getByRole("dialog").getByText("Editando")).toBeVisible()

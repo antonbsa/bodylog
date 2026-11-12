@@ -6,7 +6,7 @@ Current-state description of the mobile UI. The approved interactive prototype i
 
 Mobile is the target and must be fully functional as an installed iPhone PWA. Desktop only needs to stay consistent with mobile. Registration is the product: it must be fast, practical and accessible above everything else.
 
-Decisions: `0030-allow-charts-in-trends.md`, `0031-use-neutral-variation-color.md`, `0032-add-waist-sleep-disposition-and-notes-fields.md`, `0033-use-bottom-navigation.md`, `0034-support-light-dark-and-system-themes.md`, `0035-use-seven-day-weekly-target.md`. The component library decision is still `0026-use-radix-ui-components.md`; how the tokens below coexist with Radix Themes is settled in the visual foundation task.
+Decisions: `0030-allow-charts-in-trends.md`, `0031-use-neutral-variation-color.md`, `0032-add-waist-sleep-disposition-and-notes-fields.md`, `0033-use-bottom-navigation.md`, `0034-support-light-dark-and-system-themes.md`, `0035-use-seven-day-weekly-target.md`. The component library decision is still `0026-use-radix-ui-components.md`; the project tokens own every color and Radix Themes is kept only for behavior and the components not yet redone, following the resolved theme (see the update section in that ADR).
 
 ## Principles
 
@@ -14,6 +14,7 @@ Decisions: `0030-allow-charts-in-trends.md`, `0031-use-neutral-variation-color.m
 - Changes are never classified as good or bad.
 - All interface copy is `pt-BR`, casual, direct and short. Repo text stays English.
 - Touch targets are at least 44px. Inputs use 16px or larger text so iOS does not zoom.
+- Zoom is disabled (pinch, double-tap and focus auto-zoom) at the owner's choice, to behave like a native app; form controls stay at 16px or more.
 - Respect `prefers-reduced-motion`.
 
 ## Navigation

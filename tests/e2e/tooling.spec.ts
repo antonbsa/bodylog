@@ -329,6 +329,7 @@ test("logout returns to the login screen", async ({ page }) => {
   await page.goto("/")
   await page.getByLabel("Senha").fill("senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
+  await page.getByRole("link", { name: "Ajustes" }).click()
   await page.getByRole("button", { name: "Sair" }).click()
 
   const logoutDialog = page.getByRole("alertdialog", {
@@ -343,9 +344,7 @@ test("logout returns to the login screen", async ({ page }) => {
 
   await logoutDialog.getByRole("button", { name: "Cancelar" }).click()
   await expect(logoutDialog).toBeHidden()
-  await expect(
-    page.getByRole("heading", { name: "Resumo da semana" }),
-  ).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Ajustes" })).toBeVisible()
   expect(logoutRequestCount).toBe(0)
 
   await page.getByRole("button", { name: "Sair" }).click()

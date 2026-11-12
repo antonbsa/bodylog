@@ -86,7 +86,7 @@ test("renders recent measurements, loads more, and opens an item for editing", a
     })
   })
 
-  await page.goto("/")
+  await page.goto("/historico")
 
   await expect(page.getByText("Medidas recentes")).toHaveCount(0)
 
@@ -155,7 +155,11 @@ test("renders recent measurements, loads more, and opens an item for editing", a
     }),
   ).toHaveCount(0)
   expect(deletedMeasurementIds).toEqual(["measurement-3"])
-  expect(dashboardRequestCount).toBeGreaterThanOrEqual(2)
+  // The summary lives on Início, which fetches fresh data when opened.
+  expect(dashboardRequestCount).toBe(0)
+  await page.getByRole("link", { name: "Início" }).click()
+  await expect.poll(() => dashboardRequestCount).toBeGreaterThanOrEqual(1)
+  await page.getByRole("link", { name: "Histórico" }).click()
 
   const missingOptionalItem = table.getByRole("row").filter({
     hasText: "13/06/2026",
@@ -176,6 +180,8 @@ test("renders recent measurements, loads more, and opens an item for editing", a
 
   await newestItem.getByRole("button", { name: "Editar" }).click()
 
+  await expect(page).toHaveURL("/registro?data=2026-06-14")
+
   const dialog = page.getByRole("dialog", { name: "Medida corporal" })
 
   await expect(dialog).toBeVisible()
@@ -188,7 +194,7 @@ test("renders an empty measurement history state", async ({ page }) => {
   await mockAuthenticatedSession(page)
   await mockMeasurementList(page, [])
 
-  await page.goto("/")
+  await page.goto("/historico")
 
   await expect(page.getByText("Nenhum registro ainda.")).toBeVisible()
   await expect(page.getByRole("button", { name: "Carregar mais" })).toHaveCount(
@@ -211,7 +217,7 @@ test("renders a measurement history error state", async ({ page }) => {
     })
   })
 
-  await page.goto("/")
+  await page.goto("/historico")
 
   await expect(
     page.getByRole("alert").filter({
