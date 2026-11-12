@@ -77,8 +77,8 @@ V1 is a personal body metrics tracker, not a generic fitness platform.
 Guidelines:
 
 - Prefer small, explicit implementation over broad frameworks or speculative architecture.
-- Do not add multi-user support, account registration, OAuth, charts, offline-first behavior, Google Sheets integration, recommendations, or health interpretation in V1 unless scope changes explicitly.
-- Do not add user-configurable goals in V1; weight variation color uses the documented V1 assumption until goal settings exist.
+- Do not add multi-user support, account registration, OAuth, charts outside the Tendências screen (`0030-allow-charts-in-trends.md`), offline-first behavior, Google Sheets integration, recommendations, or health interpretation in V1 unless scope changes explicitly.
+- Do not add user-configurable goals in V1; variations use one neutral color for every metric (`0031-use-neutral-variation-color.md`).
 - Keep future ideas in `docs/product/future-ideas.md` or future version specs, not in executable V1 tasks.
 - Let automated tests scale with the risk of the behavior being implemented.
 
@@ -92,9 +92,9 @@ Guidelines:
 - Make weight the only required body metric in V1.
 - Load an existing record when its date is selected.
 - Make missing optional values clear without blocking the workflow.
-- Favor readable cards and tables over charts in V1.
-- Use the single dashboard page as the authenticated V1 app surface.
-- Open measurement creation/editing in a mobile full-viewport modal or equivalent.
+- Favor readable cards and tables; charts are limited to the Tendências screen (`0030-allow-charts-in-trends.md`).
+- Use separate screens behind a bottom tab bar as the authenticated app surface (`0033-use-bottom-navigation.md`).
+- Open measurement creation/editing in a full-screen registration route.
 - Validate mobile usability before considering desktop-specific polish.
 
 ## Operational Safety

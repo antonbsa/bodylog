@@ -61,7 +61,7 @@ V1 is not intended to provide:
 - multi-user support;
 - advanced authentication;
 - Google Sheets integration;
-- advanced charts;
+- charts outside the Tendências screen and advanced chart features (`0030-allow-charts-in-trends.md`);
 - automatic recommendations;
 - health diagnosis;
 - training or diet tracking;

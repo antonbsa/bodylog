@@ -55,6 +55,8 @@ The root package owns shared scripts for installation, typechecking, tests, D1 c
 
 ### V1 UI Structure
 
+The mobile redesign replaces the single-page structure below with separate screens (Início, Histórico, Tendências, Ajustes) behind a bottom tab bar and a full-screen registration route (`0033-use-bottom-navigation.md`, `docs/product/ui-direction.md`). The structure below describes the current implementation until the redesign lands.
+
 V1 authenticated UI structure:
 
 ```txt

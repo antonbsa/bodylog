@@ -77,7 +77,7 @@ Focus areas:
 - weekly dashboard API;
 - current week and previous week summaries;
 - variation display;
-- V1 expected-outcome up/down/stable direction indicators;
+- up/down/stable direction indicators with neutral variation color (`0031-use-neutral-variation-color.md`);
 - partial week and measurement count display.
 
 ## Phase 6 — CSV Export

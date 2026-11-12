@@ -219,7 +219,9 @@ Deletes a measurement.
 
 Returns the weekly summary for the current week and comparison against the previous week.
 
-The response must include week date ranges and measurement counts so the UI can derive current and previous week registration reliability.
+The response must include week date ranges and measurement counts so the UI can show the weekly registration count against the 7-day target.
+
+Planned with the mobile redesign: each week also returns its recorded dates so the UI can draw the day dots (`0035-use-seven-day-weekly-target.md`), and measurements and weekly averages gain the optional `waistCm`, `sleepHours`, `disposition` and `notes` fields (`0032-add-waist-sleep-disposition-and-notes-fields.md`). The shapes below do not include them yet.
 
 #### Response 200
 

@@ -16,9 +16,9 @@
 - Current partial week is compared against the previous full week.
 - Percentage metrics show absolute variation in percentage points.
 - Stable direction uses the documented V1 thresholds.
-- The UI indicates up, down, or stable using V1 expected-outcome color semantics.
+- The UI indicates up, down, or stable with one neutral color for every metric (`0031-use-neutral-variation-color.md`).
 - The UI avoids health advice, diagnosis, recommendations, and motivational interpretation.
-- Registration reliability is displayed from weekly record counts.
+- The weekly registration count is displayed against a 7-day target, with the recorded days (`0035-use-seven-day-weekly-target.md`).
 
 ## Data Management
 
