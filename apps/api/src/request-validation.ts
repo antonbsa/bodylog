@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from "../../../infra/errors"
+import { isWithinMeasurementLimit, normalizeNotes } from "./domain/measurement"
 import type { MeasurementInput } from "../../../types/measurements"
 
 type ErrorDetails = {
@@ -93,11 +94,10 @@ export function createCsvImportValidationError(summary: {
 }
 
 export function parseMeasurementInput(body: unknown): MeasurementInputResult {
+  const invalid = { code: "INVALID_MEASUREMENT_INPUT", valid: false } as const
+
   if (!isRecord(body) || !isFiniteNumber(body.weightKg)) {
-    return {
-      code: "INVALID_MEASUREMENT_INPUT",
-      valid: false,
-    }
+    return invalid
   }
 
   const bodyFatPercentage = parseOptionalFiniteNumber(body.bodyFatPercentage)
@@ -105,16 +105,40 @@ export function parseMeasurementInput(body: unknown): MeasurementInputResult {
   const restingMetabolismKcal = parseOptionalFiniteNumber(
     body.restingMetabolismKcal,
   )
+  const waistCm = parseOptionalFiniteNumber(body.waistCm)
+  const sleepHours = parseOptionalFiniteNumber(body.sleepHours)
+  const disposition = parseOptionalFiniteNumber(body.disposition)
+  const notes = parseOptionalNotes(body.notes)
 
   if (
     bodyFatPercentage === undefined ||
     musclePercentage === undefined ||
-    restingMetabolismKcal === undefined
+    restingMetabolismKcal === undefined ||
+    waistCm === undefined ||
+    sleepHours === undefined ||
+    disposition === undefined ||
+    notes === undefined
   ) {
-    return {
-      code: "INVALID_MEASUREMENT_INPUT",
-      valid: false,
-    }
+    return invalid
+  }
+
+  const limitedValues = {
+    weightKg: body.weightKg,
+    bodyFatPercentage,
+    musclePercentage,
+    restingMetabolismKcal,
+    waistCm,
+    sleepHours,
+    disposition,
+  }
+  const isOutOfLimits = Object.entries(limitedValues).some(
+    ([field, value]) =>
+      value !== null &&
+      !isWithinMeasurementLimit(field as keyof typeof limitedValues, value),
+  )
+
+  if (isOutOfLimits) {
+    return invalid
   }
 
   return {
@@ -122,6 +146,10 @@ export function parseMeasurementInput(body: unknown): MeasurementInputResult {
       bodyFatPercentage,
       musclePercentage,
       restingMetabolismKcal,
+      waistCm,
+      sleepHours,
+      disposition,
+      notes,
       weightKg: body.weightKg,
     },
     valid: true,
@@ -209,4 +237,12 @@ function parseOptionalFiniteNumber(value: unknown): number | null | undefined {
   }
 
   return value
+}
+
+function parseOptionalNotes(value: unknown): string | null | undefined {
+  if (value === null || value === undefined) {
+    return null
+  }
+
+  return typeof value === "string" ? normalizeNotes(value) : undefined
 }

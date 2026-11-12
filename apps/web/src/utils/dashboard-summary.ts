@@ -65,30 +65,6 @@ export function getAvailableDaysSoFar(currentWeek: WeekSummary): number {
   return Math.max(1, Math.min(7, availableDays))
 }
 
-export function getReliability(measurementCount: number): {
-  className: string
-  label: string
-} {
-  if (measurementCount <= 2) {
-    return {
-      className: "reliability-low",
-      label: "Baixa",
-    }
-  }
-
-  if (measurementCount <= 4) {
-    return {
-      className: "reliability-medium",
-      label: "Média",
-    }
-  }
-
-  return {
-    className: "reliability-high",
-    label: "Alta",
-  }
-}
-
 export function getOutcomeClass(
   metric: DashboardCardModel["directionMetric"],
   direction: MetricDirection | null,

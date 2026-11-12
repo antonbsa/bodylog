@@ -120,6 +120,10 @@ test("creates a measurement from the dashboard form", async ({ page }) => {
       bodyFatPercentage: 14.8,
       musclePercentage: null,
       restingMetabolismKcal: 1700,
+      waistCm: null,
+      sleepHours: null,
+      disposition: null,
+      notes: null,
       weightKg: 72.5,
     })
 
@@ -210,6 +214,10 @@ test("loads an existing date into the form before saving", async ({ page }) => {
       bodyFatPercentage: 14.46,
       musclePercentage: null,
       restingMetabolismKcal: 1700,
+      waistCm: null,
+      sleepHours: null,
+      disposition: null,
+      notes: null,
       weightKg: 73.1,
     })
 

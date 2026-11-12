@@ -7,8 +7,49 @@ export type MeasurementFields = {
   bodyFatPercentage: number | null
   musclePercentage: number | null
   restingMetabolismKcal: number | null
+  waistCm: number | null
+  sleepHours: number | null
+  disposition: number | null
+  notes: string | null
   createdAt: string
   updatedAt: string
+}
+
+export type MeasurementLimit = {
+  integer?: boolean
+  max: number
+  min: number
+}
+
+/** Hard limits that block saving a value (ADR 0032); weight is the only required field. */
+export const MEASUREMENT_LIMITS = {
+  weightKg: { max: 300, min: 20 },
+  bodyFatPercentage: { max: 80, min: 1 },
+  musclePercentage: { max: 80, min: 1 },
+  restingMetabolismKcal: { max: 5000, min: 500 },
+  waistCm: { max: 250, min: 30 },
+  sleepHours: { max: 24, min: 0 },
+  disposition: { integer: true, max: 5, min: 1 },
+} as const satisfies Record<string, MeasurementLimit>
+
+export function isWithinMeasurementLimit(
+  field: keyof typeof MEASUREMENT_LIMITS,
+  value: number,
+): boolean {
+  const limit: MeasurementLimit = MEASUREMENT_LIMITS[field]
+
+  return (
+    value >= limit.min &&
+    value <= limit.max &&
+    (!limit.integer || Number.isInteger(value))
+  )
+}
+
+/** Notes are trimmed; blank notes are stored as null. */
+export function normalizeNotes(value: string): string | null {
+  const trimmed = value.trim()
+
+  return trimmed === "" ? null : trimmed
 }
 
 export type DerivedMeasurementValues = {
@@ -29,6 +70,10 @@ export class Measurement {
   readonly bodyFatPercentage: number | null
   readonly musclePercentage: number | null
   readonly restingMetabolismKcal: number | null
+  readonly waistCm: number | null
+  readonly sleepHours: number | null
+  readonly disposition: number | null
+  readonly notes: string | null
   readonly createdAt: string
   readonly updatedAt: string
 
@@ -39,6 +84,10 @@ export class Measurement {
     this.bodyFatPercentage = fields.bodyFatPercentage
     this.musclePercentage = fields.musclePercentage
     this.restingMetabolismKcal = fields.restingMetabolismKcal
+    this.waistCm = fields.waistCm
+    this.sleepHours = fields.sleepHours
+    this.disposition = fields.disposition
+    this.notes = fields.notes
     this.createdAt = fields.createdAt
     this.updatedAt = fields.updatedAt
   }
@@ -67,6 +116,10 @@ export class Measurement {
       bodyFatPercentage: this.bodyFatPercentage,
       musclePercentage: this.musclePercentage,
       restingMetabolismKcal: this.restingMetabolismKcal,
+      waistCm: this.waistCm,
+      sleepHours: this.sleepHours,
+      disposition: this.disposition,
+      notes: this.notes,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }

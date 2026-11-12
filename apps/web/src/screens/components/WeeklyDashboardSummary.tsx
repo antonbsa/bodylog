@@ -9,7 +9,6 @@ import {
   getAvailableDaysSoFar,
   getDirectionLabel,
   getOutcomeClass,
-  getReliability,
 } from "../../utils/dashboard-summary"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
 import type {
@@ -31,10 +30,6 @@ export function WeeklyDashboardSummary({
   dashboard: WeeklyDashboard
 }) {
   const metrics = createDashboardCardModels(dashboard)
-  const currentReliability = getReliability(dashboard.current.measurementCount)
-  const previousReliability = getReliability(
-    dashboard.previous.measurementCount,
-  )
   const availableDays = getAvailableDaysSoFar(dashboard.current)
 
   return (
@@ -51,12 +46,6 @@ export function WeeklyDashboardSummary({
           <p className="context-label">Registros</p>
           <p className="context-value">
             {dashboard.current.measurementCount}/{availableDays}
-          </p>
-        </div>
-        <div>
-          <p className="context-label">Confiabilidade</p>
-          <p className={`context-value ${currentReliability.className}`}>
-            {currentReliability.label}
           </p>
         </div>
       </section>
@@ -89,9 +78,6 @@ export function WeeklyDashboardSummary({
           {formatDisplayDateFromIso(dashboard.previous.weekEndDate)}
         </span>
         <span>{dashboard.previous.measurementCount} registros</span>
-        <span className={previousReliability.className}>
-          {previousReliability.label}
-        </span>
       </section>
     </>
   )

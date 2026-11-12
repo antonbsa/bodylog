@@ -138,10 +138,16 @@ export function MeasurementForm({
     setIsSubmitting(true)
 
     try {
-      const measurement = await saveMeasurementByDate(
-        parsedFields.date,
-        parsedFields.value,
-      )
+      // The form has no inputs for the new fields yet; resend the stored
+      // values so editing a day does not clear them.
+      const stored = measurementByDateCache.current.get(parsedFields.date)
+      const measurement = await saveMeasurementByDate(parsedFields.date, {
+        ...parsedFields.value,
+        disposition: stored?.disposition ?? null,
+        notes: stored?.notes ?? null,
+        sleepHours: stored?.sleepHours ?? null,
+        waistCm: stored?.waistCm ?? null,
+      })
 
       measurementByDateCache.current.set(parsedFields.date, measurement)
       onSaved(measurement)

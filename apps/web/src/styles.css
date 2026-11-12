@@ -202,7 +202,7 @@ input:disabled {
 
 .dashboard-context {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -312,18 +312,15 @@ input:disabled {
   line-height: 1.2;
 }
 
-.metric-card-positive .variation-card strong,
-.reliability-high {
+.metric-card-positive .variation-card strong {
   color: #7ee787;
 }
 
-.metric-card-negative .variation-card strong,
-.reliability-low {
+.metric-card-negative .variation-card strong {
   color: #ff7b72;
 }
 
-.metric-card-stable .variation-card strong,
-.reliability-medium {
+.metric-card-stable .variation-card strong {
   color: #d29922;
 }
 

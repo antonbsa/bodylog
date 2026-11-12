@@ -13,6 +13,10 @@ type MeasurementRow = {
   body_fat_percentage: number | null
   muscle_percentage: number | null
   resting_metabolism_kcal: number | null
+  waist_cm: number | null
+  sleep_hours: number | null
+  disposition: number | null
+  notes: string | null
   created_at: string
   updated_at: string
 }
@@ -109,6 +113,10 @@ describe("measurement api", () => {
         bodyFatPercentage: null,
         musclePercentage: null,
         restingMetabolismKcal: null,
+        waistCm: null,
+        sleepHours: null,
+        disposition: null,
+        notes: null,
         createdAt: "2026-06-09T12:00:00.000Z",
         updatedAt: "2026-06-09T12:00:00.000Z",
       },
@@ -218,6 +226,10 @@ describe("measurement api", () => {
           bodyFatPercentage: 14.46,
           musclePercentage: 43.72,
           restingMetabolismKcal: 1700,
+          waistCm: null,
+          sleepHours: null,
+          disposition: null,
+          notes: null,
           createdAt: "2026-06-09T12:00:00.000Z",
           updatedAt: "2026-06-09T12:00:00.000Z",
           derived: {
@@ -233,6 +245,10 @@ describe("measurement api", () => {
           bodyFatPercentage: null,
           musclePercentage: null,
           restingMetabolismKcal: null,
+          waistCm: null,
+          sleepHours: null,
+          disposition: null,
+          notes: null,
           createdAt: "2026-06-09T12:00:00.000Z",
           updatedAt: "2026-06-09T12:00:00.000Z",
           derived: {
@@ -274,6 +290,10 @@ describe("measurement api", () => {
         id: "newest",
         musclePercentage: 43.72,
         restingMetabolismKcal: 1700,
+        waistCm: 81.5,
+        sleepHours: 7.5,
+        disposition: 4,
+        notes: 'Slept well, "no" coffee',
         weightKg: 72.9,
       }),
       createMeasurementRow({
@@ -302,9 +322,9 @@ describe("measurement api", () => {
     )
     expect(await response.text()).toBe(
       [
-        "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
-        "2026-06-10,72.9,14.46,43.72,1700,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z",
-        "2026-06-09,72.1,,,,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z",
+        "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at",
+        '2026-06-10,72.9,14.46,43.72,1700,81.5,7.5,4,"Slept well, ""no"" coffee",2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z',
+        "2026-06-09,72.1,,,,,,,,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z",
       ].join("\n"),
     )
   })
@@ -672,6 +692,240 @@ describe("measurement api", () => {
     })
   })
 
+  it("saves and returns waist, sleep, disposition and trimmed notes", async () => {
+    const env = createEnv()
+    const putResponse = await putMeasurement(env, {
+      disposition: 4,
+      notes: "  Slept well  ",
+      sleepHours: 7.5,
+      waistCm: 81.5,
+      weightKg: 72.9,
+    })
+
+    expect(putResponse.status).toBe(200)
+    expect(await putResponse.json()).toMatchObject({
+      item: {
+        disposition: 4,
+        notes: "Slept well",
+        sleepHours: 7.5,
+        waistCm: 81.5,
+      },
+    })
+
+    const loadResponse = await app.request(
+      "/api/measurements/by-date/2026-06-10",
+      { headers: { cookie: await createSessionCookieHeader() } },
+      env,
+    )
+
+    expect(await loadResponse.json()).toMatchObject({
+      item: {
+        disposition: 4,
+        notes: "Slept well",
+        sleepHours: 7.5,
+        waistCm: 81.5,
+      },
+    })
+  })
+
+  it("stores blank notes as null and keeps the new fields optional", async () => {
+    const response = await putMeasurement(createEnv(), {
+      notes: "   ",
+      weightKg: 72.9,
+    })
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({
+      item: {
+        disposition: null,
+        notes: null,
+        sleepHours: null,
+        waistCm: null,
+      },
+    })
+  })
+
+  it.each([
+    ["weightKg", 20, 300, 19.9, 300.1],
+    ["bodyFatPercentage", 1, 80, 0.9, 80.1],
+    ["musclePercentage", 1, 80, 0.9, 80.1],
+    ["restingMetabolismKcal", 500, 5000, 499, 5001],
+    ["waistCm", 30, 250, 29.9, 250.1],
+    ["sleepHours", 0, 24, -0.5, 24.5],
+    ["disposition", 1, 5, 0, 6],
+  ])(
+    "accepts %s at its limits and rejects values outside them",
+    async (field, min, max, belowMin, aboveMax) => {
+      for (const value of [min, max]) {
+        const response = await putMeasurement(createEnv(), {
+          weightKg: 72.9,
+          [field]: value,
+        })
+
+        expect(response.status).toBe(200)
+      }
+
+      for (const value of [belowMin, aboveMax]) {
+        const response = await putMeasurement(createEnv(), {
+          weightKg: 72.9,
+          [field]: value,
+        })
+
+        expect(response.status).toBe(400)
+      }
+    },
+  )
+
+  it("rejects a non-integer disposition and non-string notes", async () => {
+    const disposition = await putMeasurement(createEnv(), {
+      disposition: 3.5,
+      weightKg: 72.9,
+    })
+    const notes = await putMeasurement(createEnv(), {
+      notes: 42,
+      weightKg: 72.9,
+    })
+
+    expect(disposition.status).toBe(400)
+    expect(notes.status).toBe(400)
+  })
+
+  it("imports a CSV with the new columns, including multi-line quoted notes", async () => {
+    const env = createEnv()
+    const response = await importCsv(env, [
+      "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at",
+      '2026-06-10,72.9,14.46,43.72,1700,81.5,7.5,4,"Slept well,\nno ""coffee""  ",2026-06-01T10:00:00.000Z,2026-06-02T10:00:00.000Z',
+      "2026-06-09,72.1,,,,,,,   ,2026-06-01T11:00:00.000Z,2026-06-02T11:00:00.000Z",
+    ])
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      created: 2,
+      errors: [],
+      skipped: 0,
+      updated: 0,
+    })
+
+    const items = await listItems(env)
+
+    expect(items[0]).toMatchObject({
+      date: "2026-06-10",
+      disposition: 4,
+      notes: 'Slept well,\nno "coffee"',
+      sleepHours: 7.5,
+      waistCm: 81.5,
+    })
+    expect(items[1]).toMatchObject({
+      date: "2026-06-09",
+      disposition: null,
+      notes: null,
+      sleepHours: null,
+      waistCm: null,
+    })
+  })
+
+  it("imports a minimal CSV with the new columns and no timestamps", async () => {
+    const env = createEnv()
+    const response = await importCsv(env, [
+      "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes",
+      '2026-06-10,72.9,,,,"81,5",8,5,ok',
+    ])
+
+    expect(response.status).toBe(200)
+    expect((await listItems(env))[0]).toMatchObject({
+      disposition: 5,
+      notes: "ok",
+      sleepHours: 8,
+      waistCm: 81.5,
+    })
+  })
+
+  it("imports an old CSV without the new columns and leaves them null", async () => {
+    const env = createEnv()
+
+    for (const lines of [
+      [
+        "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at",
+        "2026-06-10,72.9,14.46,43.72,1700,2026-06-01T10:00:00.000Z,2026-06-02T10:00:00.000Z",
+      ],
+      [
+        "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal",
+        "2026-06-09,72.1,,,",
+      ],
+    ]) {
+      expect((await importCsv(env, lines)).status).toBe(200)
+    }
+
+    for (const item of await listItems(env)) {
+      expect(item).toMatchObject({
+        disposition: null,
+        notes: null,
+        sleepHours: null,
+        waistCm: null,
+      })
+    }
+  })
+
+  it("reports invalid new-column values per row", async () => {
+    const env = createEnv()
+    const response = await importCsv(env, [
+      "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes",
+      "2026-06-10,72.9,,,,81.5,7.5,4,fine",
+      "2026-06-11,72.9,,,,25,7.5,4,",
+      "2026-06-12,72.9,,,,81.5,30,4,",
+      "2026-06-13,72.9,,,,81.5,7.5,3.5,",
+      "2026-06-14,72.9,,,,abc,7.5,6,",
+    ])
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      created: 1,
+      errors: [
+        { message: "Invalid waist", row: 3 },
+        { message: "Invalid sleep hours", row: 4 },
+        { message: "Invalid disposition", row: 5 },
+        { message: "Invalid waist", row: 6 },
+        { message: "Invalid disposition", row: 6 },
+      ],
+      skipped: 4,
+      updated: 0,
+    })
+  })
+
+  it("rejects an import whose rows all have invalid new values", async () => {
+    const response = await importCsv(createEnv(), [
+      "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes",
+      "2026-06-10,72.9,,,,81.5,7.5,9,",
+    ])
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toMatchObject({
+      action: "Corrija a linha 2: Invalid disposition.",
+    })
+  })
+
+  it("updates the new fields when importing over an existing date", async () => {
+    const env = createEnv([
+      createMeasurementRow({
+        date: "2026-06-10",
+        id: "existing",
+        weightKg: 72.9,
+      }),
+    ])
+    const response = await importCsv(env, [
+      "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes",
+      "2026-06-10,73,,,,80,6.5,2,tired",
+    ])
+
+    expect(await response.json()).toMatchObject({ created: 0, updated: 1 })
+    expect((await listItems(env))[0]).toMatchObject({
+      disposition: 2,
+      notes: "tired",
+      sleepHours: 6.5,
+      waistCm: 80,
+    })
+  })
+
   it("deletes a measurement by id", async () => {
     const env = createEnv([
       createMeasurementRow({
@@ -732,6 +986,52 @@ describe("measurement api", () => {
   })
 })
 
+async function putMeasurement(
+  env: ReturnType<typeof createEnv>,
+  body: Record<string, unknown>,
+): Promise<Response> {
+  return app.request(
+    "/api/measurements/by-date/2026-06-10",
+    {
+      body: JSON.stringify(body),
+      headers: {
+        "content-type": "application/json",
+        cookie: await createSessionCookieHeader(),
+      },
+      method: "PUT",
+    },
+    env,
+  )
+}
+
+async function importCsv(
+  env: ReturnType<typeof createEnv>,
+  lines: string[],
+): Promise<Response> {
+  return app.request(
+    "/api/import/csv",
+    {
+      body: createCsvFormData(lines),
+      headers: { cookie: await createSessionCookieHeader() },
+      method: "POST",
+    },
+    env,
+  )
+}
+
+async function listItems(
+  env: ReturnType<typeof createEnv>,
+): Promise<Array<Record<string, unknown>>> {
+  const response = await app.request(
+    "/api/measurements?limit=10&offset=0",
+    { headers: { cookie: await createSessionCookieHeader() } },
+    env,
+  )
+
+  return ((await response.json()) as { items: Array<Record<string, unknown>> })
+    .items
+}
+
 function createEnv(rows: MeasurementRow[] = []) {
   return {
     ...baseEnv,
@@ -766,6 +1066,10 @@ function createMeasurementRow(input: {
   id: string
   musclePercentage?: number | null
   restingMetabolismKcal?: number | null
+  waistCm?: number | null
+  sleepHours?: number | null
+  disposition?: number | null
+  notes?: string | null
   weightKg: number
 }): MeasurementRow {
   return {
@@ -775,6 +1079,10 @@ function createMeasurementRow(input: {
     body_fat_percentage: input.bodyFatPercentage ?? null,
     muscle_percentage: input.musclePercentage ?? null,
     resting_metabolism_kcal: input.restingMetabolismKcal ?? null,
+    waist_cm: input.waistCm ?? null,
+    sleep_hours: input.sleepHours ?? null,
+    disposition: input.disposition ?? null,
+    notes: input.notes ?? null,
     created_at: "2026-06-09T12:00:00.000Z",
     updated_at: "2026-06-09T12:00:00.000Z",
   }
@@ -887,6 +1195,10 @@ class MeasurementApiD1Statement {
       bodyFatPercentage,
       musclePercentage,
       restingMetabolismKcal,
+      waistCm,
+      sleepHours,
+      disposition,
+      notes,
       createdAt,
       updatedAt,
     ] = this.bindings
@@ -898,6 +1210,10 @@ class MeasurementApiD1Statement {
       body_fat_percentage: nullableNumber(bodyFatPercentage),
       muscle_percentage: nullableNumber(musclePercentage),
       resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
+      waist_cm: nullableNumber(waistCm),
+      sleep_hours: nullableNumber(sleepHours),
+      disposition: nullableNumber(disposition),
+      notes: notes === null || notes === undefined ? null : String(notes),
       created_at: String(createdAt),
       updated_at: String(updatedAt),
     })
@@ -915,6 +1231,10 @@ class MeasurementApiD1Statement {
       bodyFatPercentage,
       musclePercentage,
       restingMetabolismKcal,
+      waistCm,
+      sleepHours,
+      disposition,
+      notes,
       updatedAt,
       date,
     ] = this.bindings
@@ -930,6 +1250,10 @@ class MeasurementApiD1Statement {
       body_fat_percentage: nullableNumber(bodyFatPercentage),
       muscle_percentage: nullableNumber(musclePercentage),
       resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
+      waist_cm: nullableNumber(waistCm),
+      sleep_hours: nullableNumber(sleepHours),
+      disposition: nullableNumber(disposition),
+      notes: notes === null || notes === undefined ? null : String(notes),
       updated_at: String(updatedAt),
     })
 
@@ -942,6 +1266,10 @@ class MeasurementApiD1Statement {
       bodyFatPercentage,
       musclePercentage,
       restingMetabolismKcal,
+      waistCm,
+      sleepHours,
+      disposition,
+      notes,
       createdAt,
       updatedAt,
       date,
@@ -958,6 +1286,10 @@ class MeasurementApiD1Statement {
       body_fat_percentage: nullableNumber(bodyFatPercentage),
       muscle_percentage: nullableNumber(musclePercentage),
       resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
+      waist_cm: nullableNumber(waistCm),
+      sleep_hours: nullableNumber(sleepHours),
+      disposition: nullableNumber(disposition),
+      notes: notes === null || notes === undefined ? null : String(notes),
       created_at: String(createdAt),
       updated_at: String(updatedAt),
     })

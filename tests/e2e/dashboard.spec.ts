@@ -22,7 +22,7 @@ test("shows the authenticated weekly dashboard summary", async ({ page }) => {
   await expect(
     page.getByText(`2/${getAvailableDaysSoFar(currentWeek)}`),
   ).toBeVisible()
-  await expect(page.getByText("Baixa")).toHaveCount(2)
+  await expect(page.getByText("Confiabilidade")).toHaveCount(0)
 
   const weightCard = page.locator(".metric-card").filter({
     hasText: "Peso médio",

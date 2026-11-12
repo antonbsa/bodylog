@@ -1,11 +1,16 @@
 import type { MeasurementRepository } from "./measurement-repository"
+import {
+  isWithinMeasurementLimit,
+  normalizeNotes,
+  type MEASUREMENT_LIMITS,
+} from "../domain/measurement"
 import type { ImportedMeasurementInput } from "../types"
 import type {
   CsvImportRowError,
   CsvImportSummary,
 } from "../../../../types/measurements"
 
-const requiredHeaders = [
+const legacyHeaders = [
   "date",
   "weight_kg",
   "body_fat_percentage",
@@ -13,7 +18,22 @@ const requiredHeaders = [
   "resting_metabolism_kcal",
 ] as const
 
-const fullHeaders = [...requiredHeaders, "created_at", "updated_at"] as const
+const newFieldHeaders = [
+  "waist_cm",
+  "sleep_hours",
+  "disposition",
+  "notes",
+] as const
+const auditHeaders = ["created_at", "updated_at"] as const
+
+// CSVs exported before the redesign have neither the new fields nor, for
+// spreadsheet imports, the audit timestamps; all four combinations import.
+const supportedHeaderSets: readonly (readonly string[])[] = [
+  legacyHeaders,
+  [...legacyHeaders, ...auditHeaders],
+  [...legacyHeaders, ...newFieldHeaders],
+  [...legacyHeaders, ...newFieldHeaders, ...auditHeaders],
+]
 
 type ImportCsvOptions = {
   importedAt?: Date
@@ -84,7 +104,7 @@ export async function importMeasurementsCsv(
     }
 
     const rowResult = parseMeasurementCsvRow(row, {
-      hasAuditTimestamps: headerResult.hasAuditTimestamps,
+      headers: headerResult.headers,
       importedAt,
       rowNumber,
     })
@@ -109,7 +129,7 @@ export async function importMeasurementsCsv(
 
 function validateHeaders(headers: string[]):
   | {
-      hasAuditTimestamps: boolean
+      headers: string[]
       ok: true
     }
   | {
@@ -118,16 +138,9 @@ function validateHeaders(headers: string[]):
     } {
   const normalizedHeaders = headers.map((header) => header.trim())
 
-  if (arraysEqual(normalizedHeaders, requiredHeaders)) {
+  if (supportedHeaderSets.some((set) => arraysEqual(normalizedHeaders, set))) {
     return {
-      hasAuditTimestamps: false,
-      ok: true,
-    }
-  }
-
-  if (arraysEqual(normalizedHeaders, fullHeaders)) {
-    return {
-      hasAuditTimestamps: true,
+      headers: normalizedHeaders,
       ok: true,
     }
   }
@@ -141,21 +154,18 @@ function validateHeaders(headers: string[]):
 function parseMeasurementCsvRow(
   row: string[],
   options: {
-    hasAuditTimestamps: boolean
+    headers: string[]
     importedAt: string
     rowNumber: number
   },
 ): CsvRowResult {
-  const expectedLength = options.hasAuditTimestamps
-    ? fullHeaders.length
-    : requiredHeaders.length
   const errors: CsvImportRowError[] = []
 
-  if (row.length !== expectedLength) {
+  if (row.length !== options.headers.length) {
     return {
       errors: [
         {
-          message: `Expected ${expectedLength} columns. Quote decimal-comma values or use dot decimals.`,
+          message: `Expected ${options.headers.length} columns. Quote decimal-comma values or use dot decimals.`,
           row: options.rowNumber,
         },
       ],
@@ -163,74 +173,101 @@ function parseMeasurementCsvRow(
     }
   }
 
-  const [
-    date,
-    weightKg,
-    bodyFatPercentage,
-    musclePercentage,
-    restingMetabolismKcal,
-    createdAt,
-    updatedAt,
-  ] = row
-  const parsedWeightKg = parseRequiredNumber(weightKg)
-  const parsedBodyFatPercentage = parseOptionalNumber(bodyFatPercentage)
-  const parsedMusclePercentage = parseOptionalNumber(musclePercentage)
-  const parsedRestingMetabolismKcal = parseOptionalRestingMetabolism(
-    restingMetabolismKcal,
+  const cell = (header: string) => {
+    const index = options.headers.indexOf(header)
+
+    return index === -1 ? undefined : row[index]
+  }
+  const date = cell("date") ?? ""
+  const parsedWeightKg = parseRequiredNumber(cell("weight_kg"))
+  const parsedBodyFatPercentage = parseOptionalNumber(
+    cell("body_fat_percentage"),
   )
-  const parsedCreatedAt = parseOptionalTimestamp(createdAt, options.importedAt)
-  const parsedUpdatedAt = parseOptionalTimestamp(updatedAt, options.importedAt)
+  const parsedMusclePercentage = parseOptionalNumber(cell("muscle_percentage"))
+  const parsedRestingMetabolismKcal = parseOptionalRestingMetabolism(
+    cell("resting_metabolism_kcal"),
+  )
+  const parsedWaistCm = parseOptionalNumber(cell("waist_cm"))
+  const parsedSleepHours = parseOptionalNumber(cell("sleep_hours"))
+  const parsedDisposition = parseOptionalNumber(cell("disposition"))
+  const notes = normalizeNotes(cell("notes") ?? "")
+  const parsedCreatedAt = parseOptionalTimestamp(
+    cell("created_at"),
+    options.importedAt,
+  )
+  const parsedUpdatedAt = parseOptionalTimestamp(
+    cell("updated_at"),
+    options.importedAt,
+  )
+
+  const addError = (message: string) =>
+    errors.push({ message, row: options.rowNumber })
+  const isInvalid = (
+    field: keyof typeof MEASUREMENT_LIMITS,
+    value: number | null | undefined,
+  ) =>
+    value === undefined ||
+    (value !== null && !isWithinMeasurementLimit(field, value))
 
   if (!isDateOnly(date)) {
-    errors.push({
-      message: "Invalid date",
-      row: options.rowNumber,
-    })
+    addError("Invalid date")
   }
 
-  if (parsedWeightKg === null) {
-    errors.push({
-      message: "Invalid weight value",
-      row: options.rowNumber,
-    })
+  if (
+    parsedWeightKg === null ||
+    !isWithinMeasurementLimit("weightKg", parsedWeightKg)
+  ) {
+    addError("Invalid weight value")
   }
 
-  if (parsedBodyFatPercentage === undefined) {
-    errors.push({
-      message: "Invalid body fat percentage",
-      row: options.rowNumber,
-    })
+  if (isInvalid("bodyFatPercentage", parsedBodyFatPercentage)) {
+    addError("Invalid body fat percentage")
   }
 
-  if (parsedMusclePercentage === undefined) {
-    errors.push({
-      message: "Invalid muscle percentage",
-      row: options.rowNumber,
-    })
+  if (isInvalid("musclePercentage", parsedMusclePercentage)) {
+    addError("Invalid muscle percentage")
   }
 
-  if (parsedRestingMetabolismKcal === undefined) {
-    errors.push({
-      message: "Invalid resting metabolism",
-      row: options.rowNumber,
-    })
+  const restingMetabolismKcal =
+    parsedRestingMetabolismKcal === null ||
+    parsedRestingMetabolismKcal === undefined
+      ? parsedRestingMetabolismKcal
+      : Math.trunc(parsedRestingMetabolismKcal)
+
+  if (isInvalid("restingMetabolismKcal", restingMetabolismKcal)) {
+    addError("Invalid resting metabolism")
+  }
+
+  if (isInvalid("waistCm", parsedWaistCm)) {
+    addError("Invalid waist")
+  }
+
+  if (isInvalid("sleepHours", parsedSleepHours)) {
+    addError("Invalid sleep hours")
+  }
+
+  if (isInvalid("disposition", parsedDisposition)) {
+    addError("Invalid disposition")
   }
 
   if (parsedCreatedAt === null) {
-    errors.push({
-      message: "Invalid created_at timestamp",
-      row: options.rowNumber,
-    })
+    addError("Invalid created_at timestamp")
   }
 
   if (parsedUpdatedAt === null) {
-    errors.push({
-      message: "Invalid updated_at timestamp",
-      row: options.rowNumber,
-    })
+    addError("Invalid updated_at timestamp")
   }
 
-  if (errors.length > 0 || parsedWeightKg === null) {
+  if (
+    errors.length > 0 ||
+    parsedWeightKg === null ||
+    parsedBodyFatPercentage === undefined ||
+    parsedMusclePercentage === undefined ||
+    restingMetabolismKcal === undefined ||
+    parsedWaistCm === undefined ||
+    parsedSleepHours === undefined ||
+    parsedDisposition === undefined
+  ) {
     return {
       errors,
       ok: false,
@@ -242,13 +279,13 @@ function parseMeasurementCsvRow(
       bodyFatPercentage: parsedBodyFatPercentage,
       createdAt: parsedCreatedAt ?? options.importedAt,
       date,
+      disposition: parsedDisposition,
       musclePercentage: parsedMusclePercentage,
-      restingMetabolismKcal:
-        parsedRestingMetabolismKcal === null ||
-        parsedRestingMetabolismKcal === undefined
-          ? null
-          : Math.trunc(parsedRestingMetabolismKcal),
+      notes,
+      restingMetabolismKcal,
+      sleepHours: parsedSleepHours,
       updatedAt: parsedUpdatedAt ?? options.importedAt,
+      waistCm: parsedWaistCm,
       weightKg: parsedWeightKg,
     },
     ok: true,

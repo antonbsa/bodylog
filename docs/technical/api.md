@@ -115,6 +115,10 @@ offset=number
       "bodyFatPercentage": 14.46,
       "musclePercentage": 43.72,
       "restingMetabolismKcal": 1700,
+      "waistCm": 80.5,
+      "sleepHours": 7.5,
+      "disposition": 4,
+      "notes": "string or null",
       "derived": {
         "bmi": 25.83,
         "bodyFatKg": 10.54,
@@ -144,6 +148,10 @@ Finds a measurement by date.
     "bodyFatPercentage": null,
     "musclePercentage": null,
     "restingMetabolismKcal": null,
+    "waistCm": null,
+    "sleepHours": null,
+    "disposition": null,
+    "notes": null,
     "createdAt": "string",
     "updatedAt": "string"
   }
@@ -171,14 +179,20 @@ Creates or updates the measurement for a date.
   "weightKg": 72.9,
   "bodyFatPercentage": 14.46,
   "musclePercentage": 43.72,
-  "restingMetabolismKcal": 1700
+  "restingMetabolismKcal": 1700,
+  "waistCm": 80.5,
+  "sleepHours": 7.5,
+  "disposition": 4,
+  "notes": "Slept well"
 }
 ```
 
 #### Rules
 
 - `weightKg` is required.
-- Other fields accept `number` or `null`.
+- Other fields accept `number` or `null` (`notes` accepts a string or `null`); an omitted field is stored as `null`.
+- Values outside the limits are rejected with the `INVALID_MEASUREMENT_INPUT` validation error (400): weight 20–300 kg, `bodyFatPercentage` and `musclePercentage` 1–80, `restingMetabolismKcal` 500–5000, `waistCm` 30–250, `sleepHours` 0–24, `disposition` an integer 1–5.
+- `notes` is trimmed; a blank string after trimming is stored as `null`.
 - If the date already exists, update it.
 - If the date does not exist, create it.
 
@@ -193,6 +207,10 @@ Creates or updates the measurement for a date.
     "bodyFatPercentage": 14.46,
     "musclePercentage": 43.72,
     "restingMetabolismKcal": 1700,
+    "waistCm": 80.5,
+    "sleepHours": 7.5,
+    "disposition": 4,
+    "notes": "Slept well",
     "createdAt": "string",
     "updatedAt": "string"
   }
@@ -221,7 +239,7 @@ Returns the weekly summary for the current week and comparison against the previ
 
 The response must include week date ranges and measurement counts so the UI can show the weekly registration count against the 7-day target.
 
-Planned with the mobile redesign: each week also returns its recorded dates so the UI can draw the day dots (`0035-use-seven-day-weekly-target.md`), and measurements and weekly averages gain the optional `waistCm`, `sleepHours`, `disposition` and `notes` fields (`0032-add-waist-sleep-disposition-and-notes-fields.md`). The shapes below do not include them yet.
+Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI can draw the day dots; `measurementCount` is the recorded count. The weekly registration target is 7 (`0035-use-seven-day-weekly-target.md`) and the response carries no reliability label. Weekly averages include `waistCm`, `sleepHours` and `disposition`, and the variation includes them with an `absolute` value in cm, h and points. A metric missing in either week has no variation entry. The API returns raw averages and deltas.
 
 #### Response 200
 
@@ -231,6 +249,7 @@ Planned with the mobile redesign: each week also returns its recorded dates so t
     "weekStartDate": "YYYY-MM-DD",
     "weekEndDate": "YYYY-MM-DD",
     "measurementCount": 4,
+    "recordedDates": ["YYYY-MM-DD"],
     "isCurrentWeek": true,
     "isPartialWeek": true,
     "averages": {
@@ -240,7 +259,10 @@ Planned with the mobile redesign: each week also returns its recorded dates so t
       "bodyFatKg": 10.54,
       "musclePercentage": 43.72,
       "muscleKg": 31.87,
-      "restingMetabolismKcal": 1700
+      "restingMetabolismKcal": 1700,
+      "waistCm": 80.5,
+      "sleepHours": 7.5,
+      "disposition": 4
     }
   },
   "display": {
@@ -249,6 +271,7 @@ Planned with the mobile redesign: each week also returns its recorded dates so t
       "weekStartDate": "YYYY-MM-DD",
       "weekEndDate": "YYYY-MM-DD",
       "measurementCount": 4,
+      "recordedDates": ["YYYY-MM-DD"],
       "isCurrentWeek": true,
       "isPartialWeek": true,
       "averages": {
@@ -258,7 +281,10 @@ Planned with the mobile redesign: each week also returns its recorded dates so t
         "bodyFatKg": 10.54,
         "musclePercentage": 43.72,
         "muscleKg": 31.87,
-        "restingMetabolismKcal": 1700
+        "restingMetabolismKcal": 1700,
+        "waistCm": 80.5,
+        "sleepHours": 7.5,
+        "disposition": 4
       }
     },
     "variation": {
@@ -273,6 +299,7 @@ Planned with the mobile redesign: each week also returns its recorded dates so t
     "weekStartDate": "YYYY-MM-DD",
     "weekEndDate": "YYYY-MM-DD",
     "measurementCount": 7,
+    "recordedDates": ["YYYY-MM-DD"],
     "averages": {
       "weightKg": 71.75,
       "bmi": 25.42,
@@ -280,7 +307,10 @@ Planned with the mobile redesign: each week also returns its recorded dates so t
       "bodyFatKg": 11.62,
       "musclePercentage": 42.75,
       "muscleKg": 30.67,
-      "restingMetabolismKcal": 1680
+      "restingMetabolismKcal": 1680,
+      "waistCm": 82,
+      "sleepHours": 7,
+      "disposition": 3
     }
   },
   "variation": {
@@ -292,6 +322,11 @@ Planned with the mobile redesign: each week also returns its recorded dates so t
     "bodyFatPercentage": {
       "absolutePercentagePoints": -1.74,
       "relativePercentage": -10.74,
+      "direction": "down"
+    },
+    "waistCm": {
+      "absolute": -1.5,
+      "relativePercentage": -1.83,
       "direction": "down"
     }
   }
@@ -312,8 +347,8 @@ Downloads all measurements as CSV.
 #### Response 200
 
 ```csv
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
-2026-06-10,72.9,14.46,43.72,1700,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
+2026-06-10,72.9,14.46,43.72,1700,80.5,7.5,4,Slept well,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z
 ```
 
 #### Rules
@@ -338,19 +373,22 @@ Multipart upload containing a CSV file in a `file` field.
 Full canonical format:
 
 ```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
 ```
 
 Minimal canonical format:
 
 ```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes
 ```
+
+Files exported before the redesign, without `waist_cm,sleep_hours,disposition,notes`, still import (with or without `created_at,updated_at`); the new fields are stored as `null`.
 
 #### Rules
 
 - Validates headers exactly against supported canonical formats.
-- Validates each row.
+- Validates each row, including the limits of every numeric field; an invalid new value is reported per row (for example `Invalid waist`, `Invalid sleep hours`, `Invalid disposition`).
+- Trims `notes`; blank notes are stored as `null`. Notes with commas or line breaks must be quoted.
 - Upserts records by `date`.
 - Uses the current import timestamp when `created_at` or `updated_at` are
   omitted or empty.

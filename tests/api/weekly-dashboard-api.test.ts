@@ -15,6 +15,10 @@ type MeasurementRow = {
   body_fat_percentage: number | null
   muscle_percentage: number | null
   resting_metabolism_kcal: number | null
+  waist_cm: number | null
+  sleep_hours: number | null
+  disposition: number | null
+  notes: string | null
   created_at: string
   updated_at: string
 }
@@ -50,6 +54,7 @@ describe("weekly dashboard api", () => {
         weekStartDate: "2026-06-08",
         weekEndDate: "2026-06-14",
         measurementCount: 2,
+        recordedDates: ["2026-06-08", "2026-06-10"],
         isCurrentWeek: true,
         isPartialWeek: true,
         averages: {
@@ -60,6 +65,9 @@ describe("weekly dashboard api", () => {
           musclePercentage: 44,
           muscleKg: 32.56,
           restingMetabolismKcal: 1700,
+          waistCm: 88.5,
+          sleepHours: 7.5,
+          disposition: null,
         },
       },
       display: {
@@ -68,6 +76,7 @@ describe("weekly dashboard api", () => {
           weekStartDate: "2026-06-08",
           weekEndDate: "2026-06-14",
           measurementCount: 2,
+          recordedDates: ["2026-06-08", "2026-06-10"],
           isCurrentWeek: true,
           isPartialWeek: true,
           averages: {
@@ -78,6 +87,9 @@ describe("weekly dashboard api", () => {
             musclePercentage: 44,
             muscleKg: 32.56,
             restingMetabolismKcal: 1700,
+            waistCm: 88.5,
+            sleepHours: 7.5,
+            disposition: null,
           },
         },
         variation: {
@@ -116,12 +128,18 @@ describe("weekly dashboard api", () => {
             relativePercentage: 0.59,
             direction: "up",
           },
+          waistCm: {
+            absolute: -2.5,
+            relativePercentage: -2.75,
+            direction: "down",
+          },
         },
       },
       previous: {
         weekStartDate: "2026-06-01",
         weekEndDate: "2026-06-07",
         measurementCount: 2,
+        recordedDates: ["2026-06-01", "2026-06-07"],
         isCurrentWeek: false,
         isPartialWeek: false,
         averages: {
@@ -132,6 +150,9 @@ describe("weekly dashboard api", () => {
           musclePercentage: 42.75,
           muscleKg: 30.79,
           restingMetabolismKcal: 1690,
+          waistCm: 91,
+          sleepHours: null,
+          disposition: null,
         },
       },
       variation: {
@@ -169,6 +190,11 @@ describe("weekly dashboard api", () => {
           absolute: 10,
           relativePercentage: 0.59,
           direction: "up",
+        },
+        waistCm: {
+          absolute: -2.5,
+          relativePercentage: -2.75,
+          direction: "down",
         },
       },
     })
@@ -217,6 +243,7 @@ function createEnv(): {
         bodyFatPercentage: 16,
         musclePercentage: 42,
         restingMetabolismKcal: 1680,
+        waistCm: 90,
       }),
       measurementRow({
         id: "previous-2",
@@ -225,6 +252,7 @@ function createEnv(): {
         bodyFatPercentage: 16.4,
         musclePercentage: 43.5,
         restingMetabolismKcal: 1700,
+        waistCm: 92,
       }),
       measurementRow({
         id: "current-1",
@@ -233,6 +261,8 @@ function createEnv(): {
         bodyFatPercentage: 14,
         musclePercentage: 44,
         restingMetabolismKcal: 1710,
+        waistCm: 88.5,
+        sleepHours: 7,
       }),
       measurementRow({
         id: "current-2",
@@ -241,6 +271,7 @@ function createEnv(): {
         bodyFatPercentage: null,
         musclePercentage: null,
         restingMetabolismKcal: 1690,
+        sleepHours: 8,
       }),
     ]) as unknown as D1Database,
     SESSION_SECRET: "test-session-secret",
@@ -256,6 +287,8 @@ function measurementRow(input: {
   bodyFatPercentage?: number | null
   musclePercentage?: number | null
   restingMetabolismKcal?: number | null
+  waistCm?: number | null
+  sleepHours?: number | null
 }): MeasurementRow {
   return {
     id: input.id,
@@ -264,6 +297,10 @@ function measurementRow(input: {
     body_fat_percentage: input.bodyFatPercentage ?? null,
     muscle_percentage: input.musclePercentage ?? null,
     resting_metabolism_kcal: input.restingMetabolismKcal ?? null,
+    waist_cm: input.waistCm ?? null,
+    sleep_hours: input.sleepHours ?? null,
+    disposition: null,
+    notes: null,
     created_at: "2026-06-10T12:00:00.000Z",
     updated_at: "2026-06-10T12:00:00.000Z",
   }

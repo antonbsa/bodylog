@@ -91,6 +91,9 @@ function measurement(input: {
   date: string
   musclePercentage?: number | null
   restingMetabolismKcal?: number | null
+  waistCm?: number | null
+  sleepHours?: number | null
+  disposition?: number | null
   weightKg: number
 }): Measurement {
   return new Measurement({
@@ -100,6 +103,10 @@ function measurement(input: {
     bodyFatPercentage: input.bodyFatPercentage ?? null,
     musclePercentage: input.musclePercentage ?? null,
     restingMetabolismKcal: input.restingMetabolismKcal ?? null,
+    waistCm: input.waistCm ?? null,
+    sleepHours: input.sleepHours ?? null,
+    disposition: input.disposition ?? null,
+    notes: null,
     createdAt: "2026-06-10T12:00:00.000Z",
     updatedAt: "2026-06-10T12:00:00.000Z",
   })

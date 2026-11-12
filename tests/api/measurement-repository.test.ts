@@ -9,6 +9,10 @@ type MeasurementRow = {
   body_fat_percentage: number | null
   muscle_percentage: number | null
   resting_metabolism_kcal: number | null
+  waist_cm: number | null
+  sleep_hours: number | null
+  disposition: number | null
+  notes: string | null
   created_at: string
   updated_at: string
 }
@@ -30,6 +34,10 @@ describe("MeasurementRepository", () => {
       bodyFatPercentage: null,
       musclePercentage: null,
       restingMetabolismKcal: null,
+      waistCm: null,
+      sleepHours: null,
+      disposition: null,
+      notes: null,
       createdAt: "2026-06-10T12:00:00.000Z",
       updatedAt: "2026-06-10T12:00:00.000Z",
     })
@@ -64,6 +72,10 @@ describe("MeasurementRepository", () => {
       bodyFatPercentage: null,
       musclePercentage: 43.72,
       restingMetabolismKcal: 1700,
+      waistCm: null,
+      sleepHours: null,
+      disposition: null,
+      notes: null,
       createdAt: "2026-06-10T12:00:00.000Z",
       updatedAt: "2026-06-11T12:00:00.000Z",
     })
@@ -77,6 +89,74 @@ describe("MeasurementRepository", () => {
         weightKg: 72.9,
       }),
     ).resolves.toBeNull()
+  })
+
+  it("round-trips waist, sleep, disposition and notes", async () => {
+    let now = "2026-06-10T12:00:00.000Z"
+    const repository = createRepository(new InMemoryMeasurementD1(), {
+      now: () => new Date(now),
+    })
+
+    const created = await repository.create({
+      date: "2026-06-09",
+      weightKg: 72.9,
+      waistCm: 81.5,
+      sleepHours: 7.5,
+      disposition: 4,
+      notes: "Slept well",
+    })
+
+    expect(created).toMatchObject({
+      waistCm: 81.5,
+      sleepHours: 7.5,
+      disposition: 4,
+      notes: "Slept well",
+    })
+    expect(await repository.getByDate("2026-06-09")).toEqual(created)
+
+    now = "2026-06-11T12:00:00.000Z"
+
+    const updated = await repository.updateByDate("2026-06-09", {
+      weightKg: 73,
+      waistCm: 80,
+      sleepHours: 0,
+      disposition: 1,
+      notes: null,
+    })
+
+    expect(updated).toMatchObject({
+      waistCm: 80,
+      sleepHours: 0,
+      disposition: 1,
+      notes: null,
+    })
+    expect((await repository.list())[0]).toEqual(updated)
+  })
+
+  it("reads rows without the new columns set as null", async () => {
+    const db = new InMemoryMeasurementD1()
+
+    db.rows.set("old", {
+      id: "old",
+      date: "2026-05-01",
+      weight_kg: 75,
+      body_fat_percentage: null,
+      muscle_percentage: null,
+      resting_metabolism_kcal: null,
+      waist_cm: null,
+      sleep_hours: null,
+      disposition: null,
+      notes: null,
+      created_at: "2026-05-01T12:00:00.000Z",
+      updated_at: "2026-05-01T12:00:00.000Z",
+    })
+
+    expect(await createRepository(db).getByDate("2026-05-01")).toMatchObject({
+      waistCm: null,
+      sleepHours: null,
+      disposition: null,
+      notes: null,
+    })
   })
 
   it("gets a measurement by date", async () => {
@@ -293,6 +373,10 @@ class InMemoryD1Statement {
       bodyFatPercentage,
       musclePercentage,
       restingMetabolismKcal,
+      waistCm,
+      sleepHours,
+      disposition,
+      notes,
       createdAt,
       updatedAt,
     ] = this.bindings
@@ -308,6 +392,10 @@ class InMemoryD1Statement {
       body_fat_percentage: nullableNumber(bodyFatPercentage),
       muscle_percentage: nullableNumber(musclePercentage),
       resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
+      waist_cm: nullableNumber(waistCm),
+      sleep_hours: nullableNumber(sleepHours),
+      disposition: nullableNumber(disposition),
+      notes: notes === null || notes === undefined ? null : String(notes),
       created_at: String(createdAt),
       updated_at: String(updatedAt),
     })
@@ -321,6 +409,10 @@ class InMemoryD1Statement {
       bodyFatPercentage,
       musclePercentage,
       restingMetabolismKcal,
+      waistCm,
+      sleepHours,
+      disposition,
+      notes,
       updatedAt,
       date,
     ] = this.bindings
@@ -336,6 +428,10 @@ class InMemoryD1Statement {
       body_fat_percentage: nullableNumber(bodyFatPercentage),
       muscle_percentage: nullableNumber(musclePercentage),
       resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
+      waist_cm: nullableNumber(waistCm),
+      sleep_hours: nullableNumber(sleepHours),
+      disposition: nullableNumber(disposition),
+      notes: notes === null || notes === undefined ? null : String(notes),
       updated_at: String(updatedAt),
     })
 

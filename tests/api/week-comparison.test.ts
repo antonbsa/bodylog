@@ -77,6 +77,60 @@ describe("WeekComparison", () => {
       direction: "up",
     })
   })
+
+  it("compares waist, sleep and disposition with neutral variation", () => {
+    const previous = summaryFor([
+      measurement({
+        date: "2026-06-01",
+        weightKg: 72,
+        waistCm: 82,
+        sleepHours: 7,
+        disposition: 3,
+      }),
+    ])
+    const current = summaryFor([
+      measurement({
+        date: "2026-06-08",
+        weightKg: 72,
+        waistCm: 80.5,
+        sleepHours: 7.5,
+        disposition: 3,
+      }),
+    ])
+
+    const variation = WeekComparison.compare(current, previous)
+
+    expect(variation.waistCm).toEqual({
+      absolute: -1.5,
+      relativePercentage: -1.83,
+      direction: "down",
+    })
+    expect(variation.sleepHours).toEqual({
+      absolute: 0.5,
+      relativePercentage: 7.14,
+      direction: "up",
+    })
+    expect(variation.disposition).toEqual({
+      absolute: 0,
+      relativePercentage: 0,
+      direction: "stable",
+    })
+  })
+
+  it("gives no comparison when either week lacks a new metric", () => {
+    const previous = summaryFor([
+      measurement({ date: "2026-06-01", weightKg: 72, waistCm: 82 }),
+    ])
+    const current = summaryFor([
+      measurement({ date: "2026-06-08", weightKg: 72, sleepHours: 7 }),
+    ])
+
+    const variation = WeekComparison.compare(current, previous)
+
+    expect(variation.waistCm).toBeUndefined()
+    expect(variation.sleepHours).toBeUndefined()
+    expect(variation.disposition).toBeUndefined()
+  })
 })
 
 function summaryFor(measurements: Measurement[]): WeekSummary {
@@ -94,6 +148,9 @@ function measurement(input: {
   date: string
   musclePercentage?: number | null
   restingMetabolismKcal?: number | null
+  waistCm?: number | null
+  sleepHours?: number | null
+  disposition?: number | null
   weightKg: number
 }): Measurement {
   return new Measurement({
@@ -103,6 +160,10 @@ function measurement(input: {
     bodyFatPercentage: input.bodyFatPercentage ?? null,
     musclePercentage: input.musclePercentage ?? null,
     restingMetabolismKcal: input.restingMetabolismKcal ?? null,
+    waistCm: input.waistCm ?? null,
+    sleepHours: input.sleepHours ?? null,
+    disposition: input.disposition ?? null,
+    notes: null,
     createdAt: "2026-06-10T12:00:00.000Z",
     updatedAt: "2026-06-10T12:00:00.000Z",
   })
