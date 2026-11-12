@@ -1,89 +1,70 @@
 ---
 name: next-task-readiness
-description: Validate the next executable project task before implementation. Use when the user asks to proceed to the next task, check what task is next, prepare a task before coding, verify whether a task can be started, or summarize expected implementation changes before starting work.
+description: Validate the next executable task, tracked as a GitHub sub-issue, before implementation. Use when the user asks to proceed to the next task, check what task is next, prepare a task before coding, verify whether a task can be started, or summarize expected implementation changes before starting work.
 ---
 
 # Next Task Readiness
 
-Use this skill to perform a pre-implementation readiness check. The output must help the user decide whether to start implementation, not start implementation itself.
+Use this skill to perform a pre-implementation readiness check. The output must help the owner decide whether to start implementation, not start implementation itself.
 
 ## Core Rule
 
-Do not edit project files or implement code while using this skill unless the user explicitly confirms implementation after the readiness summary.
+Do not edit project files, implement code, or write to GitHub (no comments, labels or state changes) while using this skill. Report to the owner only; implementation starts only after the owner confirms it following the readiness summary.
 
-Read files and run harmless inspection commands as needed. Prefer `rg`, `rg --files`, `sed`, `git status`, and package metadata reads.
+Use read-only commands: `gh issue view`, `gh api` GETs, `git status`, `git branch`, `rg`, `sed`, package metadata reads.
 
 ## Workflow
 
-1. Identify the selected task.
-   - Rule 1: If the user names a task, use that task and record source='user'.
-   - Rule 2: Else if a project task index exists, such as `specs/*/tasks/README.md`, use that index and record source='index'.
-   - Rule 3: Else scan task markdown files in numeric order and choose the first task whose `## Status` is not `Done`, recording source='scan'.
-   - If multiple sources are available and disagree, report the conflict, list each source, and ask which source to follow.
+1. Find the active parent issue.
+   - If the user names an issue, use it (when it is a sub-issue, use its parent for ordering).
+   - Otherwise list open parent issues: `gh api repos/{owner}/{repo}/issues --jq '.[] | select(.sub_issues_summary.total > 0) | "\(.number) \(.title) \(.sub_issues_summary.completed)/\(.sub_issues_summary.total)"'`. One match is the active parent; several matches go to the owner to choose.
+   - List its sub-issues in initiative order with `gh api repos/{owner}/{repo}/issues/<parent>/sub_issues --jq '.[] | "\(.number) \(.state) \(.title)"'`; `gh issue view` shows no state or order for them.
 
-2. Load required context.
-   - Read repository agent instructions such as `AGENTS.md` when present.
-   - Read the selected task file. If a required file cannot be read, report it as `unreadable` with the OS error and mark readiness as `Blocked` unless the user supplies the file or permissions.
-   - Read the project docs/specs required by repo instructions for starting a task.
-   - Read task files in the same directory and in the same spec folder as the selected task. Additionally read any files referenced by the selected task's `Prerequisites` or `Depends on` sections.
+2. Select the task.
+   - The next task is the first open sub-issue in that order, or the one the user names.
+   - Read its `**Depends on:**` line and check with `gh issue view <n> --json state` that every listed issue is closed. An open dependency makes the task `Blocked`, naming the dependency.
 
-3. Validate readiness.
-   - Mandatory checks (must run):
-     - `git status --short`.
-     - Existence of required files, package scripts, configs, migrations, or docs explicitly listed by the task or project docs.
-   - Advisory checks (run if quick):
-     - Whether previous prerequisite tasks appear complete.
-     - Whether unresolved open questions or decisions directly affect the selected task.
-     - Whether the requested task overlaps another task's explicit scope.
-   - Use these checks to decide readiness, but do not list every passing check in the response.
-   - Report only findings that affect readiness or implementation confidence: blockers, failures, warnings, conflicts, unresolved decisions, risky assumptions, or notable missing context.
-   - Do not treat nice-to-have polish as a blocker.
+3. Load context.
+   - Read the sub-issue and its parent with `gh issue view <n>`.
+   - Read `AGENTS.md` and every doc it requires before coding, plus the docs and ADRs the issue links. For UI tasks that includes `docs/product/ui-direction.md` and the prototype `docs/product/prototype/mobile-redesign.html`.
+   - Report any file or issue that cannot be read as `unreadable` with the error, and mark the task `Blocked`.
 
-4. Decide the readiness result.
-   - Ready: enough information exists and assumptions are low risk.
-   - Needs direction: one or more decisions are required before implementation.
-   - Blocked: project state prevents meaningful progress without user input or external changes.
+4. Surface open points.
+   - Collect every item in the issue's "Open points" section, plus any assumption in the issue or docs marked "Confirm before implementing" or "Must be decided before implementing".
+   - Each one is a decision the owner makes before coding: list it with the assumed default (if any) and ask. Unanswered open points keep the verdict at `Needs direction`.
 
-5. Respond with a concise readiness summary.
-   - Selected task and how it was identified.
-   - Current project state relevant to the task.
-   - Whether everything needed is present.
-   - Blockers, warnings, conflicts, risky assumptions, or decisions needed, if any.
-   - Intended implementation approach.
-   - Expected files or areas likely to change.
-   - Explicitly state that implementation is waiting for confirmation.
+5. Check repository state.
+   - `git status --short` and `git branch --show-current`. The expected branch is the initiative's single feature branch (named in the parent issue's Workflow section, for example `feat/mobile-redesign`); report a different branch or uncommitted changes that make the expected edits risky.
+   - Confirm that files, scripts, migrations and docs the issue names exist.
+   - Check that the task does not overlap another sub-issue's scope or the parent's out-of-scope list.
 
-## When Direction Is Needed
-
-Ask for direction instead of guessing when:
-
-- project docs conflict with the task;
-- required technology choices are undecided and materially affect files or dependencies;
-- the task scope overlaps another task in a way that could cause rework;
-- existing uncommitted changes make the expected edits risky;
-- an external secret, account, deployment target, or credential is required.
-
-Group related questions into one reply when they share the same decision context. Limit each group to a single decision with up to 3 clarifying sub-questions.
+6. Decide the verdict.
+   - Ready: dependencies closed, no open points, low-risk assumptions.
+   - Needs direction: one or more owner decisions are required.
+   - Blocked: an open dependency, unreadable input, or repository state prevents progress.
 
 ## Output Shape
 
-Use this structure when useful:
+Report only findings that affect readiness; omit passing checks.
 
 ```md
-**Selected Task**
-T-000 — Task title
+**Task**
+#<n> Title (parent #<p>; next in order / named by user)
 
 **Readiness**
-Ready / Needs direction / Blocked
-
-**Relevant Findings**
-Only include blockers, warnings, conflicts, risky assumptions, unresolved decisions, or notable missing context. Omit this section when there are no findings.
+Ready / Needs direction / Blocked, with the reason
 
 **Decisions Needed**
-Only include if needed.
+Open points to settle before coding, each with its assumed default. Omit when none.
 
-**Intended Changes**
-Short bullets with likely files/areas.
+**Findings**
+Blockers, branch or working-tree problems, doc conflicts, scope overlaps. Omit when none.
+
+**Expected Changes**
+Short bullets with likely files and areas.
+
+**Validation Plan**
+Checks from the issue's Validation section (typecheck, lint, tests, migrations). For UI tasks, a screenshot at phone width in light and dark, compared against the prototype, before the issue is closed.
 
 Waiting for confirmation before implementation.
 ```

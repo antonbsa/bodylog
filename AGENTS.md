@@ -21,7 +21,7 @@ Before implementing any task, read these files:
 7. `specs/v1/spec.md`
 8. `specs/v1/implementation-plan.md`
 9. `specs/v1/acceptance-criteria.md`
-10. The selected GitHub issue and its parent umbrella issue (`gh issue view <n>`)
+10. The selected GitHub issue and its parent issue (`gh issue view <n>`)
 11. For UI work, `docs/product/ui-direction.md` and the visual reference `docs/product/prototype/mobile-redesign.html`
 
 Use `docs/product/future-ideas.md` only to understand future ideas. Do not implement future ideas unless explicitly requested.
@@ -36,12 +36,12 @@ Use `docs/product/future-ideas.md` only to understand future ideas. Do not imple
 
 ## Task Workflow
 
-Executable work is tracked only as GitHub issues: one umbrella issue per initiative with native sub-issues, one per task. Each issue holds scope, acceptance criteria and validation; UI tasks are validated with a screenshot compared against `docs/product/prototype/mobile-redesign.html`.
+Executable work is tracked only as GitHub issues: one parent issue per initiative with native sub-issues, one per task. Each issue holds scope, acceptance criteria and validation; UI tasks are validated with a screenshot compared against `docs/product/prototype/mobile-redesign.html`.
 
 Before implementing a task:
 
 1. Read the related docs/specs.
-2. Read the selected issue and its umbrella issue with `gh issue view <n>`.
+2. Read the selected issue and its parent issue with `gh issue view <n>`.
 3. When the issue is not clear enough, show an implementation plan to the owner before coding.
 4. Implement only the selected issue.
 5. Report validation notes and modified files to the owner; post them on the issue only when the owner asks, since GitHub comments are public and are not reviewed first.
@@ -55,7 +55,7 @@ When creating new work:
 
 Existing files under `specs/v1/tasks/` are history that the owner removes later. Do not edit them or add new task files; note superseded tasks in the issues instead.
 
-Work for one initiative goes on one feature branch with one commit per task and a single pull request linked to the umbrella issue.
+Work for one initiative goes on one feature branch with one commit per task and a single pull request linked to the parent issue.
 
 ## V1 Technical Decisions
 

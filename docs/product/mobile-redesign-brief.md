@@ -114,8 +114,8 @@ Source of truth for the mobile redesign agreed on 2026-11-11, on branch `feat/mo
 1. Done. Prototype: HTML with fake data covering Login; Início with and without today's record; Registro new, editing, validation error and discard confirmation; Histórico; Tendências with metric and period switching; Ajustes. Light/dark toggle and the three accent options. Published as a private claude.ai page for testing on the iPhone and saved in the repo next to the docs.
 2. Done. Owner tested on the iPhone and approved the prototype.
 3. Done. `docs/product/ui-direction.md` and ADRs 0030–0036 (charts, neutral variation color, new fields, bottom navigation, themes, 7-day target, issue-only task tracking). Where the approved prototype and `ui-direction.md` differ from this brief, they win.
-4. Update `AGENTS.md` for issue-only task tracking (diff shown to the owner before committing).
-5. Draft the umbrella issue and sub-issues; create them only after the owner approves the text.
+4. Done. `AGENTS.md` updated for issue-only task tracking.
+5. Done. Parent issue #23 "Mobile redesign" with sub-issues #24–#30, created after the owner approved the text.
 6. Implement task by task, in this order, each validated by screenshot against the prototype before it is closed:
    1. New fields: database, API, types, CSV.
    2. Visual foundation: tokens, themes, fonts, bottom bar and routes.
