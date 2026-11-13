@@ -58,6 +58,36 @@ export type DerivedMeasurementValues = {
   muscleKg: number | null
 }
 
+export type DerivedValuesInput = {
+  bodyFatPercentage: number | null
+  musclePercentage: number | null
+  weightKg: number
+}
+
+/** Pure so the web form can recompute derived values live while typing. */
+export function calculateDerivedValues(
+  measurement: DerivedValuesInput,
+  heightCm: number,
+): DerivedMeasurementValues {
+  const heightM = heightCm / 100
+
+  return {
+    bmi: roundToTwoDecimals(measurement.weightKg / (heightM * heightM)),
+    bodyFatKg:
+      measurement.bodyFatPercentage === null
+        ? null
+        : roundToTwoDecimals(
+            (measurement.weightKg * measurement.bodyFatPercentage) / 100,
+          ),
+    muscleKg:
+      measurement.musclePercentage === null
+        ? null
+        : roundToTwoDecimals(
+            (measurement.weightKg * measurement.musclePercentage) / 100,
+          ),
+  }
+}
+
 /**
  * Domain entity for a single date's body metrics. Height is configured
  * outside the measurement record, so derived values are computed on demand
@@ -93,19 +123,7 @@ export class Measurement {
   }
 
   getDerivedValues(heightCm: number): DerivedMeasurementValues {
-    const heightM = heightCm / 100
-
-    return {
-      bmi: roundToTwoDecimals(this.weightKg / (heightM * heightM)),
-      bodyFatKg:
-        this.bodyFatPercentage === null
-          ? null
-          : roundToTwoDecimals((this.weightKg * this.bodyFatPercentage) / 100),
-      muscleKg:
-        this.musclePercentage === null
-          ? null
-          : roundToTwoDecimals((this.weightKg * this.musclePercentage) / 100),
-    }
+    return calculateDerivedValues(this, heightCm)
   }
 
   toJSON(): MeasurementFields {

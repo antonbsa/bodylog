@@ -274,6 +274,7 @@ app.get("/api/measurements/by-date/:date", async (c) => {
 
   return c.json({
     item: measurement,
+    heightCm: getUserHeightCm(c.env),
   })
 })
 

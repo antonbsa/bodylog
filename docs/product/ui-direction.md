@@ -56,7 +56,7 @@ The weekly block has no metabolism or derived values: metabolism shows only in t
 
 ### Registro
 
-Full-screen route (for example `/registro?data=YYYY-MM-DD`), outside the tab layout. Fixed header and fixed footer; the form scrolls between them.
+Full-screen route (for example `/registro?data=YYYY-MM-DD`), outside the tab layout. The page scrolls with the document: the header (Cancelar and date bar) is sticky at the top and the footer is fixed at the bottom.
 
 - Header: "Cancelar", then the date bar with a previous-day arrow, the date label ("qui, 12 nov") and a next-day arrow. The arrows are 44px circles; next is disabled on today. Tapping the date opens the native date picker (a transparent `input type="date"` laid over the label), and future dates are not allowed.
 - A badge states the mode: "Nova medida" or "Editando medida de DD/MM". Selecting a date with a record loads it for editing; a date without one shows an empty form.
@@ -68,22 +68,22 @@ Full-screen route (for example `/registro?data=YYYY-MM-DD`), outside the tab lay
   5. Notas: a multi-line text area with the placeholder "Opcional".
 - Only weight is required.
 - "Excluir medida" appears at the end only in edit mode (see states below).
-- Footer: a full-width "Salvar" button above the keyboard.
-- On iOS the layout height follows the visual viewport while the keyboard is open, so the footer stays above it and the focused field is scrolled into view.
+- Footer: a full-width submit button fixed at the bottom: "Salvar" when creating and "Atualizar" when editing an existing record ("Salvando…" and "Atualizando…" while submitting).
+- While the iOS keyboard is open the footer is hidden (the keyboard is detected when the visual viewport is more than 100px shorter than the layout viewport); the user closes the keyboard with "OK" to reach Salvar/Atualizar. iOS PWAs cannot pin elements to the visible area while the keyboard is open without an inner-scroll container, which breaks native focus scrolling and keyboard field navigation, so for the same reason the sticky header can also scroll out of view while the keyboard is open. The page keeps bottom padding equal to the footer height, and iOS scrolls the focused field into view natively; the app adds no scroll of its own on focus.
 
 #### Input patterns
 
 - Numeric fields use a right-to-left digit mask with a fixed decimal: digits fill from the right and the comma is inserted automatically, so typing `724` shows `72,4`. One decimal for weight, fat, muscle, waist and sleep; none for metabolism. Leading zeros are dropped and input is capped at 4 digits (3 for sleep). Typed digits always append regardless of the caret position, delete removes the last digit, delete over a selection clears the field, and pasting a number such as `72,4` or `72.4` fills the field. The caret stays at the end.
 - Every numeric input uses `inputMode="numeric"` (digits-only keypad), left-aligned labels with the value right-aligned in Geist Mono, and the unit beside the field.
 - Each numeric field shows the previous record's value as a discreet hint ("anterior: 72,6"), never prefilled. For disposição the hint is the previous value as well.
-- Sleep has − and ＋ stepper buttons in 0.5 h steps around an editable digits-only input, bounded to 0–24 h. The field starts empty; the first tap on either button fills the previous recorded value (7,0 when there is none) and later taps step from the current value.
+- Sleep has − and ＋ stepper buttons in 0.5 h steps around an editable digits-only input, bounded to 0–24 h. Pressing the buttons does not take focus from a focused input, so the iOS keyboard stays open; they remain focusable buttons for keyboard and screen-reader use. The field starts empty; the first tap on either button fills the previous recorded value (7,0 when there is none) and later taps step from the current value.
 - Disposição is five segmented buttons, 1 to 5, with captions only at the ends: "Indisposto" (1) and "Disposto" (5). Tapping the selected value clears it.
 - Field advance on iPhone relies on the keyboard accessory arrows; the digits-only keypad has no "Next" key.
 - Notes are trimmed on save.
 
 #### Validation
 
-Hard limits that block saving: weight 20–300 kg, fat and muscle 1–80%, metabolism 500–5000 kcal, waist 30–250 cm, sleep 0–24 h. The error appears in a reserved slot under the field (no layout shift) once the field has been left or on save, for example "Use um valor entre 20 e 300 kg."; a missing weight shows "Informe o peso.". The field is marked `aria-invalid`. On save with errors, focus moves to the first invalid field and it is scrolled into view. There are no "unusual value" warnings beyond the previous-value hint.
+Hard limits that block saving: weight 20–300 kg, fat and muscle 1–80%, metabolism 500–5000 kcal, waist 30–250 cm, sleep 0–24 h. The error appears in a reserved slot under the field (no layout shift) once the field has been changed and left, or on save (an error already shown updates live while retyping), for example "Use um valor entre 20 e 300 kg."; a missing weight shows "Informe o peso.". The field is marked `aria-invalid`. On save with errors, focus moves to the first invalid field and it is scrolled into view. There are no "unusual value" warnings beyond the previous-value hint.
 
 #### Discard, date navigation and delete
 

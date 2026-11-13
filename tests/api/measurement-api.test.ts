@@ -120,6 +120,7 @@ describe("measurement api", () => {
         createdAt: "2026-06-09T12:00:00.000Z",
         updatedAt: "2026-06-09T12:00:00.000Z",
       },
+      heightCm: 168,
     })
 
     const updateResponse = await app.request(

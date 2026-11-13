@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, type ReactNode } from "react"
 import { AlertDialog, Flex } from "@radix-ui/themes"
 
 import { Button } from "../../components/Button"
@@ -14,7 +15,7 @@ type ConfirmationDialogProps = {
   onConfirm: () => void
   onOpenChange: (open: boolean) => void
   open: boolean
-  title: string
+  title: ReactNode
 }
 
 export function ConfirmationDialog({
@@ -29,21 +30,43 @@ export function ConfirmationDialog({
   open,
   title,
 }: ConfirmationDialogProps) {
+  const openerRef = useRef<HTMLElement | null>(null)
+
+  // The dialog is opened from state, not a Trigger, so Radix has no element to
+  // return focus to; remember the opener before the dialog moves focus.
+  useLayoutEffect(() => {
+    if (open && document.activeElement instanceof HTMLElement) {
+      openerRef.current = document.activeElement
+    }
+  }, [open])
+
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
-      <AlertDialog.Content maxWidth="420px">
+      <AlertDialog.Content
+        maxWidth="420px"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          openerRef.current?.focus()
+        }}
+      >
         <AlertDialog.Title>{title}</AlertDialog.Title>
         <AlertDialog.Description>{description}</AlertDialog.Description>
 
-        <Flex gap="3" justify="end" mt="4">
+        <Flex className="dialog-actions" direction="column" gap="2" mt="4">
           <AlertDialog.Cancel>
-            <Button disabled={isConfirming} type="button" variant="secondary">
+            <Button
+              disabled={isConfirming}
+              fullWidth
+              type="button"
+              variant="secondary"
+            >
               {cancelLabel}
             </Button>
           </AlertDialog.Cancel>
           <AlertDialog.Action>
             <Button
               disabled={isConfirming}
+              fullWidth
               onClick={(event) => {
                 event.preventDefault()
                 onConfirm()

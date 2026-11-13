@@ -182,12 +182,8 @@ test("renders recent measurements, loads more, and opens an item for editing", a
 
   await expect(page).toHaveURL("/registro?data=2026-06-14")
 
-  const dialog = page.getByRole("dialog", { name: "Medida corporal" })
-
-  await expect(dialog).toBeVisible()
-  await expect(dialog.getByText("Editando")).toBeVisible()
-  await expect(page.getByLabel("Data")).toHaveValue("14/06/2026")
-  await expect(page.getByLabel("Peso (kg)")).toHaveValue("72,9")
+  await expect(page.getByText("Editando medida de 14/06")).toBeVisible()
+  await expect(page.getByLabel("Peso")).toHaveValue("72,9")
 })
 
 test("renders an empty measurement history state", async ({ page }) => {

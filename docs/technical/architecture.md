@@ -68,7 +68,7 @@ Routes, handled client-side by `react-router`:
 /registro?data=YYYY-MM-DD   registration, outside the tab layout, no bar
 ```
 
-The tab screens share a full-height flex layout: a scrolling content area above a bottom tab bar that sits in the layout flow (not fixed), with a central button that opens `/registro` for today (`0033-use-bottom-navigation.md`, `docs/product/ui-direction.md`). Unauthenticated visits show the login screen without the bar, and unknown paths show the not-found screen. The registration route renders the existing measurement form until the registration sub-issue redoes it.
+The tab screens share a full-height flex layout: a scrolling content area above a bottom tab bar that sits in the layout flow (not fixed), with a central button that opens `/registro` for today (`0033-use-bottom-navigation.md`, `docs/product/ui-direction.md`). Unauthenticated visits show the login screen without the bar, and unknown paths show the not-found screen. The registration route is a full-screen form outside the tab layout: a sticky header with the date bar, a form that scrolls with the document (so iOS scrolls focused fields natively) and a fixed footer that is hidden while the iOS keyboard is open (detected from the visual viewport height). Numeric fields use a right-to-left digit mask, and validation limits, notes normalization and derived values come from `apps/api/src/domain/measurement.ts`, so the web form and the API share them.
 
 Deep links rely on Cloudflare Pages serving `index.html` for unknown paths, which Pages does only when the build has no top-level `404.html`; do not add one to `apps/web/public`.
 

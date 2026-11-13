@@ -3,5 +3,10 @@
   "compilerOptions": {
     "types": ["@cloudflare/workers-types", "vitest/globals"]
   },
-  "include": ["api/**/*.ts", "../apps/api/src/**/*.ts"]
+  "include": [
+    "api/**/*.ts",
+    "web/**/*.ts",
+    "../apps/api/src/**/*.ts",
+    "../apps/web/src/utils/**/*.ts"
+  ]
 }

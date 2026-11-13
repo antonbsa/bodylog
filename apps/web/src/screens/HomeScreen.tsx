@@ -1,5 +1,4 @@
 import { Callout } from "@radix-ui/themes"
-import { useLocation } from "react-router"
 
 import { Button } from "../components/Button"
 import { PageTitle } from "./components/PageTitle"
@@ -12,9 +11,6 @@ import { useWeeklyDashboard } from "../hooks/useWeeklyDashboard"
 
 export function HomeScreen() {
   const { reload, state } = useWeeklyDashboard()
-  const location = useLocation()
-  const savedMessage =
-    (location.state as { savedMessage?: string } | null)?.savedMessage ?? null
 
   useRefreshOnResume(reload)
 
@@ -36,12 +32,6 @@ export function HomeScreen() {
           </Button>
         </div>
       </header>
-
-      {savedMessage ? (
-        <Callout.Root color="green" role="status">
-          <Callout.Text>{savedMessage}</Callout.Text>
-        </Callout.Root>
-      ) : null}
 
       {state.status === "error" ? (
         <Callout.Root color="red" role="alert">

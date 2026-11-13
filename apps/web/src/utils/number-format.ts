@@ -43,3 +43,12 @@ export function parseDecimalInput(value: string): number | undefined {
 
   return Number.isFinite(parsedValue) ? parsedValue : undefined
 }
+
+const ptBrOneDecimalFormatter = new Intl.NumberFormat("pt-BR", {
+  maximumFractionDigits: 1,
+  minimumFractionDigits: 1,
+})
+
+export function formatOneDecimal(value: number): string {
+  return ptBrOneDecimalFormatter.format(value)
+}

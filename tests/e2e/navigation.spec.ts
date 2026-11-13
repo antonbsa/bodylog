@@ -169,15 +169,11 @@ test("central button opens the registration route without the bar", async ({
   await page.getByRole("link", { name: "Registrar medida" }).click()
 
   await expect(page).toHaveURL(`/registro?data=${getToday()}`)
-  await expect(
-    page.getByRole("dialog", { name: "Medida corporal" }),
-  ).toBeVisible()
+  await expect(page.getByLabel("Peso")).toBeVisible()
   await expect(mainNav(page)).toHaveCount(0)
 
   await page.reload()
-  await expect(
-    page.getByRole("dialog", { name: "Medida corporal" }),
-  ).toBeVisible()
+  await expect(page.getByLabel("Peso")).toBeVisible()
   await expect(mainNav(page)).toHaveCount(0)
 })
 

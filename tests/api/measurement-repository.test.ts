@@ -237,6 +237,23 @@ describe("MeasurementRepository", () => {
     ])
   })
 
+  it("returns the latest measurement before a date with to and limit 1", async () => {
+    const repository = createRepository(new InMemoryMeasurementD1())
+
+    for (const date of ["2026-06-05", "2026-06-08", "2026-06-10"]) {
+      await repository.create({ date, weightKg: 72 })
+    }
+
+    const measurements = await repository.list({
+      limit: 1,
+      to: "2026-06-09",
+    })
+
+    expect(measurements.map((measurement) => measurement.date)).toEqual([
+      "2026-06-08",
+    ])
+  })
+
   it("deletes a measurement", async () => {
     const repository = createRepository(new InMemoryMeasurementD1())
     const measurement = await repository.create({

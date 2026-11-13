@@ -4,17 +4,24 @@ import type {
   CsvImportSummary,
   Measurement,
   MeasurementInput,
+  MeasurementLookup,
 } from "../../../../types/measurements"
 import type { ListedMeasurement } from "../types"
 
 export async function listMeasurements(options: {
   limit: number
   offset?: number
+  to?: string
 }): Promise<ListedMeasurement[]> {
   const query = new URLSearchParams({
     limit: String(options.limit),
     offset: String(options.offset ?? 0),
   })
+
+  if (options.to) {
+    query.set("to", options.to)
+  }
+
   const response = await api(`/api/measurements?${query}`, {
     method: "GET",
   })
@@ -35,7 +42,7 @@ export async function listMeasurements(options: {
 
 export async function getMeasurementByDate(
   date: string,
-): Promise<Measurement | null> {
+): Promise<MeasurementLookup | null> {
   const response = await api(`/api/measurements/by-date/${date}`, {
     method: "GET",
   })
@@ -51,11 +58,7 @@ export async function getMeasurementByDate(
     })
   }
 
-  const payload = (await response.json()) as {
-    item: Measurement | null
-  }
-
-  return payload.item
+  return (await response.json()) as MeasurementLookup
 }
 
 export async function saveMeasurementByDate(

@@ -28,7 +28,7 @@ body,
 
 /* Radix Themes keeps behavior and the not-yet-redone components; its gray and
    accent scales are pointed at the project tokens so they follow light/dark. */
-.radix-themes.app-root {
+.radix-themes {
   --default-font-family: var(--font-sans);
   --color-background: var(--bg);
   --color-panel-solid: var(--surface);
@@ -52,7 +52,9 @@ body,
   --gray-a11: var(--fg-2);
   --gray-a12: var(--fg);
   --focus-8: var(--accent);
+}
 
+.radix-themes.app-root {
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -253,8 +255,7 @@ input:disabled {
   padding: 20px 0 28px;
 }
 
-.app-header .header-actions,
-.modal-actions {
+.app-header .header-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -302,7 +303,6 @@ input:disabled {
 .variation-card strong,
 .variation-card span,
 .login-form label,
-.measurement-form label,
 .field-note,
 .form-error {
   margin: 0;
@@ -334,8 +334,7 @@ input:disabled {
   margin-top: 8px;
 }
 
-.login-form label,
-.measurement-form label {
+.login-form label {
   display: grid;
   gap: 8px;
   color: var(--fg);
@@ -583,26 +582,6 @@ input:disabled {
   opacity: 0;
 }
 
-.modal-loading-status {
-  display: block;
-  margin-bottom: 12px;
-  color: var(--fg-2);
-  font-size: 0.75rem;
-  line-height: 1;
-}
-
-.measurement-form {
-  display: grid;
-  align-content: start;
-  gap: 16px;
-  overflow: auto;
-  padding: 20px;
-}
-
-.modal-actions {
-  margin-top: 4px;
-}
-
 @media (min-width: 680px) {
   .app-shell {
     padding: 56px 28px;
@@ -633,4 +612,24 @@ input:disabled {
   .history-actions {
     justify-content: start;
   }
+}
+
+/* Confirmation dialogs: stacked full-width actions, the safe one first. */
+.rt-AlertDialogContent {
+  border-radius: 20px;
+}
+
+.rt-AlertDialogTitle {
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.rt-AlertDialogDescription {
+  color: var(--fg-2);
+  font-size: 15px;
+}
+
+.dialog-actions .rt-Button {
+  min-height: 48px;
+  font-size: 16px;
 }

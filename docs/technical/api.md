@@ -154,9 +154,12 @@ Finds a measurement by date.
     "notes": null,
     "createdAt": "string",
     "updatedAt": "string"
-  }
+  },
+  "heightCm": 168
 }
 ```
+
+`heightCm` is the configured user height, so the registration screen can recompute the BMI live while editing.
 
 #### Response 404
 
