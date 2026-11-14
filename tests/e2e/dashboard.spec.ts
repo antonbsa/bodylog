@@ -337,6 +337,30 @@ test("a failed weekly request shows a text error with retry inside the card", as
   expect(Math.abs((after?.height ?? 0) - (before?.height ?? 0))).toBeLessThan(2)
 })
 
+test("a failed refresh on resume keeps the loaded week card", async ({
+  page,
+}) => {
+  const counters = await mockHome(page, {
+    current: currentWeek([TODAY], { weightKg: 73.4 }),
+    dashboardStatuses: [200, 500],
+  })
+
+  await page.goto("/")
+
+  await expect(weekCard(page).locator(".mrow").first()).toContainText("73,4")
+
+  await page.waitForTimeout(600)
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("focus"))
+  })
+
+  await expect.poll(() => counters.dashboard).toBe(2)
+  await page.waitForTimeout(300)
+
+  await expect(weekCard(page).getByRole("alert")).toHaveCount(0)
+  await expect(weekCard(page).locator(".mrow").first()).toContainText("73,4")
+})
+
 test("returning to the foreground refreshes Início and the history", async ({
   page,
 }) => {

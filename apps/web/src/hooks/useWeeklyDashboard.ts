@@ -20,15 +20,15 @@ export function useWeeklyDashboard(): {
     queryKey: queryKeys.dashboard,
   })
 
-  const state: WeeklyDashboardState = query.isFetching
-    ? { dashboard: query.data ?? null, message: null, status: "loading" }
-    : query.isError
-      ? {
-          dashboard: null,
-          message: formatApiErrorMessage(query.error),
-          status: "error",
-        }
-      : { dashboard: query.data ?? null, message: null, status: "loaded" }
+  const status = query.data ? "loaded" : query.isError ? "error" : "loading"
+  const state: WeeklyDashboardState = {
+    dashboard: query.data ?? null,
+    message:
+      status === "error" && query.error
+        ? formatApiErrorMessage(query.error)
+        : null,
+    status,
+  }
 
   return {
     reload: () => {
