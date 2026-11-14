@@ -81,6 +81,7 @@ Do:
 - Add automated tests together with implemented behavior.
 - Keep data access isolated behind a repository/service layer.
 - Declare cross-boundary request/response shapes once in the root `types/` package; do not redeclare per-app copies in `apps/web` or `apps/api`.
+- Put code that both apps run (pure measurement rules such as limits, notes normalization and derived values) in the root `domain/` module, and import from each app only its own `src/`. A cross-app import such as `apps/web` reaching into `apps/api/src` still typechecks and bundles, so CI won't flag it; verify with `grep -rn "api/src" apps/web/src` and `grep -rn "web/src" apps/api/src` both returning nothing.
 - Update docs when implementation decisions change.
 - Prefer boring, explicit code over unnecessary abstraction.
 
