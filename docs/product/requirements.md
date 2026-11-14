@@ -112,7 +112,7 @@ The system must compare the current week against the previous week.
 - [ ] Relative percentage variation is displayed when applicable.
 - [ ] Percentage-based metrics display absolute changes in percentage points.
 - [ ] The system indicates whether each metric moved up, down, or stayed stable.
-- [ ] Stable direction uses the documented V1 thresholds for weight, body fat mass, and muscle mass.
+- [ ] A metric is stable when its change rounds to zero at the displayed precision (ADR 0039).
 - [ ] The UI shows variations in one neutral tone, without health advice, diagnosis, recommendations, or motivational interpretation (ADR 0031).
 
 ---
@@ -125,7 +125,7 @@ The system must provide a dashboard as the main screen.
 
 - [ ] The dashboard is the initial authenticated screen.
 - [ ] The dashboard shows current week averages.
-- [ ] If the current week has no records yet, the dashboard summary cards show the latest available recorded metrics instead of placeholders.
+- [ ] If the current week has no records yet, the dashboard summary cards show empty values (`-`) instead of another week's metrics.
 - [ ] The dashboard shows comparison against the previous week.
 - [ ] The dashboard includes a button to open the measurement form.
 - [ ] The dashboard is mobile-first.

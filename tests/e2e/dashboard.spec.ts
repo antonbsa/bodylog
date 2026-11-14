@@ -121,19 +121,9 @@ async function mockHome(page: Page, mocks: HomeMocks = {}) {
       return json(route, { message: "Falha ao carregar." }, status)
     }
 
-    const payload = {
+    return json(route, {
       current: toWeek(current, true),
       previous: toWeek(previous, false),
-      variation: {},
-    }
-
-    return json(route, {
-      ...payload,
-      display: {
-        mode: "current-week",
-        summary: payload.current,
-        variation: {},
-      },
     })
   })
   await page.route("**/api/measurements?*", (route) => {
@@ -367,9 +357,7 @@ test("returning to the foreground refreshes Início and the history", async ({
 
     return json(route, {
       current: week,
-      display: { mode: "current-week", summary: week, variation: {} },
       previous: toWeek(previousWeek({ weightKg: 72 }), false),
-      variation: {},
     })
   })
   await page.route("**/api/measurements/by-date/*", (route) =>

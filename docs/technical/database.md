@@ -84,13 +84,7 @@ The V1 compares:
 partial current week vs previous full week
 ```
 
-The comparison should include:
-
-- absolute variation;
-- relative percentage variation when a previous value exists;
-- direction: `up`, `down`, or `stable`.
-
-Waist (cm), sleep (h) and disposition (points) are compared with a neutral variation: `absolute` in the metric's own unit and the relative percentage. They have no stable threshold in the API (direction is `stable` only when the averages are equal); the web UI does not read `direction` and decides "Estável" from the rounded averages (`docs/product/ui-direction.md`). A metric missing in either week has no entry in the variation, never a zero. Resting metabolism and derived values are not part of the redesign's additions.
+The API returns weekly averages only; the UI computes the variation between the two weeks (`0039-compute-weekly-variation-in-the-ui.md`). Missing metrics in either week produce no comparison, never a zero.
 
 For percentage-based metrics such as body fat percentage and muscle percentage, absolute variation must be displayed as percentage points.
 
@@ -99,22 +93,6 @@ Example:
 ```txt
 16.20% → 14.46% = -1.74 percentage points
 ```
-
-## Direction Rule
-
-V1 stable thresholds:
-
-- weight: less than `0.5 kg`;
-- body fat mass: less than `0.4 kg`;
-- muscle mass: less than `0.3 kg`.
-
-Direction rules:
-
-- `up`: current value is greater than previous value by at least the relevant threshold;
-- `down`: current value is lower than previous value by at least the relevant threshold;
-- `stable`: absolute change is below the relevant threshold.
-
-Weight direction uses average weight in kg. Body fat and muscle direction use derived mass in kg for threshold evaluation, while percentage values still display percentage-point variation.
 
 ## Future Postgres Portability
 

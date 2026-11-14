@@ -97,9 +97,7 @@ async function mockApi(
 
     return json(route, {
       current: emptyWeek,
-      display: { mode: "current-week", summary: emptyWeek, variation: {} },
       previous: { ...emptyWeek, isCurrentWeek: false, isPartialWeek: false },
-      variation: {},
     })
   })
   await page.route("**/api/measurements?*", (route) => {

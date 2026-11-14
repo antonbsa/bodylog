@@ -52,7 +52,7 @@ Guidelines:
 - Keep week calculations aligned with Monday-start weeks.
 - Compare partial current week against the previous full week.
 - Display percentage metric changes in percentage points.
-- Use the documented stable thresholds for weekly direction.
+- Treat a weekly change as stable when it rounds to zero at the displayed precision, decided in the UI.
 - Ignore missing optional values when calculating averages for that metric.
 - Keep derived calculations covered by focused automated tests.
 - Document assumptions when date, rounding, tolerance, or import behavior is ambiguous but not blocking.

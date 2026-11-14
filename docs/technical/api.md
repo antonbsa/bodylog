@@ -238,11 +238,11 @@ Deletes a measurement.
 
 ### GET /api/dashboard/weekly
 
-Returns the weekly summary for the current week and comparison against the previous week.
+Returns the weekly summaries of the current week and the previous week.
 
 The response must include week date ranges and measurement counts so the UI can show the weekly registration count against the 7-day target.
 
-Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI can draw the day dots; `measurementCount` is the recorded count. The weekly registration target is 7 (`0035-use-seven-day-weekly-target.md`) and the response carries no reliability label. Weekly averages include `waistCm`, `sleepHours` and `disposition`, and the variation includes them with an `absolute` value in cm, h and points. A metric missing in either week has no variation entry. The API returns raw averages and deltas.
+Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI can draw the day dots; `measurementCount` is the recorded count. The weekly registration target is 7 (`0035-use-seven-day-weekly-target.md`) and the response carries no reliability label. Weekly averages include `waistCm`, `sleepHours` and `disposition`. The API returns raw averages and counts only; the UI computes variation (`0039-compute-weekly-variation-in-the-ui.md`).
 
 #### Response 200
 
@@ -268,36 +268,6 @@ Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI ca
       "disposition": 4
     }
   },
-  "display": {
-    "mode": "current-week",
-    "summary": {
-      "weekStartDate": "YYYY-MM-DD",
-      "weekEndDate": "YYYY-MM-DD",
-      "measurementCount": 4,
-      "recordedDates": ["YYYY-MM-DD"],
-      "isCurrentWeek": true,
-      "isPartialWeek": true,
-      "averages": {
-        "weightKg": 72.9,
-        "bmi": 25.83,
-        "bodyFatPercentage": 14.46,
-        "bodyFatKg": 10.54,
-        "musclePercentage": 43.72,
-        "muscleKg": 31.87,
-        "restingMetabolismKcal": 1700,
-        "waistCm": 80.5,
-        "sleepHours": 7.5,
-        "disposition": 4
-      }
-    },
-    "variation": {
-      "weightKg": {
-        "absolute": 1.15,
-        "relativePercentage": 1.6,
-        "direction": "up"
-      }
-    }
-  },
   "previous": {
     "weekStartDate": "YYYY-MM-DD",
     "weekEndDate": "YYYY-MM-DD",
@@ -315,31 +285,11 @@ Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI ca
       "sleepHours": 7,
       "disposition": 3
     }
-  },
-  "variation": {
-    "weightKg": {
-      "absolute": 1.15,
-      "relativePercentage": 1.6,
-      "direction": "up"
-    },
-    "bodyFatPercentage": {
-      "absolutePercentagePoints": -1.74,
-      "relativePercentage": -10.74,
-      "direction": "down"
-    },
-    "waistCm": {
-      "absolute": -1.5,
-      "relativePercentage": -1.83,
-      "direction": "down"
-    }
   }
 }
 ```
 
-`current` always represents the actual current week in the configured user time
-zone, and the web UI renders `current` and `previous` only. `display` uses the
-current week when it has records and falls back to the latest recorded week
-when the current week is still empty; the web UI does not read it.
+`current` always represents the actual current week in the configured user time zone, even when it has no records yet; the web UI reads `current` and `previous` only.
 
 ## CSV Export
 

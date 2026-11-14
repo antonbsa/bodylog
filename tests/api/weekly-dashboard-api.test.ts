@@ -33,7 +33,7 @@ describe("weekly dashboard api", () => {
     vi.useRealTimers()
   })
 
-  it("returns the current week, previous week, variation, counts, and partial-week metadata", async () => {
+  it("returns the current week, previous week, counts, and partial-week metadata", async () => {
     const env = createEnv()
     const sessionCookieValue = await createSessionCookieValue(
       env.SESSION_SECRET,
@@ -70,71 +70,6 @@ describe("weekly dashboard api", () => {
           disposition: null,
         },
       },
-      display: {
-        mode: "current-week",
-        summary: {
-          weekStartDate: "2026-06-08",
-          weekEndDate: "2026-06-14",
-          measurementCount: 2,
-          recordedDates: ["2026-06-08", "2026-06-10"],
-          isCurrentWeek: true,
-          isPartialWeek: true,
-          averages: {
-            weightKg: 73,
-            bmi: 25.87,
-            bodyFatPercentage: 14,
-            bodyFatKg: 10.36,
-            musclePercentage: 44,
-            muscleKg: 32.56,
-            restingMetabolismKcal: 1700,
-            waistCm: 88.5,
-            sleepHours: 7.5,
-            disposition: null,
-          },
-        },
-        variation: {
-          weightKg: {
-            absolute: 1,
-            relativePercentage: 1.39,
-            direction: "up",
-          },
-          bmi: {
-            absolute: 0.36,
-            relativePercentage: 1.41,
-            direction: "up",
-          },
-          bodyFatPercentage: {
-            absolutePercentagePoints: -2.2,
-            relativePercentage: -13.58,
-            direction: "down",
-          },
-          bodyFatKg: {
-            absolute: -1.31,
-            relativePercentage: -11.23,
-            direction: "down",
-          },
-          musclePercentage: {
-            absolutePercentagePoints: 1.25,
-            relativePercentage: 2.92,
-            direction: "up",
-          },
-          muscleKg: {
-            absolute: 1.77,
-            relativePercentage: 5.75,
-            direction: "up",
-          },
-          restingMetabolismKcal: {
-            absolute: 10,
-            relativePercentage: 0.59,
-            direction: "up",
-          },
-          waistCm: {
-            absolute: -2.5,
-            relativePercentage: -2.75,
-            direction: "down",
-          },
-        },
-      },
       previous: {
         weekStartDate: "2026-06-01",
         weekEndDate: "2026-06-07",
@@ -153,48 +88,6 @@ describe("weekly dashboard api", () => {
           waistCm: 91,
           sleepHours: null,
           disposition: null,
-        },
-      },
-      variation: {
-        weightKg: {
-          absolute: 1,
-          relativePercentage: 1.39,
-          direction: "up",
-        },
-        bmi: {
-          absolute: 0.36,
-          relativePercentage: 1.41,
-          direction: "up",
-        },
-        bodyFatPercentage: {
-          absolutePercentagePoints: -2.2,
-          relativePercentage: -13.58,
-          direction: "down",
-        },
-        bodyFatKg: {
-          absolute: -1.31,
-          relativePercentage: -11.23,
-          direction: "down",
-        },
-        musclePercentage: {
-          absolutePercentagePoints: 1.25,
-          relativePercentage: 2.92,
-          direction: "up",
-        },
-        muscleKg: {
-          absolute: 1.77,
-          relativePercentage: 5.75,
-          direction: "up",
-        },
-        restingMetabolismKcal: {
-          absolute: 10,
-          relativePercentage: 0.59,
-          direction: "up",
-        },
-        waistCm: {
-          absolute: -2.5,
-          relativePercentage: -2.75,
-          direction: "down",
         },
       },
     })

@@ -48,8 +48,6 @@ async function mockApi(page: Page, authenticated = true) {
       body: JSON.stringify({
         current: emptyWeek,
         previous: { ...emptyWeek, isCurrentWeek: false, isPartialWeek: false },
-        display: { mode: "current-week", summary: emptyWeek, variation: {} },
-        variation: {},
       }),
       contentType: "application/json",
       status: 200,
