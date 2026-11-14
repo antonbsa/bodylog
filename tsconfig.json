@@ -1,4 +1,4 @@
 {
   "extends": "./tsconfig.base.json",
-  "include": ["types/**/*.ts", "infra/errors/**/*.ts"]
+  "include": ["types/**/*.ts", "domain/**/*.ts", "infra/errors/**/*.ts"]
 }

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 
+import { Measurement } from "../../apps/api/src/domain/measurement"
 import {
   isWithinMeasurementLimit,
-  Measurement,
   normalizeNotes,
-} from "../../apps/api/src/domain/measurement"
+} from "../../domain/measurement"
 
 const USER_HEIGHT_CM = 168
 

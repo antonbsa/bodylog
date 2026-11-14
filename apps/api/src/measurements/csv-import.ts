@@ -3,7 +3,7 @@ import {
   isWithinMeasurementLimit,
   normalizeNotes,
   type MEASUREMENT_LIMITS,
-} from "../domain/measurement"
+} from "../../../../domain/measurement"
 import type { ImportedMeasurementInput } from "../types"
 import type {
   CsvImportRowError,

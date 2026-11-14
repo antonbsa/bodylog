@@ -23,7 +23,7 @@ V1 allows at most one measurement per date.
 | `createdAt`             | string      |      yes | Creation timestamp.                                      |
 | `updatedAt`             | string      |      yes | Last update timestamp.                                   |
 
-Hard validation limits that block saving: weight 20–300 kg, body fat and muscle 1–80%, resting metabolism 500–5000 kcal, waist 30–250 cm, sleep 0–24 h, disposition integer 1–5 (`0032-add-waist-sleep-disposition-and-notes-fields.md`). The limits live in `apps/api/src/domain/measurement.ts`.
+Hard validation limits that block saving: weight 20–300 kg, body fat and muscle 1–80%, resting metabolism 500–5000 kcal, waist 30–250 cm, sleep 0–24 h, disposition integer 1–5 (`0032-add-waist-sleep-disposition-and-notes-fields.md`). The limits live in `domain/measurement.ts`.
 
 ## Derived Values
 

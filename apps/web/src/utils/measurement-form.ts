@@ -2,7 +2,7 @@ import {
   MEASUREMENT_LIMITS,
   calculateDerivedValues,
   normalizeNotes,
-} from "../../../api/src/domain/measurement"
+} from "../../../../domain/measurement"
 import { maskedDigitsToNumber, numberToMaskedDigits } from "./numeric-mask"
 import type {
   Measurement,

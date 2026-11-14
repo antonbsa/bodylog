@@ -1,5 +1,5 @@
 import type { Measurement } from "./measurement"
-import { roundToTwoDecimals } from "./numeric"
+import { roundToTwoDecimals } from "../../../../domain/numeric"
 import type { WeekRange } from "./week-range"
 
 export type WeeklyAverages = {
