@@ -43,7 +43,7 @@ Source of truth for the mobile redesign agreed on 2026-11-11, on branch `feat/mo
 
 ## Registration screen
 
-- Full-screen route (for example `/registro?data=YYYY-MM-DD`), not a modal or bottom sheet. Fixed header with "Cancelar" and the date; fixed "Salvar" button above the keyboard.
+- Full-screen route (for example `/registro?data=YYYY-MM-DD`), not a modal or bottom sheet. Sticky header (document scroll) with "Cancelar" and the date; "Salvar"/"Atualizar" button fixed at the bottom and hidden while the keyboard is open.
 - Date: defaults to today. ±1 day arrows beside it; tapping the date opens the native `input type="date"` (calendar popover on iOS). A badge states the mode: "Nova medida" or "Editando medida de DD/MM".
 - Selecting a date that has a record loads it for editing; otherwise the form is empty (existing product rule).
 - Sections and fields, in this order (only weight is required):
