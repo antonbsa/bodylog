@@ -1,9 +1,8 @@
-import { useNavigate } from "react-router"
-
 import { Button } from "../components/Button"
+import { useTabNavigate } from "../hooks/useTabNavigate"
 
 export function NotFoundScreen() {
-  const navigate = useNavigate()
+  const { navigate } = useTabNavigate()
 
   return (
     <main className="app-shell not-found-shell">

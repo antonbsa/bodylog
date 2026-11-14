@@ -186,6 +186,54 @@ test("registration cancel returns to the previous screen", async ({ page }) => {
   await expect(page).toHaveURL("/historico")
 })
 
+const historyLength = (page: Page) => page.evaluate(() => history.length)
+
+test("switching tabs does not grow browser history", async ({ page }) => {
+  await mockApi(page)
+  await page.goto("/")
+
+  const before = await historyLength(page)
+
+  for (const route of [...MAIN_ROUTES].reverse()) {
+    await mainNav(page).getByRole("link", { name: route.tab }).click()
+    await expect(page).toHaveURL(route.path)
+  }
+
+  expect(await historyLength(page)).toBe(before)
+})
+
+test("registration opened from Histórico returns there without growing history", async ({
+  page,
+}) => {
+  await mockApi(page)
+  await page.goto("/historico")
+
+  const before = await historyLength(page)
+
+  await page.getByRole("link", { name: "Registrar medida" }).click()
+  await expect(page).toHaveURL(/\/registro/)
+  expect(await historyLength(page)).toBe(before)
+
+  await page.getByRole("button", { name: "Cancelar" }).click()
+  await expect(page).toHaveURL("/historico")
+  expect(await historyLength(page)).toBe(before)
+})
+
+test("changing the date keeps the origin for Cancelar", async ({ page }) => {
+  await mockApi(page)
+  await page.goto("/tendencias")
+  await page.getByRole("link", { name: "Registrar medida" }).click()
+  await page.getByRole("button", { name: "Dia anterior" }).click()
+  await page.waitForURL(
+    (url) =>
+      url.pathname === "/registro" &&
+      url.searchParams.get("data") !== getToday(),
+  )
+  await page.getByRole("button", { name: "Cancelar" }).click()
+
+  await expect(page).toHaveURL("/tendencias")
+})
+
 test("hides the bar on the login screen", async ({ page }) => {
   await mockApi(page, false)
   await page.goto("/historico")

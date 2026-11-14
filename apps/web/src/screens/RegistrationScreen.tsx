@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type SubmitEvent } from "react"
-import { useLocation, useNavigate, useSearchParams } from "react-router"
+import { useLocation, useSearchParams } from "react-router"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { deleteMeasurement, saveMeasurementByDate } from "../api/measurements"
@@ -8,6 +8,7 @@ import {
   type RegistrationData,
 } from "../hooks/useRegistrationData"
 import { useKeyboardOpenFlag } from "../hooks/useKeyboardOpenFlag"
+import { readOrigin, useTabNavigate } from "../hooks/useTabNavigate"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
 import { DispositionField } from "./components/DispositionField"
 import { NumberField } from "./components/NumberField"
@@ -61,7 +62,7 @@ function formatPreviousValue(
 export function RegistrationScreen() {
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
-  const navigate = useNavigate()
+  const { navigate, replace } = useTabNavigate()
   const today = getTodayIsoDate()
   const requestedDate = searchParams.get("data")
   const date = isPastOrTodayIsoDate(requestedDate) ? requestedDate : today
@@ -130,13 +131,8 @@ export function RegistrationScreen() {
   }
 
   function leave() {
-    // "default" means this is the first entry (deep link), so there is nothing to go back to.
-    if (location.key === "default") {
-      navigate("/")
-      return
-    }
-
-    navigate(-1)
+    // The origin entry was replaced, so history back can't reach it; a deep link has no origin and lands on Início.
+    navigate(readOrigin(location.state))
   }
 
   /** Runs `action` now, or after the user confirms discarding unsaved changes. */
@@ -154,8 +150,10 @@ export function RegistrationScreen() {
       return
     }
 
-    // Replace, so Cancelar still returns to the tab the user came from.
-    afterDiscardCheck(() => setSearchParams({ data: next }, { replace: true }))
+    // Keeps the origin state, which setSearchParams would otherwise drop, so Cancelar still finds the tab.
+    afterDiscardCheck(() =>
+      setSearchParams({ data: next }, { replace, state: location.state }),
+    )
   }
 
   function fieldProps(key: NumericFieldKey) {

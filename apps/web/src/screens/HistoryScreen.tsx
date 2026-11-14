@@ -1,13 +1,12 @@
-import { useNavigate } from "react-router"
-
 import { MeasurementHistory } from "./components/MeasurementHistory"
 import { PageTitle } from "./components/PageTitle"
 import { useMeasurementHistory } from "../hooks/useMeasurementHistory"
+import { useTabNavigate } from "../hooks/useTabNavigate"
 import { useRefreshOnResume } from "../hooks/useRefreshOnResume"
 
 export function HistoryScreen() {
   const { loadMore, reload, remove, state } = useMeasurementHistory()
-  const navigate = useNavigate()
+  const { navigate } = useTabNavigate()
 
   useRefreshOnResume(reload)
 
@@ -18,7 +17,9 @@ export function HistoryScreen() {
       </header>
 
       <MeasurementHistory
-        onEditMeasurement={(date) => navigate(`/registro?data=${date}`)}
+        onEditMeasurement={(date) =>
+          navigate(`/registro?data=${date}`, { from: "/historico" })
+        }
         onLoadMore={loadMore}
         onRemove={remove}
         state={state}

@@ -23,6 +23,7 @@ Bottom tab bar: Início, Histórico, a central add button, Tendências, Ajustes 
 
 - The bar sits in the layout flow (full-height flex column, not `position: fixed`), with safe-area bottom padding, a solid background and a thin top border.
 - Each tab is an icon (Phosphor) above a 12px label. The active tab uses the accent color and `aria-current="page"`.
+- In the tab layout, switching tabs and opening or closing the registration screen replace the history entry instead of pushing, because the iOS edge-swipe gesture follows browser history and native tab apps do not stack tabs. Cancelar returns to the origin tab (kept in location state), save and delete go to Início, and a future desktop layout without the bottom bar may use normal history.
 - The central button is a 52px accent circle on the same plane as the bar, without a label, `aria-label="Registrar medida"`. It opens today's registration. No floating action button and no gear menu.
 - The bar is hidden on Login and on the registration screen.
 - Each main screen starts with a large bold page title that takes focus on navigation.

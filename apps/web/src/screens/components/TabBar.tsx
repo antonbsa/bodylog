@@ -1,6 +1,7 @@
 import { ChartLineUp, GearSix, House, List, Plus } from "@phosphor-icons/react"
-import { NavLink } from "react-router"
+import { NavLink, useLocation } from "react-router"
 
+import { useTabNavigate } from "../../hooks/useTabNavigate"
 import { getTodayIsoDate } from "../../utils/date-format"
 
 const TAB_ICON_SIZE = 24
@@ -16,8 +17,10 @@ function Tab({
   label: string
   to: string
 }) {
+  const { replace } = useTabNavigate()
+
   return (
-    <NavLink className="tab" end={end} to={to}>
+    <NavLink className="tab" end={end} replace={replace} to={to}>
       {({ isActive }) => (
         <>
           <Icon
@@ -33,6 +36,9 @@ function Tab({
 }
 
 export function TabBar() {
+  const { replace } = useTabNavigate()
+  const { pathname } = useLocation()
+
   return (
     <div className="tabbar">
       <nav aria-label="Navegação principal" className="tabbar-grid">
@@ -41,6 +47,8 @@ export function TabBar() {
         <NavLink
           aria-label="Registrar medida"
           className="tab-add"
+          replace={replace}
+          state={{ from: pathname }}
           to={`/registro?data=${getTodayIsoDate()}`}
         >
           <Plus aria-hidden="true" size={26} weight="bold" />

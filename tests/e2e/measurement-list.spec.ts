@@ -184,6 +184,9 @@ test("renders recent measurements, loads more, and opens an item for editing", a
 
   await expect(page.getByText("Editando medida de 14/06")).toBeVisible()
   await expect(page.getByLabel("Peso")).toHaveValue("72,9")
+
+  await page.getByRole("button", { name: "Cancelar" }).click()
+  await expect(page).toHaveURL("/historico")
 })
 
 test("renders an empty measurement history state", async ({ page }) => {
