@@ -68,6 +68,7 @@ async function mockApi(
   page: Page,
   options: {
     failPut?: boolean
+    lookupDelayMs?: number
     records?: StoredMeasurement[]
   } = {},
 ): Promise<ApiState> {
@@ -132,6 +133,12 @@ async function mockApi(
     const date = new URL(request.url()).pathname.split("/").pop() ?? ""
 
     if (request.method() === "GET") {
+      if (options.lookupDelayMs) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, options.lookupDelayMs),
+        )
+      }
+
       const record = records.find((item) => item.date === date)
 
       if (!record) {
@@ -147,9 +154,17 @@ async function mockApi(
       return json(route, { message: "Falha ao salvar." }, 500)
     }
 
-    return json(route, {
-      item: createMeasurement({ date, ...request.postDataJSON() }),
-    })
+    const saved = createMeasurement({ date, ...request.postDataJSON() })
+
+    const index = records.findIndex((item) => item.date === date)
+
+    if (index === -1) {
+      records.push(saved)
+    } else {
+      records[index] = saved
+    }
+
+    return json(route, { item: saved })
   })
   await page.route("**/api/measurements/*", (route) => {
     const request = route.request()
@@ -256,6 +271,25 @@ test("creates a measurement for today and returns to Início", async ({
       date: getToday(),
     },
   ])
+})
+
+test("Início shows the saved record right after saving, without the empty state", async ({
+  page,
+}) => {
+  await mockApi(page, { lookupDelayMs: 400, records: [previousMeasurement] })
+
+  await page.goto("/")
+  await expect(page.getByText("Sem medida hoje.")).toBeVisible()
+  await page.getByRole("link", { name: "Registrar medida" }).click()
+  await field(page, "Peso").pressSequentially("724")
+  await page.getByRole("button", { name: "Salvar" }).click()
+
+  await expect(page).toHaveURL("/")
+  // A one-shot read: web-first assertions would retry until the refetch lands and hide the stale frame.
+  const todayCard = await page.getByLabel("Hoje").innerText()
+
+  expect(todayCard).toContain("72,4")
+  expect(todayCard).not.toContain("Sem medida hoje")
 })
 
 test("the footer button reads Salvar when creating", async ({ page }) => {

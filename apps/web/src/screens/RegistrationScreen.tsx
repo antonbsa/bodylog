@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type SubmitEvent } from "react"
 import { useLocation, useSearchParams } from "react-router"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQueryClient, type QueryClient } from "@tanstack/react-query"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { deleteMeasurement, saveMeasurementByDate } from "../api/measurements"
-import { invalidateMeasurementData } from "../api/queryKeys"
+import { invalidateMeasurementData, queryKeys } from "../api/queryKeys"
 import {
   useRegistrationData,
   type RegistrationData,
@@ -37,6 +37,23 @@ import {
 import { formatOneDecimal } from "../utils/number-format"
 import { formatMaskedDigits, numberToMaskedDigits } from "../utils/numeric-mask"
 import type { ListedMeasurement } from "../types"
+
+/** Awaits fresh data for what Início reads, so it never mounts on pre-write cache; failed refetches don't throw. */
+async function refreshHomeData(queryClient: QueryClient) {
+  const today = getTodayIsoDate()
+
+  // Invalidation refetches only active queries; Início's queries are inactive while Registro is open.
+  await Promise.all([
+    invalidateMeasurementData(queryClient),
+    ...[
+      queryKeys.dashboard,
+      queryKeys.measurementByDate(today),
+      queryKeys.previousMeasurement(today),
+    ].map((queryKey) =>
+      queryClient.refetchQueries({ exact: true, queryKey, type: "inactive" }),
+    ),
+  ])
+}
 
 type Dialog = { kind: "delete" } | { kind: "discard"; proceed: () => void }
 
@@ -217,7 +234,7 @@ export function RegistrationScreen() {
 
     try {
       await saveMeasurementByDate(date, input)
-      invalidateMeasurementData(queryClient)
+      await refreshHomeData(queryClient)
       toast.showSuccess(`Medida de ${formatDayMonth(date)} salva`)
       navigate("/")
     } catch (error) {
@@ -235,7 +252,7 @@ export function RegistrationScreen() {
 
     try {
       await deleteMeasurement(data.measurement.id)
-      invalidateMeasurementData(queryClient)
+      await refreshHomeData(queryClient)
       toast.showSuccess(`Medida de ${formatDayMonth(date)} excluída`)
       navigate("/")
     } catch (error) {
