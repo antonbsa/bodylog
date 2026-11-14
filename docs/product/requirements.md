@@ -202,7 +202,7 @@ The system must present the V1 interface using the documented UI direction.
 - [ ] The UI supports light and dark themes, following the system with a manual override (ADR 0034).
 - [ ] Values use `pt-BR` display formatting.
 - [ ] Empty summary values display `-`.
-- [ ] The history list displays a plain empty placeholder when no records exist.
+- [ ] The history screen displays a "Nenhuma medida ainda." message with a "Registrar hoje" action when no records exist.
 - [ ] The UI includes loading, empty, error, disabled, and submitting states where applicable.
 - [ ] The UI avoids strong gradients, heavy glassmorphism, gamified fitness visuals, floating AI assistant patterns, and generic motivational copy.
 

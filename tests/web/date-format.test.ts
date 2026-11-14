@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   formatDayLabel,
   formatDayMonth,
+  formatRowDate,
   formatWeekRange,
   getMonthRange,
   getTodayIsoDate,
@@ -55,5 +56,13 @@ describe("calendar date helpers", () => {
       from: "2028-02-01",
       to: "2028-02-29",
     })
+  })
+})
+
+describe("formatRowDate", () => {
+  it("joins the lowercase weekday and DD/MM", () => {
+    expect(formatRowDate("2026-11-09")).toBe("seg 09/11")
+    expect(formatRowDate("2026-11-15")).toBe("dom 15/11")
+    expect(formatRowDate("2026-11-14")).toBe("sáb 14/11")
   })
 })

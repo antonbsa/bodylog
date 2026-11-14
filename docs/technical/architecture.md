@@ -50,7 +50,7 @@ The root package owns shared scripts for installation, typechecking, tests, D1 c
 
 - Render the authenticated app.
 - Route between the Início, Histórico, Tendências and Ajustes screens behind a bottom tab bar, plus a registration route without the bar.
-- Show the weekly summary on Início and the measurement history on Histórico.
+- Show the weekly summary on Início and the measurement history on Histórico as weekly cards, paged by week (`GET /api/history/weeks`).
 - Apply the light, dark or system theme before first paint, from the preference stored in the browser.
 - Call API endpoints.
 - Handle CSV import/export UI.

@@ -291,6 +291,56 @@ Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI ca
 
 `current` always represents the actual current week in the configured user time zone, even when it has no records yet; the web UI reads `current` and `previous` only.
 
+## History
+
+### GET /api/history/weeks
+
+Returns the weeks that have at least one record, newest first, for the Histórico screen. A page holds 8 weeks and a week is never split across pages, so each week summary matches the one Início shows.
+
+#### Optional query params
+
+```txt
+before=YYYY-MM-DD
+```
+
+`before` excludes measurements on or after that date. To get the next older page, pass the `nextBefore` of the previous response. An invalid date returns the `INVALID_DATE` validation error (400).
+
+#### Response 200
+
+```json
+{
+  "weeks": [
+    {
+      "summary": {
+        "weekStartDate": "YYYY-MM-DD",
+        "weekEndDate": "YYYY-MM-DD",
+        "measurementCount": 4,
+        "recordedDates": ["YYYY-MM-DD"],
+        "isCurrentWeek": true,
+        "isPartialWeek": true,
+        "averages": {
+          "weightKg": 72.9,
+          "bodyFatPercentage": 14.46,
+          "musclePercentage": 43.72
+        }
+      },
+      "measurements": [
+        {
+          "id": "string",
+          "date": "YYYY-MM-DD",
+          "weightKg": 72.9,
+          "notes": "string or null",
+          "derived": { "bmi": 25.83, "bodyFatKg": 10.54, "muscleKg": 31.87 }
+        }
+      ]
+    }
+  ],
+  "nextBefore": "YYYY-MM-DD or null"
+}
+```
+
+`summary` has the same shape as a weekly dashboard week (the example shows a few averages only) and `measurements` are the items of `GET /api/measurements`, newest first. `nextBefore` is the `weekStartDate` of the last returned week when older records exist, otherwise `null`. An empty history returns `{ "weeks": [], "nextBefore": null }`.
+
 ## CSV Export
 
 ### GET /api/export/csv

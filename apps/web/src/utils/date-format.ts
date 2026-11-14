@@ -109,6 +109,13 @@ export function formatDayMonth(value: string): string {
   return `${day}/${month}`
 }
 
+/** List row label such as "seg 09/11". */
+export function formatRowDate(value: string): string {
+  const weekday = WEEKDAYS[new Date(`${value}T00:00:00.000Z`).getUTCDay()]
+
+  return `${weekday} ${formatDayMonth(value)}`
+}
+
 /** Accepts only a real ISO date that is not in the future. */
 export function isPastOrTodayIsoDate(value: string | null): value is string {
   if (value === null || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {

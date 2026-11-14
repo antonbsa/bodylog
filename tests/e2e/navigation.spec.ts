@@ -53,6 +53,13 @@ async function mockApi(page: Page, authenticated = true) {
       status: 200,
     })
   })
+  await page.route("**/api/history/weeks*", (route) =>
+    route.fulfill({
+      body: JSON.stringify({ nextBefore: null, weeks: [] }),
+      contentType: "application/json",
+      status: 200,
+    }),
+  )
   await page.route("**/api/measurements?*", async (route) => {
     await route.fulfill({
       body: JSON.stringify({ items: [] }),

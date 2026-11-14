@@ -69,6 +69,13 @@ async function mockWeeklyDashboard(page: Page) {
 }
 
 async function mockMeasurementList(page: Page) {
+  await page.route("**/api/history/weeks*", (route) =>
+    route.fulfill({
+      body: JSON.stringify({ nextBefore: null, weeks: [] }),
+      contentType: "application/json",
+      status: 200,
+    }),
+  )
   await page.route("**/api/measurements?*", async (route) => {
     await route.fulfill({
       body: JSON.stringify({

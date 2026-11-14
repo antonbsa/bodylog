@@ -341,9 +341,9 @@ test("returning to the foreground refreshes Início and the history", async ({
   page,
 }) => {
   let weightKg = 73
-  let measurementDate = "2026-06-10"
+  let historyDate = "2026-06-10"
   let dashboardRequests = 0
-  let measurementRequests = 0
+  let historyRequests = 0
 
   await page.clock.setFixedTime(new Date(2026, 5, 12, 12))
   await page.route("**/api/auth/session", (route) =>
@@ -363,12 +363,21 @@ test("returning to the foreground refreshes Início and the history", async ({
   await page.route("**/api/measurements/by-date/*", (route) =>
     json(route, { message: "Medida não encontrada." }, 404),
   )
-  await page.route("**/api/measurements?*", (route) => {
-    measurementRequests += 1
+  await page.route("**/api/measurements?*", (route) =>
+    json(route, { items: [] }),
+  )
+  await page.route("**/api/history/weeks*", (route) => {
+    historyRequests += 1
     expect(route.request().headers()["cache-control"]).toBe("no-store")
 
     return json(route, {
-      items: [createMeasurement(measurementDate, { weightKg })],
+      nextBefore: null,
+      weeks: [
+        {
+          measurements: [createMeasurement(historyDate, { weightKg })],
+          summary: toWeek(currentWeek([historyDate], { weightKg }), true),
+        },
+      ],
     })
   })
 
@@ -386,23 +395,23 @@ test("returning to the foreground refreshes Início and the history", async ({
   await expect(weekCard(page).locator(".mrow").first()).toContainText("74,0")
   expect(dashboardRequests).toBeGreaterThanOrEqual(2)
 
-  measurementDate = "2026-06-11"
+  historyDate = "2026-06-11"
 
   await page.getByRole("link", { name: "Histórico" }).click()
 
-  await expect(page.getByText("11/06/2026")).toBeVisible()
-  expect(measurementRequests).toBeGreaterThanOrEqual(1)
+  await expect(page.getByRole("button", { name: /qui 11\/06/ })).toBeVisible()
+  expect(historyRequests).toBeGreaterThanOrEqual(1)
 
-  const requestsBeforeResume = measurementRequests
-  measurementDate = "2026-06-12"
+  const requestsBeforeResume = historyRequests
+  historyDate = "2026-06-12"
 
   await page.waitForTimeout(600)
   await page.evaluate(() => {
     window.dispatchEvent(new Event("focus"))
   })
 
-  await expect(page.getByText("12/06/2026")).toBeVisible()
-  expect(measurementRequests).toBeGreaterThan(requestsBeforeResume)
+  await expect(page.getByRole("button", { name: /sex 12\/06/ })).toBeVisible()
+  expect(historyRequests).toBeGreaterThan(requestsBeforeResume)
 })
 
 test("exports measurements CSV from the settings screen", async ({ page }) => {

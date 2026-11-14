@@ -57,6 +57,9 @@ The weekly block has no metabolism or derived values: metabolism shows only in t
 - The first row of a card is a "Média" row on a tinted background with the week's average weight (kg), body fat (%) and muscle (%), aligned to the daily columns.
 - Then one row per recorded day, newest first: date with weekday ("seg 09/11"), weight, fat, muscle, and a small note icon (with a screen-reader label) when the record has notes. A missing value is an em dash.
 - Tapping a row opens that date in the registration screen in edit mode. No inline actions.
+- Paging: only weeks with records are listed, 8 weeks per page. A "Carregar mais" button below the last card appends the next 8 older weeks and disappears on the last page; it stays in place and shows "Carregando…" while loading. Weeks are paged whole, so each average matches the one in Início.
+- Empty: a card with "Nenhuma medida ainda." and a "Registrar hoje" button that opens the registration screen for today.
+- Loading and error: one placeholder week card with dashes keeps a real card's height; a failed load shows the message and "Tentar de novo" inside it.
 
 ### Registro
 
@@ -163,7 +166,7 @@ A pill above the tab bar, inverted colors (`--fg` on `--bg`), about 2.6 seconds,
 
 ## States
 
-- Empty: Início offers "Registrar hoje"; Tendências shows the "not enough data" message. An empty Histórico is not drawn in the prototype.
+- Empty: Início and Histórico offer "Registrar hoje"; Tendências shows the "not enough data" message. The empty Histórico is not drawn in the prototype.
 - Validation and error: inline and reserved-space, see Registro.
 - Confirmation: discard and delete dialogs, see Registro.
 - Feedback: toasts.
@@ -171,4 +174,4 @@ A pill above the tab bar, inverted colors (`--fg` on `--bg`), about 2.6 seconds,
 
 ## Open points
 
-- Histórico paging: the prototype lists the last 8 weeks; the real paging or "load more" behavior is decided in the Histórico task.
+- None open.

@@ -24,6 +24,7 @@ import {
   getCurrentDateOnly,
   getWeeklyDashboard,
 } from "./dashboard/weekly-dashboard-service"
+import { getHistoryWeeks } from "./history/history-service"
 import { importMeasurementsCsv } from "./measurements/csv-import"
 import { serializeMeasurementsCsv } from "./measurements/csv-export"
 import { MeasurementRepository } from "./measurements/measurement-repository"
@@ -45,6 +46,7 @@ const defaultCorsAllowedHeaders = "Content-Type"
 const protectedApiRoutePrefixes = [
   "/api/measurements",
   "/api/dashboard",
+  "/api/history",
   "/api/export",
   "/api/import",
 ]
@@ -201,6 +203,23 @@ app.get("/api/dashboard/weekly", async (c) => {
   })
 
   return c.json(dashboard)
+})
+
+app.get("/api/history/weeks", async (c) => {
+  const before = c.req.query("before")
+
+  if (before !== undefined && !isDateOnly(before)) {
+    throw createValidationError("INVALID_DATE")
+  }
+
+  const repository = new MeasurementRepository(c.env.DB)
+  const page = await getHistoryWeeks(repository, {
+    before,
+    currentDate: getCurrentDateOnly(getUserTimeZone(c.env)),
+    heightCm: getUserHeightCm(c.env),
+  })
+
+  return c.json(page)
 })
 
 app.get("/api/export/csv", async (c) => {

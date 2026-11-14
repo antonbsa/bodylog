@@ -100,6 +100,13 @@ async function mockApi(
       previous: { ...emptyWeek, isCurrentWeek: false, isPartialWeek: false },
     })
   })
+  await page.route("**/api/history/weeks*", (route) =>
+    route.fulfill({
+      body: JSON.stringify({ nextBefore: null, weeks: [] }),
+      contentType: "application/json",
+      status: 200,
+    }),
+  )
   await page.route("**/api/measurements?*", (route) => {
     const url = new URL(route.request().url())
 
