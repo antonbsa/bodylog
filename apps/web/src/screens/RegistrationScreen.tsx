@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type SubmitEvent } from "react"
 import { useLocation, useSearchParams } from "react-router"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { deleteMeasurement, saveMeasurementByDate } from "../api/measurements"
+import { invalidateMeasurementData } from "../api/queryKeys"
 import {
   useRegistrationData,
   type RegistrationData,
@@ -63,6 +65,7 @@ export function RegistrationScreen() {
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
   const { navigate, replace } = useTabNavigate()
+  const queryClient = useQueryClient()
   const today = getTodayIsoDate()
   const requestedDate = searchParams.get("data")
   const date = isPastOrTodayIsoDate(requestedDate) ? requestedDate : today
@@ -93,15 +96,24 @@ export function RegistrationScreen() {
     return () => document.documentElement.classList.remove("reg-page")
   }, [])
 
-  // Reset the form whenever another date's data arrives (or while it loads),
-  // before paint, so values from the previous date never show.
+  // Reset before paint when another date's data arrives (or loads), so its values never show;
+  // a background refetch of the same date resets only a pristine form, never edits in progress.
   if (data !== syncedData) {
+    const isSameDate =
+      data !== null && syncedData !== null && data.date === syncedData.date
+    const hasEdits =
+      syncedData !== null &&
+      !isSameForm(form, formFromMeasurement(syncedData.measurement))
+
     setSyncedData(data)
-    setForm(formFromMeasurement(data?.measurement ?? null))
-    setTouched({})
-    changedFields.current.clear()
-    setShowAllErrors(false)
-    setActionError(null)
+
+    if (!isSameDate || !hasEdits) {
+      setForm(formFromMeasurement(data?.measurement ?? null))
+      setTouched({})
+      changedFields.current.clear()
+      setShowAllErrors(false)
+      setActionError(null)
+    }
   }
 
   const baseline = useMemo(
@@ -206,6 +218,7 @@ export function RegistrationScreen() {
 
     try {
       await saveMeasurementByDate(date, input)
+      invalidateMeasurementData(queryClient)
       navigate("/")
     } catch (error) {
       setActionError(formatApiErrorMessage(error))
@@ -223,6 +236,7 @@ export function RegistrationScreen() {
 
     try {
       await deleteMeasurement(data.measurement.id)
+      invalidateMeasurementData(queryClient)
       navigate("/")
     } catch (error) {
       setActionError(formatApiErrorMessage(error))

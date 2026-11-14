@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useMemo } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
+import { queryKeys } from "../api/queryKeys"
 import { getMeasurementByDate, listMeasurements } from "../api/measurements"
-import { shiftIsoDate } from "../utils/date-format"
+import { isPastOrTodayIsoDate, shiftIsoDate } from "../utils/date-format"
 import type { Measurement } from "../../../../types/measurements"
 import type { ListedMeasurement } from "../types"
 
@@ -15,77 +17,90 @@ export type RegistrationData = {
   previous: ListedMeasurement | null
 }
 
-type LookupResult =
-  | { data: RegistrationData; status: "ready" }
-  | { date: string; message: string; status: "error" }
+// Keeps prefetched neighbours from being refetched on every effect run.
+const PREFETCH_STALE_MS = 60_000
+
+function lookupQuery(date: string) {
+  return {
+    queryFn: () => getMeasurementByDate(date),
+    queryKey: queryKeys.measurementByDate(date),
+  }
+}
+
+function previousQuery(date: string) {
+  return {
+    // The hint is optional, so a failed lookup must not block the form.
+    queryFn: () =>
+      listMeasurements({ limit: 1, to: shiftIsoDate(date, -1) }).catch(
+        () => [],
+      ),
+    queryKey: queryKeys.previousMeasurement(date),
+  }
+}
 
 /**
- * Looks up the record for `date` and the one before it. `data` and `error`
- * are null while a different date than the requested one is still loading,
- * so the screen never shows the previous date's values.
+ * Looks up the record for `date` and the one before it, and prefetches the
+ * adjacent days so the date arrows are instant. `data` and `error` are null
+ * while `date` has nothing cached, so the screen never shows another date's values.
  */
 export function useRegistrationData(date: string): {
   data: RegistrationData | null
   error: string | null
   reload: () => void
 } {
-  const [result, setResult] = useState<LookupResult | null>(null)
-  const [attempt, setAttempt] = useState(0)
+  const queryClient = useQueryClient()
+  const lookup = useQuery(lookupQuery(date))
+  const previous = useQuery(previousQuery(date))
+  const lookupData = lookup.data
+  const previousItems = previous.data
+
+  // Stable while the query data is unchanged: the screen resets the form when this reference changes.
+  const data = useMemo<RegistrationData | null>(
+    () =>
+      lookupData === undefined || previousItems === undefined
+        ? null
+        : {
+            date,
+            heightCm: lookupData?.heightCm ?? null,
+            measurement: lookupData?.item ?? null,
+            previous: previousItems[0] ?? null,
+          },
+    [date, lookupData, previousItems],
+  )
+  const isReady = data !== null
 
   useEffect(() => {
-    let isCurrent = true
-
-    async function load() {
-      try {
-        const [lookup, previousItems] = await Promise.all([
-          getMeasurementByDate(date),
-          // The hint is optional, so a failed lookup must not block the form.
-          listMeasurements({ limit: 1, to: shiftIsoDate(date, -1) }).catch(
-            () => [],
-          ),
-        ])
-
-        if (isCurrent) {
-          setResult({
-            data: {
-              date,
-              heightCm: lookup?.heightCm ?? null,
-              measurement: lookup?.item ?? null,
-              previous: previousItems[0] ?? null,
-            },
-            status: "ready",
-          })
-        }
-      } catch (error) {
-        if (isCurrent) {
-          setResult({
-            date,
-            message: formatApiErrorMessage(error),
-            status: "error",
-          })
-        }
-      }
+    if (!isReady) {
+      return
     }
 
-    load()
+    const neighbours = [shiftIsoDate(date, -1), shiftIsoDate(date, 1)].filter(
+      (neighbour) => isPastOrTodayIsoDate(neighbour),
+    )
 
-    return () => {
-      isCurrent = false
+    for (const neighbour of neighbours) {
+      queryClient.prefetchQuery({
+        ...lookupQuery(neighbour),
+        staleTime: PREFETCH_STALE_MS,
+      })
+      queryClient.prefetchQuery({
+        ...previousQuery(neighbour),
+        staleTime: PREFETCH_STALE_MS,
+      })
     }
-  }, [attempt, date])
+  }, [date, isReady, queryClient])
 
-  const reload = useCallback(() => {
-    setResult(null)
-    setAttempt((current) => current + 1)
-  }, [])
-
-  const matches =
-    result !== null &&
-    (result.status === "ready" ? result.data.date : result.date) === date
+  function reload() {
+    lookup.refetch()
+    previous.refetch()
+  }
 
   return {
-    data: matches && result.status === "ready" ? result.data : null,
-    error: matches && result.status === "error" ? result.message : null,
+    data,
+    error:
+      lookupData === undefined && lookup.isError
+        ? formatApiErrorMessage(lookup.error)
+        : null,
     reload,
   }
 }

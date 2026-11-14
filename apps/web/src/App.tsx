@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Outlet, Route, Routes } from "react-router"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { checkSession, logout } from "./api/auth"
 import { HistoryScreen } from "./screens/HistoryScreen"
@@ -14,6 +15,7 @@ import { TrendsScreen } from "./screens/TrendsScreen"
 type AuthState = "checking" | "authenticated" | "unauthenticated"
 
 export function App() {
+  const queryClient = useQueryClient()
   const [authState, setAuthState] = useState<AuthState>("checking")
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export function App() {
 
   async function handleLogout() {
     await logout()
+    queryClient.clear()
     setAuthState("unauthenticated")
   }
 

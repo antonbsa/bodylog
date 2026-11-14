@@ -1,9 +1,11 @@
 import { useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { Callout } from "@radix-ui/themes"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { PageTitle } from "./components/PageTitle"
 import { Button } from "../components/Button"
+import { invalidateMeasurementData } from "../api/queryKeys"
 import {
   exportMeasurementsCsv,
   importMeasurementsCsv,
@@ -41,6 +43,7 @@ type SettingsScreenProps = {
 }
 
 export function SettingsScreen({ onLogout }: SettingsScreenProps) {
+  const queryClient = useQueryClient()
   const [exportState, setExportState] = useState<ExportState>({
     message: null,
     status: "idle",
@@ -95,6 +98,7 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
 
     importMeasurementsCsv(file)
       .then((summary) => {
+        invalidateMeasurementData(queryClient)
         setImportState({
           message: null,
           status: "idle",

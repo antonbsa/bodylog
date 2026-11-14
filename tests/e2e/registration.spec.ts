@@ -585,6 +585,65 @@ test("changing the date with changes asks first, without changes loads the date"
   await expect(page).toHaveURL(`/registro?data=${PREVIOUS_DATE}`)
 })
 
+/** Makes every by-date lookup from now on take long, so only cached data can render quickly. */
+async function slowDownLookups(page: Page) {
+  await page.route("**/api/measurements/by-date/*", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+    await route.fallback()
+  })
+}
+
+test("moving to the previous day shows its prefetched values without loading", async ({
+  page,
+}) => {
+  await mockApi(page, { records: [existingMeasurement, previousMeasurement] })
+
+  const prefetched = Promise.all([
+    page.waitForResponse((response) =>
+      response.url().endsWith(`/by-date/${PREVIOUS_DATE}`),
+    ),
+    page.waitForResponse((response) =>
+      response.url().includes("to=2026-06-08"),
+    ),
+  ])
+
+  await page.goto(`/registro?data=${EXISTING_DATE}`)
+  await expect(page.getByText("Editando medida de 10/06")).toBeVisible()
+  await prefetched
+  await slowDownLookups(page)
+
+  await page.getByRole("button", { name: "Dia anterior" }).click()
+  await expect(page).toHaveURL(`/registro?data=${PREVIOUS_DATE}`)
+  await expect(page.getByText("Editando medida de 09/06")).toBeVisible({
+    timeout: 500,
+  })
+  await expect(field(page, "Peso")).toHaveValue("72,6")
+  await expect(page.getByText("Carregando…")).toHaveCount(0)
+})
+
+test("returning to a visited day shows its values immediately", async ({
+  page,
+}) => {
+  await mockApi(page, { records: [existingMeasurement] })
+  await page.goto(`/registro?data=${EXISTING_DATE}`)
+  await expect(page.getByText("Editando medida de 10/06")).toBeVisible()
+
+  await page.getByRole("button", { name: "Dia anterior" }).click()
+  await page.getByRole("button", { name: "Dia anterior" }).click()
+  await expect(page).toHaveURL("/registro?data=2026-06-08")
+  await expect(page.getByText("Nova medida")).toBeVisible()
+  await slowDownLookups(page)
+
+  await page.getByRole("button", { name: "Próximo dia" }).click()
+  await page.getByRole("button", { name: "Próximo dia" }).click()
+  await expect(page).toHaveURL(`/registro?data=${EXISTING_DATE}`)
+  await expect(page.getByText("Editando medida de 10/06")).toBeVisible({
+    timeout: 500,
+  })
+  await expect(field(page, "Peso")).toHaveValue("72,0")
+  await expect(page.getByText("Carregando…")).toHaveCount(0)
+})
+
 test("the next-day arrow is disabled today and future dates fall back to today", async ({
   page,
 }) => {

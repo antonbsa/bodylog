@@ -1,7 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useState } from "react"
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { deleteMeasurement, listMeasurements } from "../api/measurements"
+import { invalidateMeasurementData, queryKeys } from "../api/queryKeys"
 import type { ListedMeasurement } from "../types"
 
 export const HISTORY_PAGE_SIZE = 30
@@ -15,11 +22,7 @@ export type MeasurementHistoryState = {
   status: "error" | "loaded" | "loading"
 }
 
-export function useMeasurementHistory({
-  onRemoved,
-}: {
-  onRemoved?: () => void
-} = {}): {
+export function useMeasurementHistory(): {
   loadMore: () => void
   reload: () => void
   remove: (
@@ -28,97 +31,71 @@ export function useMeasurementHistory({
   ) => Promise<boolean>
   state: MeasurementHistoryState
 } {
+  const queryClient = useQueryClient()
   const [visibleLimit, setVisibleLimit] = useState(HISTORY_PAGE_SIZE)
-  const [state, setState] = useState<MeasurementHistoryState>({
-    deletingId: null,
-    hasMore: false,
-    items: [],
-    message: null,
-    messageKind: null,
-    status: "loading",
+  const [feedback, setFeedback] = useState<{
+    kind: "error" | "success"
+    message: string
+  } | null>(null)
+
+  // One extra row tells whether there is another page.
+  const query = useQuery({
+    // Keeps the current rows visible while "Carregar mais" fetches the larger list.
+    placeholderData: keepPreviousData,
+    queryFn: () => listMeasurements({ limit: visibleLimit + 1 }),
+    queryKey: queryKeys.measurementList(visibleLimit + 1),
   })
-  const requestIdRef = useRef(0)
+  const removal = useMutation({
+    mutationFn: (measurement: ListedMeasurement) =>
+      deleteMeasurement(measurement.id),
+    onSuccess: () => invalidateMeasurementData(queryClient),
+  })
 
-  const reload = useCallback(() => {
-    const requestId = (requestIdRef.current += 1)
+  const items = query.data ?? []
+  const status = query.isFetching
+    ? "loading"
+    : query.isError
+      ? "error"
+      : "loaded"
 
-    setState((currentState) => ({ ...currentState, status: "loading" }))
+  async function remove(
+    measurement: ListedMeasurement,
+    displayDate: string,
+  ): Promise<boolean> {
+    setFeedback(null)
 
-    listMeasurements({ limit: visibleLimit + 1 })
-      .then((items) => {
-        if (requestId !== requestIdRef.current) {
-          return
-        }
-
-        setState({
-          deletingId: null,
-          hasMore: items.length > visibleLimit,
-          items: items.slice(0, visibleLimit),
-          message: null,
-          messageKind: null,
-          status: "loaded",
-        })
+    try {
+      await removal.mutateAsync(measurement)
+      setFeedback({
+        kind: "success",
+        message: `Medida de ${displayDate} excluída.`,
       })
-      .catch((error: unknown) => {
-        if (requestId !== requestIdRef.current) {
-          return
-        }
 
-        setState((currentState) => ({
-          ...currentState,
-          message: formatApiErrorMessage(error),
-          messageKind: "error",
-          status: "error",
-        }))
-      })
-  }, [visibleLimit])
+      return true
+    } catch (error) {
+      setFeedback({ kind: "error", message: formatApiErrorMessage(error) })
 
-  useEffect(() => {
-    reload()
-  }, [reload])
+      return false
+    }
+  }
 
-  const loadMore = useCallback(() => {
-    setVisibleLimit((currentLimit) => currentLimit + HISTORY_PAGE_SIZE)
-  }, [])
-
-  const remove = useCallback(
-    (measurement: ListedMeasurement, displayDate: string): Promise<boolean> => {
-      setState((currentState) => ({
-        ...currentState,
-        deletingId: measurement.id,
-        message: null,
-        messageKind: null,
-      }))
-
-      return deleteMeasurement(measurement.id)
-        .then(() => {
-          setState((currentState) => ({
-            ...currentState,
-            deletingId: null,
-            items: currentState.items.filter(
-              (item) => item.id !== measurement.id,
-            ),
-            message: `Medida de ${displayDate} excluída.`,
-            messageKind: "success",
-            status: "loaded",
-          }))
-          onRemoved?.()
-
-          return true
-        })
-        .catch((error: unknown) => {
-          setState((currentState) => ({
-            ...currentState,
-            deletingId: null,
-            message: formatApiErrorMessage(error),
-            messageKind: "error",
-          }))
-
-          return false
-        })
+  return {
+    loadMore: () => setVisibleLimit((limit) => limit + HISTORY_PAGE_SIZE),
+    reload: () => {
+      setFeedback(null)
+      query.refetch()
     },
-    [onRemoved],
-  )
-
-  return { loadMore, reload, remove, state }
+    remove,
+    state: {
+      deletingId: removal.isPending ? removal.variables.id : null,
+      hasMore: items.length > visibleLimit,
+      items: items.slice(0, visibleLimit),
+      message:
+        status === "error" && query.error
+          ? formatApiErrorMessage(query.error)
+          : (feedback?.message ?? null),
+      messageKind: status === "error" ? "error" : (feedback?.kind ?? null),
+      status,
+    },
+  }
 }

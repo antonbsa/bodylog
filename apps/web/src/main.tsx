@@ -1,6 +1,7 @@
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Theme } from "@radix-ui/themes"
 
 import { App } from "./App"
@@ -17,6 +18,13 @@ for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
     passive: false,
   })
 }
+
+// Errors show at once (no retries), and resume refreshes go through useRefreshOnResume.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { refetchOnWindowFocus: false, retry: false },
+  },
+})
 
 const rootElement = document.getElementById("root")
 
@@ -38,9 +46,11 @@ function Root() {
       hasBackground={false}
       radius="small"
     >
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </QueryClientProvider>
     </Theme>
   )
 }
