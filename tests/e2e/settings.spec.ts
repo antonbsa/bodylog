@@ -91,6 +91,30 @@ test("the theme selector applies immediately, persists and Sistema follows the O
   )
 })
 
+test("the theme selector reflects the choice when storage is blocked", async ({
+  page,
+}) => {
+  await mockApi(page)
+  await page.addInitScript(() => {
+    const blocked = () => {
+      throw new Error("storage blocked")
+    }
+
+    Storage.prototype.getItem = blocked
+    Storage.prototype.setItem = blocked
+    Storage.prototype.removeItem = blocked
+  })
+  await page.goto("/ajustes")
+
+  const option = (name: string) => page.getByRole("radio", { name })
+
+  await expect(option("Sistema")).toHaveAttribute("aria-checked", "true")
+  await option("Escuro").click()
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark")
+  await expect(option("Escuro")).toHaveAttribute("aria-checked", "true")
+  await expect(option("Sistema")).toHaveAttribute("aria-checked", "false")
+})
+
 test("the settings card has no Radix callouts or in-flow status", async ({
   page,
 }) => {

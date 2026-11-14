@@ -27,8 +27,15 @@ export function getThemePreference(): ThemePreference {
 
     return isThemePreference(stored) ? stored : "system"
   } catch {
-    return "system"
+    return getAppliedTheme()
   }
+}
+
+/** The theme currently on <html> ("system" when no data-theme is set). */
+function getAppliedTheme(): ThemePreference {
+  const applied = document.documentElement.dataset.theme
+
+  return applied === "light" || applied === "dark" ? applied : "system"
 }
 
 /** Persists the preference and applies it to <html>; "system" removes data-theme so the CSS media query decides. */
@@ -73,10 +80,5 @@ export function subscribeToTheme(listener: () => void) {
 
 /** Reads data-theme (set by the inline script and setThemePreference) so it stays right when storage is blocked. */
 export function getResolvedTheme(): ResolvedTheme {
-  const applied = document.documentElement.dataset.theme
-
-  return resolveTheme(
-    applied === "light" || applied === "dark" ? applied : "system",
-    window.matchMedia(DARK_QUERY).matches,
-  )
+  return resolveTheme(getAppliedTheme(), window.matchMedia(DARK_QUERY).matches)
 }
