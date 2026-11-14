@@ -21,18 +21,16 @@ export async function getHistoryWeeks(
   config: HistoryWeeksConfig,
 ): Promise<HistoryWeeksPage> {
   const { before } = config
-  const measurements = (await repository.list()).filter(
-    (measurement) => before === undefined || measurement.date < before,
-  )
+  const measurements = await repository.list({ before })
   const byWeekStart = new Map<string, Measurement[]>()
 
   for (const measurement of measurements) {
     const { weekStartDate } = getWeekRange(measurement.date)
 
-    byWeekStart.set(weekStartDate, [
-      ...(byWeekStart.get(weekStartDate) ?? []),
-      measurement,
-    ])
+    const weekMeasurements = byWeekStart.get(weekStartDate) ?? []
+
+    weekMeasurements.push(measurement)
+    byWeekStart.set(weekStartDate, weekMeasurements)
   }
 
   const weekStarts = [...byWeekStart.keys()].sort().reverse()

@@ -26,6 +26,8 @@ type MeasurementRepositoryOptions = {
 }
 
 type ListMeasurementsOptions = {
+  /** Exclusive upper bound, unlike the inclusive `to`. */
+  before?: string
   from?: string
   limit?: number
   offset?: number
@@ -289,6 +291,11 @@ export class MeasurementRepository {
     if (options.to) {
       whereClauses.push("date <= ?")
       bindings.push(options.to)
+    }
+
+    if (options.before) {
+      whereClauses.push("date < ?")
+      bindings.push(options.before)
     }
 
     const whereSql =

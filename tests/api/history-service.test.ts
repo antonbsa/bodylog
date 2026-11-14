@@ -127,6 +127,21 @@ describe("getHistoryWeeks", () => {
     ])
   })
 
+  it("applies the before bound in the repository query", async () => {
+    const calls: unknown[] = []
+    const repository: HistoryRepository = {
+      list: async (options) => {
+        calls.push(options)
+        return []
+      },
+    }
+
+    await getHistoryWeeks(repository, { ...CONFIG, before: "2026-06-08" })
+    await getHistoryWeeks(repository, CONFIG)
+
+    expect(calls).toEqual([{ before: "2026-06-08" }, { before: undefined }])
+  })
+
   it("returns an empty page when there are no records", async () => {
     expect(await getHistoryWeeks(repositoryFor([]), CONFIG)).toEqual({
       nextBefore: null,
@@ -136,7 +151,12 @@ describe("getHistoryWeeks", () => {
 })
 
 function repositoryFor(measurements: Measurement[]): HistoryRepository {
-  return { list: async () => measurements }
+  return {
+    list: async (options) =>
+      measurements.filter(
+        (item) => !options?.before || item.date < options.before,
+      ),
+  }
 }
 
 function measurement(input: {

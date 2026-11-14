@@ -163,13 +163,15 @@ class DashboardMeasurementD1 {
 class DashboardMeasurementD1Statement {
   private readonly rows: MeasurementRow[]
   private readonly query: string
+  private bindings: unknown[] = []
 
   constructor(rows: MeasurementRow[], query: string) {
     this.rows = rows
     this.query = query
   }
 
-  bind(): DashboardMeasurementD1Statement {
+  bind(...bindings: unknown[]): DashboardMeasurementD1Statement {
+    this.bindings = bindings
     return this
   }
 
@@ -181,9 +183,13 @@ class DashboardMeasurementD1Statement {
       throw new Error(`Unsupported all query: ${this.query}`)
     }
 
-    const results = [...this.rows].sort((left, right) =>
-      right.date.localeCompare(left.date),
-    )
+    // Only the `date < ?` filter is emulated; history queries bind nothing else.
+    const before = this.query.includes("date < ?")
+      ? String(this.bindings[0])
+      : undefined
+    const results = this.rows
+      .filter((row) => before === undefined || row.date < before)
+      .sort((left, right) => right.date.localeCompare(left.date))
 
     return {
       results: results as T[],
