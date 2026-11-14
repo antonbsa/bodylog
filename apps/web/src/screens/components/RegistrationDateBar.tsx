@@ -1,6 +1,7 @@
 import { CaretLeft, CaretRight } from "@phosphor-icons/react"
 
-import { formatDayLabel, shiftIsoDate } from "../../utils/date-format"
+import { shiftIsoDate } from "../../utils/date-format"
+import { DatePickerSheet } from "./DatePickerSheet"
 
 type RegistrationDateBarProps = {
   date: string
@@ -23,20 +24,7 @@ export function RegistrationDateBar({
       >
         <CaretLeft aria-hidden="true" size={22} weight="bold" />
       </button>
-      <div className="datewrap">
-        <span aria-hidden="true">{formatDayLabel(date)}</span>
-        <input
-          aria-label="Data da medida"
-          max={today}
-          onChange={(event) => {
-            if (event.target.value) {
-              onDateChange(event.target.value)
-            }
-          }}
-          type="date"
-          value={date}
-        />
-      </div>
+      <DatePickerSheet date={date} onDateChange={onDateChange} today={today} />
       <button
         aria-label="Próximo dia"
         className="arrow"

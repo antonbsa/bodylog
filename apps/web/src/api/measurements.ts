@@ -9,6 +9,7 @@ import type {
 import type { ListedMeasurement } from "../types"
 
 export async function listMeasurements(options: {
+  from?: string
   limit: number
   offset?: number
   to?: string
@@ -17,6 +18,10 @@ export async function listMeasurements(options: {
     limit: String(options.limit),
     offset: String(options.offset ?? 0),
   })
+
+  if (options.from) {
+    query.set("from", options.from)
+  }
 
   if (options.to) {
     query.set("to", options.to)

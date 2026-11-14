@@ -4,13 +4,35 @@ export function formatDisplayDateFromIso(value: string): string {
   return `${day}/${month}/${year}`
 }
 
-export function getTodayIsoDate(): string {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, "0")
-  const day = String(today.getDate()).padStart(2, "0")
+/** ISO date of a `Date`'s local calendar day (never `toISOString()`, which shifts by time zone). */
+export function toIsoDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
 
   return `${year}-${month}-${day}`
+}
+
+/** Local-midnight `Date` of an ISO date, for calendar widgets. */
+export function parseIsoDate(value: string): Date {
+  const [year, month, day] = value.split("-").map(Number)
+
+  return new Date(year, month - 1, day)
+}
+
+/** First and last ISO date of the month containing `date` (local calendar). */
+export function getMonthRange(date: Date): { from: string; to: string } {
+  const year = date.getFullYear()
+  const month = date.getMonth()
+
+  return {
+    from: toIsoDate(new Date(year, month, 1)),
+    to: toIsoDate(new Date(year, month + 1, 0)),
+  }
+}
+
+export function getTodayIsoDate(): string {
+  return toIsoDate(new Date())
 }
 
 export function getDateOnlyDifferenceInDays(

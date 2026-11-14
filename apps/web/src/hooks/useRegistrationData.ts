@@ -4,7 +4,13 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { queryKeys } from "../api/queryKeys"
 import { getMeasurementByDate, listMeasurements } from "../api/measurements"
-import { isPastOrTodayIsoDate, shiftIsoDate } from "../utils/date-format"
+import {
+  getMonthRange,
+  isPastOrTodayIsoDate,
+  parseIsoDate,
+  shiftIsoDate,
+} from "../utils/date-format"
+import { recordedDaysQuery } from "./useRecordedDays"
 import type { Measurement } from "../../../../types/measurements"
 import type { ListedMeasurement } from "../types"
 
@@ -88,6 +94,12 @@ export function useRegistrationData(date: string): {
         staleTime: PREFETCH_STALE_MS,
       })
     }
+
+    // So the calendar sheet opens with its marks already loaded.
+    queryClient.prefetchQuery({
+      ...recordedDaysQuery(getMonthRange(parseIsoDate(date)).from),
+      staleTime: PREFETCH_STALE_MS,
+    })
   }, [date, isReady, queryClient])
 
   function reload() {

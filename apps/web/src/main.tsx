@@ -11,6 +11,7 @@ import "./styles/fonts.css"
 import "./styles/tokens.css"
 import "./styles.css"
 import "./styles/registration.css"
+import "./styles/calendar.css"
 
 // iOS Safari ignores user-scalable=no for pinch, so cancel its gesture events.
 for (const type of ["gesturestart", "gesturechange", "gestureend"]) {

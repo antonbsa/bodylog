@@ -60,7 +60,7 @@ The weekly block has no metabolism or derived values: metabolism shows only in t
 
 Full-screen route (for example `/registro?data=YYYY-MM-DD`), outside the tab layout. The page scrolls with the document: the header (Cancelar and date bar) is sticky at the top and the footer is fixed at the bottom. The scrollbar is hidden, since the document scrollbar would run under both and a page cannot inset it.
 
-- Header: "Cancelar", then the date bar with a previous-day arrow, the date label ("qui, 12 nov") and a next-day arrow. The arrows are 44px circles; next is disabled on today. Tapping the date opens the native date picker (a transparent `input type="date"` laid over the label), and future dates are not allowed.
+- Header: "Cancelar", then the date bar with a previous-day arrow, the date label ("qui, 12 nov") and a next-day arrow. The arrows are 44px circles; next is disabled on today. Tapping the date label (a button) opens a bottom-sheet calendar (react-day-picker, ADR 0038) styled after the iOS calendar: month title with previous/next buttons, weeks starting on Monday, the selected day as a filled accent circle, today in the accent color and a small dot under each day that already has a measurement (read aloud as ", com medida"). Future days are disabled and the calendar cannot go past the current month. Choosing a day closes the sheet and goes to that date through the same discard check as the arrows; choosing the current day just closes it.
 - A badge states the mode: "Nova medida" or "Editando medida de DD/MM". Selecting a date with a record loads it for editing; a date without one shows an empty form.
 - Sections in order, each in a card:
   1. Balança: peso (kg), gordura (%), músculo (%), metabolismo (kcal).

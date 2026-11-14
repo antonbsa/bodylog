@@ -107,9 +107,11 @@ async function mockApi(
 
     state.listQueries.push(url.search)
 
+    const from = url.searchParams.get("from")
     const to = url.searchParams.get("to")
     const limit = Number(url.searchParams.get("limit") ?? "30")
     const items = records
+      .filter((record) => !from || record.date >= from)
       .filter((record) => !to || record.date <= to)
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, limit)
@@ -551,6 +553,8 @@ test("cancel with changes asks before discarding", async ({ page }) => {
 test("changing the date with changes asks first, without changes loads the date", async ({
   page,
 }) => {
+  // June 2026 is the current month, so the sheet shows the dates under test.
+  await page.clock.setFixedTime(new Date(2026, 5, 12, 12))
   await mockApi(page, { records: [existingMeasurement] })
   await page.goto(`/registro?data=${EXISTING_DATE}`)
   await expect(page.getByText("Editando medida de 10/06")).toBeVisible()
@@ -581,7 +585,8 @@ test("changing the date with changes asks first, without changes loads the date"
   await expect(field(page, "Peso")).toHaveValue("72,0")
 
   // The date picker goes through the same check.
-  await page.getByLabel("Data da medida").fill(PREVIOUS_DATE)
+  await openDateSheet(page)
+  await page.getByRole("button", { name: /, 9 de junho de 2026/ }).click()
   await expect(page).toHaveURL(`/registro?data=${PREVIOUS_DATE}`)
 })
 
@@ -651,11 +656,10 @@ test("the next-day arrow is disabled today and future dates fall back to today",
   await page.goto("/registro?data=2999-01-01")
 
   await expect(page.getByRole("button", { name: "Próximo dia" })).toBeDisabled()
-  await expect(page.getByLabel("Data da medida")).toHaveValue(getToday())
-  await expect(page.getByLabel("Data da medida")).toHaveAttribute(
-    "max",
-    getToday(),
-  )
+  await expect(
+    page.getByRole("button", { name: /^Data da medida/ }),
+  ).toBeVisible()
+  await expect(page.getByText("Nova medida")).toBeVisible()
 
   await page.getByRole("button", { name: "Dia anterior" }).click()
   await expect(page.getByRole("button", { name: "Próximo dia" })).toBeEnabled()
@@ -723,4 +727,73 @@ test("the document scrolls, the header stays pinned and Excluir medida clears th
   expect((remove?.y ?? 0) + (remove?.height ?? 0)).toBeLessThanOrEqual(
     footer?.y ?? 0,
   )
+})
+
+async function openDateSheet(page: Page) {
+  await page.getByRole("button", { name: /^Data da medida/ }).click()
+  await expect(
+    page.getByRole("dialog", { name: "Escolher data" }),
+  ).toBeVisible()
+}
+
+test("the date sheet marks recorded days and disables future ones", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date(2026, 5, 12, 12))
+  await mockApi(page, { records: [existingMeasurement, previousMeasurement] })
+  await page.goto(`/registro?data=${EXISTING_DATE}`)
+  await openDateSheet(page)
+
+  await expect(
+    page.getByRole("button", { name: /, 10 de junho de 2026.*, com medida$/ }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: /, 9 de junho de 2026.*, com medida$/ }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: /, 11 de junho de 2026/ }),
+  ).not.toHaveAccessibleName(/com medida/)
+  await expect(
+    page.getByRole("button", { name: /, 13 de junho de 2026/ }),
+  ).toBeDisabled()
+  await expect(
+    page.getByRole("button", { name: "Ir para o próximo mês" }),
+  ).toHaveAttribute("aria-disabled", "true")
+})
+
+test("choosing a day in the date sheet closes it and loads that date", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date(2026, 5, 12, 12))
+  await mockApi(page, { records: [existingMeasurement, previousMeasurement] })
+  await page.goto(`/registro?data=${EXISTING_DATE}`)
+  await openDateSheet(page)
+  await page.getByRole("button", { name: /, 9 de junho de 2026/ }).click()
+
+  await expect(page.getByRole("dialog", { name: "Escolher data" })).toHaveCount(
+    0,
+  )
+  await expect(page).toHaveURL(`/registro?data=${PREVIOUS_DATE}`)
+  await expect(page.getByText("Editando medida de 09/06")).toBeVisible()
+})
+
+test("choosing a day in the date sheet with unsaved changes asks to discard", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date(2026, 5, 12, 12))
+  await mockApi(page, { records: [existingMeasurement, previousMeasurement] })
+  await page.goto(`/registro?data=${EXISTING_DATE}`)
+  await expect(field(page, "Peso")).toHaveValue("72,0")
+  await paste(page, "Peso", "72,5")
+  await openDateSheet(page)
+  await page.getByRole("button", { name: /, 9 de junho de 2026/ }).click()
+
+  const dialog = page.getByRole("alertdialog", {
+    name: "Descartar alterações?",
+  })
+
+  await expect(dialog).toBeVisible()
+  await expect(page).toHaveURL(`/registro?data=${EXISTING_DATE}`)
+  await dialog.getByRole("button", { name: "Descartar" }).click()
+  await expect(page).toHaveURL(`/registro?data=${PREVIOUS_DATE}`)
 })
