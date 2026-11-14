@@ -1,0 +1,233 @@
+/* Tendências: metric selector, period control, summary, chart and weekly table. The accent marks only the weekly line and dots. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.small {
+  font-size: 13px;
+}
+
+.selwrap {
+  position: relative;
+}
+
+.selwrap select {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 52px;
+  padding: 0 44px 0 16px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.selwrap .ic {
+  position: absolute;
+  top: 15px;
+  right: 14px;
+  color: var(--fg-2);
+  pointer-events: none;
+}
+
+.seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--seg-bg);
+}
+
+.seg button {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fg-2);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.seg button[aria-checked="true"] {
+  background: var(--seg-on);
+  color: var(--fg);
+  box-shadow: var(--shadow);
+}
+
+.seg.period {
+  margin: 12px 0;
+}
+
+.sum {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sum .k {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--fg-2);
+  font-size: 13px;
+}
+
+.sum .v {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.sum .v .unit {
+  font-size: 14px;
+}
+
+.sum .r {
+  text-align: right;
+}
+
+.readout {
+  min-height: 22px;
+  margin-bottom: 8px;
+  color: var(--fg-2);
+  font-size: 14px;
+}
+
+.readout b {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 240px;
+  touch-action: pan-y;
+}
+
+.chart-wrap svg {
+  display: block;
+  width: 100%;
+  height: 240px;
+}
+
+.ax {
+  fill: var(--fg-2);
+  font:
+    11px "Geist Mono",
+    ui-monospace,
+    monospace;
+}
+
+.gridline {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  color: var(--fg-2);
+  font-size: 13px;
+}
+
+.legend i {
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.lg-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+.lg-line {
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.note-line {
+  margin: 10px 0 0;
+  color: var(--fg-2);
+  font-size: 13px;
+}
+
+.empty-chart {
+  display: grid;
+  height: 240px;
+  padding: 0 12px;
+  place-items: center;
+  color: var(--fg-2);
+  font-size: 15px;
+  text-align: center;
+}
+
+/* Summary card (about 90) plus chart card (about 340) so loading and error keep the screen height. */
+.trend-reserved {
+  min-height: 430px;
+}
+
+.trend-error {
+  padding-top: 0;
+  border-top: 0;
+}
+
+details.tbl {
+  margin-top: 12px;
+}
+
+details.tbl summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  color: var(--fg-2);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+details.tbl table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+details.tbl th,
+details.tbl td {
+  padding: 8px 4px;
+  border-top: 1px solid var(--line);
+  text-align: right;
+}
+
+details.tbl th:first-child,
+details.tbl td:first-child {
+  text-align: left;
+}
+
+details.tbl th {
+  color: var(--fg-2);
+  font-weight: 500;
+}
+
+details.tbl tbody th {
+  color: var(--fg);
+}

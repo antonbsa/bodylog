@@ -10,6 +10,7 @@ export const queryKeys = {
   // Keyed by the first day of the month, so the key never depends on time zones.
   measurementsOfMonth: (monthStart: string) =>
     ["measurements", "month", monthStart] as const,
+  trends: ["measurements", "trends"] as const,
   previousMeasurement: (date: string) =>
     ["measurements", "previous", date] as const,
 }

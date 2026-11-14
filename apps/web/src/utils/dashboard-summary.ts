@@ -1,6 +1,6 @@
 import type { WeeklyAverages, WeekSummary } from "../../../../types/dashboard"
 import { shiftIsoDate } from "./date-format"
-import { formatOneDecimal } from "./number-format"
+import { formatFixed } from "./number-format"
 
 export const WEEKLY_TARGET_DAYS = 7
 
@@ -30,22 +30,24 @@ export type VariationChip = {
   text: string
 }
 
-function roundToOneDecimal(value: number): number {
-  return Number(value.toFixed(1))
+function roundTo(value: number, decimals: number): number {
+  return Number(value.toFixed(decimals))
 }
 
-/** Neutral chip text; "Estável" means the change rounds to zero at the displayed precision. */
+/** Neutral chip text; "Estável" means the change rounds to zero at the displayed precision (`decimals`). */
 export function getVariationChip(
   current: number | null | undefined,
   previous: number | null | undefined,
   unit: string,
+  decimals = 1,
 ): VariationChip {
   if (current == null || previous == null) {
     return { direction: "none", text: "Sem comparação" }
   }
 
-  const change = roundToOneDecimal(
-    roundToOneDecimal(current) - roundToOneDecimal(previous),
+  const change = roundTo(
+    roundTo(current, decimals) - roundTo(previous, decimals),
+    decimals,
   )
 
   if (change === 0) {
@@ -56,7 +58,7 @@ export function getVariationChip(
 
   return {
     direction: change > 0 ? "up" : "down",
-    text: `${word} ${formatOneDecimal(Math.abs(change))} ${unit}`,
+    text: `${word} ${formatFixed(Math.abs(change), decimals)} ${unit}`,
   }
 }
 

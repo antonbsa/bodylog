@@ -68,7 +68,7 @@ export function shiftIsoDate(value: string, days: number): string {
 }
 
 const WEEKDAYS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"]
-const MONTHS = [
+export const MONTHS = [
   "jan",
   "fev",
   "mar",

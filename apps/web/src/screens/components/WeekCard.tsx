@@ -21,7 +21,11 @@ const PLACEHOLDER_DAYS = ["S", "T", "Q", "Q", "S", "S", "D"].map((letter) => ({
   status: "missing" as const,
 }))
 
-function ChipIcon({ direction }: { direction: VariationChip["direction"] }) {
+export function ChipIcon({
+  direction,
+}: {
+  direction: VariationChip["direction"]
+}) {
   const props = {
     "aria-hidden": true,
     size: CHIP_ICON_SIZE,

@@ -46,3 +46,20 @@ const ptBrOneDecimalFormatter = new Intl.NumberFormat("pt-BR", {
 export function formatOneDecimal(value: number): string {
   return ptBrOneDecimalFormatter.format(value)
 }
+
+const fixedFormatters = new Map<number, Intl.NumberFormat>()
+
+/** pt-BR number with exactly `decimals` fraction digits. */
+export function formatFixed(value: number, decimals: number): string {
+  let formatter = fixedFormatters.get(decimals)
+
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("pt-BR", {
+      maximumFractionDigits: decimals,
+      minimumFractionDigits: decimals,
+    })
+    fixedFormatters.set(decimals, formatter)
+  }
+
+  return formatter.format(value)
+}

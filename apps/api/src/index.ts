@@ -25,6 +25,7 @@ import {
   getWeeklyDashboard,
 } from "./dashboard/weekly-dashboard-service"
 import { getHistoryWeeks } from "./history/history-service"
+import { getTrends } from "./trends/trends-service"
 import { importMeasurementsCsv } from "./measurements/csv-import"
 import { serializeMeasurementsCsv } from "./measurements/csv-export"
 import { MeasurementRepository } from "./measurements/measurement-repository"
@@ -47,6 +48,7 @@ const protectedApiRoutePrefixes = [
   "/api/measurements",
   "/api/dashboard",
   "/api/history",
+  "/api/trends",
   "/api/export",
   "/api/import",
 ]
@@ -220,6 +222,14 @@ app.get("/api/history/weeks", async (c) => {
   })
 
   return c.json(page)
+})
+
+app.get("/api/trends", async (c) => {
+  const repository = new MeasurementRepository(c.env.DB)
+
+  return c.json(
+    await getTrends(repository, { heightCm: getUserHeightCm(c.env) }),
+  )
 })
 
 app.get("/api/export/csv", async (c) => {

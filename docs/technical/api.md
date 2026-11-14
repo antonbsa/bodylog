@@ -341,6 +341,34 @@ before=YYYY-MM-DD
 
 `summary` has the same shape as a weekly dashboard week (the example shows a few averages only) and `measurements` are the items of `GET /api/measurements`, newest first. `nextBefore` is the `weekStartDate` of the last returned week when older records exist, otherwise `null`. An empty history returns `{ "weeks": [], "nextBefore": null }`.
 
+## Trends
+
+### GET /api/trends
+
+Returns every measurement as one point, oldest first, for the Tendências screen. It is not paged because the screen switches metric and period on the client, and `GET /api/measurements` caps `limit` at 100, which would break the "Tudo" period.
+
+#### Response 200
+
+```json
+{
+  "points": [
+    {
+      "date": "YYYY-MM-DD",
+      "weightKg": 72.9,
+      "bodyFatPercentage": 14.5,
+      "musclePercentage": 43.7,
+      "waistCm": null,
+      "sleepHours": 7.5,
+      "disposition": 4,
+      "restingMetabolismKcal": 1650,
+      "bmi": 25.83
+    }
+  ]
+}
+```
+
+Every metric can be `null`; `bmi` is derived from the configured user height. No records return `{ "points": [] }`.
+
 ## CSV Export
 
 ### GET /api/export/csv
