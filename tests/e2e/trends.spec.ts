@@ -57,7 +57,11 @@ function json(route: Route, body: unknown, status = 200) {
 }
 
 /** Mocks the API for Tendências; `statuses` can fail the first requests. */
-async function mockTrends(page: Page, statuses: number[] = []) {
+async function mockTrends(
+  page: Page,
+  statuses: number[] = [],
+  source: { points: TrendPoint[] } = { points },
+) {
   const failures = [...statuses]
   let requests = 0
 
@@ -71,7 +75,7 @@ async function mockTrends(page: Page, statuses: number[] = []) {
     requests += 1
 
     return status === 200
-      ? json(route, { points })
+      ? json(route, source)
       : json(route, { message: "Falha ao carregar." }, status)
   })
 
@@ -220,4 +224,34 @@ test("keeps a retry button when loading fails", async ({ page }) => {
   await expect(page.getByRole("alert")).toBeVisible()
   await page.getByRole("button", { name: "Tentar de novo" }).click()
   await expect(summary(page)).toContainText("73,6kg")
+})
+
+test("the selection follows refetched data and clears when its day disappears", async ({
+  page,
+}) => {
+  const source = { points }
+
+  await mockTrends(page, [], source)
+  await page.goto("/tendencias")
+
+  const chart = page.getByTestId("trend-chart")
+  const readout = page.getByTestId("trend-readout")
+  const box = await chart.boundingBox()
+
+  await chart.click({ position: { x: (box?.width ?? 300) - 12, y: 100 } })
+  await expect(readout).toHaveText("sex 13/11 · 72,2 kg · média da semana 72,5")
+
+  source.points = points.map((item) =>
+    item.date === "2026-11-13" ? { ...item, weightKg: 71.8 } : item,
+  )
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")))
+  await expect(readout).toContainText("71,8 kg")
+  await expect(page.getByTestId("trend-marker")).toHaveCount(1)
+
+  source.points = points.filter((item) => item.date !== "2026-11-13")
+  // The fixed clock never advances, so move it past the resume cooldown.
+  await page.clock.setFixedTime(new Date(2026, 10, 13, 12, 0, 2))
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")))
+  await expect(readout).toHaveText("Toque no gráfico para ver os valores.")
+  await expect(page.getByTestId("trend-marker")).toHaveCount(0)
 })

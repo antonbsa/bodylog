@@ -57,7 +57,7 @@ export function TrendChart({
 }: TrendChartProps) {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const [width, setWidth] = useState(FALLBACK_WIDTH)
-  const [selected, setSelected] = useState<MetricPoint | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const { decimals, unit } = metric
 
   useLayoutEffect(() => {
@@ -95,6 +95,8 @@ export function TrendChart({
   const long = span > LONG_RANGE_DAYS
   const average =
     points.reduce((sum, point) => sum + point.value, 0) / points.length
+  // Resolved by date so a refetch never leaves a stale point selected.
+  const selected = points.find((point) => point.date === selectedDate) ?? null
   const selectedWeek = selected
     ? weeks.find((week) => week.weekStartDate === getWeekStart(selected.date))
     : undefined
@@ -113,7 +115,7 @@ export function TrendChart({
       }
     }
 
-    setSelected(nearest)
+    setSelectedDate(nearest.date)
   }
 
   return (
