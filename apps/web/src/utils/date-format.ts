@@ -35,17 +35,6 @@ export function getTodayIsoDate(): string {
   return toIsoDate(new Date())
 }
 
-export function getDateOnlyDifferenceInDays(
-  startDate: string,
-  endDate: string,
-): number {
-  const start = new Date(`${startDate}T00:00:00.000Z`)
-  const end = new Date(`${endDate}T00:00:00.000Z`)
-  const millisecondsPerDay = 24 * 60 * 60 * 1000
-
-  return Math.round((end.getTime() - start.getTime()) / millisecondsPerDay)
-}
-
 export function parseDisplayDate(value: string): string | null {
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(value.trim())
 
@@ -99,6 +88,18 @@ export function formatDayLabel(value: string): string {
   const date = new Date(`${value}T00:00:00.000Z`)
 
   return `${WEEKDAYS[date.getUTCDay()]}, ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`
+}
+
+/** Week range such as "9–15 nov", or "30 nov – 6 dez" across months. */
+export function formatWeekRange(startDate: string, endDate: string): string {
+  const start = new Date(`${startDate}T00:00:00.000Z`)
+  const end = new Date(`${endDate}T00:00:00.000Z`)
+  const startMonth = MONTHS[start.getUTCMonth()]
+  const endMonth = MONTHS[end.getUTCMonth()]
+
+  return startMonth === endMonth
+    ? `${start.getUTCDate()}–${end.getUTCDate()} ${endMonth}`
+    : `${start.getUTCDate()} ${startMonth} – ${end.getUTCDate()} ${endMonth}`
 }
 
 /** "DD/MM" for dialogs and the mode badge. */

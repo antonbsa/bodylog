@@ -26,14 +26,14 @@ export type RegistrationData = {
 // Keeps prefetched neighbours from being refetched on every effect run.
 const PREFETCH_STALE_MS = 60_000
 
-function lookupQuery(date: string) {
+export function lookupQuery(date: string) {
   return {
     queryFn: () => getMeasurementByDate(date),
     queryKey: queryKeys.measurementByDate(date),
   }
 }
 
-function previousQuery(date: string) {
+export function previousQuery(date: string) {
   return {
     // The hint is optional, so a failed lookup must not block the form.
     queryFn: () =>

@@ -46,6 +46,8 @@ The "BodyLog" title, a password field labeled "Senha" and an "Entrar" button. An
    - A line with the comparison week and its count: "vs 2–8 nov · 6/7".
    - One row per metric, in this order: peso, gordura, músculo, cintura, sono, disposição. Each row shows the weekly average (partial current week) and a neutral variation chip against the previous full week.
 
+While loading, Início draws both cards with dashes and hollow dots so nothing shifts; a failed request shows its message and "Tentar de novo" inside the affected card, in the space the content would take. The weekly card uses `current` and `previous` only, so it always describes the actual current week.
+
 The weekly block has no metabolism or derived values: metabolism shows only in the Today card, the registration screen and Tendências, and BMI, fat kg and muscle kg in edit mode and Tendências (BMI).
 
 ### Histórico
@@ -112,7 +114,7 @@ One card with: Tema (segmented Sistema, Claro, Escuro), "Exportar CSV", "Importa
 
 (`0031-use-neutral-variation-color.md`)
 
-A neutral chip with an arrow icon, a word and the magnitude: "Subiu 0,4 kg", "Caiu 0,3 p.p.", "Estável" (an equals icon), or "Sem comparação" when either week has no value. Units: kg, p.p. for body fat and muscle percentages, cm, h and pts for disposição. The chip is gray on every metric; it never uses green or red, and the accent is never used for variations or data values.
+A neutral chip with an arrow icon, a word and the magnitude: "Subiu 0,4 kg", "Caiu 0,3 p.p.", "Estável" (an equals icon), or "Sem comparação" when either week has no value. "Estável" means the change rounds to zero at the displayed precision (one decimal), with no per-metric thresholds; the magnitude is the difference of the rounded averages. Units: kg, p.p. for body fat and muscle percentages, cm, h and pts for disposição. The chip is gray on every metric; it never uses green or red, and the accent is never used for variations or data values.
 
 ## Visual system
 
@@ -169,5 +171,4 @@ A pill above the tab bar, inverted colors (`--fg` on `--bg`), about 2.6 seconds,
 
 ## Open points
 
-- The "Estável" rule: the prototype shows it when the change is zero at the displayed precision. The earlier fixed thresholds (weight under 0.5 kg, fat mass under 0.4 kg, muscle mass under 0.3 kg) are not applied by the prototype; the Início task decides.
 - Histórico paging: the prototype lists the last 8 weeks; the real paging or "load more" behavior is decided in the Histórico task.

@@ -239,10 +239,8 @@ test("login screen opens the app after a valid password", async ({ page }) => {
   await page.getByLabel("Senha").fill("senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
 
-  await expect(
-    page.getByRole("heading", { name: "Resumo da semana" }),
-  ).toBeVisible()
-  await expect(page.getByText("Peso médio")).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
+  await expect(page.getByText("Esta semana")).toBeVisible()
 })
 
 test("authenticated session survives a page reload", async ({ page }) => {
@@ -288,10 +286,8 @@ test("authenticated session survives a page reload", async ({ page }) => {
   await page.getByRole("button", { name: "Entrar" }).click()
   await page.reload()
 
-  await expect(
-    page.getByRole("heading", { name: "Resumo da semana" }),
-  ).toBeVisible()
-  await expect(page.getByText("Peso médio")).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
+  await expect(page.getByText("Esta semana")).toBeVisible()
 })
 
 test("logout returns to the login screen", async ({ page }) => {

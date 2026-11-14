@@ -1,159 +1,88 @@
-import type {
-  MetricDirection,
-  MetricVariation,
-  WeeklyDashboard,
-  WeekSummary,
-} from "../../../../types/dashboard"
-import type { DashboardCardModel, OutcomeClass } from "../types"
-import { getDateOnlyDifferenceInDays, getTodayIsoDate } from "./date-format"
-import {
-  formatDisplayNumber,
-  formatOptionalPreciseDisplayNumber,
-  formatSignedDisplayNumber,
-} from "./number-format"
+import type { WeeklyAverages, WeekSummary } from "../../../../types/dashboard"
+import { shiftIsoDate } from "./date-format"
+import { formatOneDecimal } from "./number-format"
 
-export function createDashboardCardModels(
-  dashboard: WeeklyDashboard,
-): DashboardCardModel[] {
-  return [
-    {
-      directionMetric: "weight",
-      label: "Peso médio",
-      secondaryLabel: "IMC médio",
-      secondaryValue: dashboard.display.summary.averages.bmi,
-      type: "weight",
-      value: dashboard.display.summary.averages.weightKg,
-      variation: dashboard.display.variation.weightKg,
-      variationSecondary: dashboard.display.variation.weightKg,
-      variationSecondaryType: "relativePercentage",
-    },
-    {
-      directionMetric: "bodyFat",
-      label: "Gordura corporal",
-      secondaryLabel: "BF kg",
-      secondaryValue: dashboard.display.summary.averages.bodyFatKg,
-      type: "percentage",
-      value: dashboard.display.summary.averages.bodyFatPercentage,
-      variation: dashboard.display.variation.bodyFatPercentage,
-      variationSecondary: dashboard.display.variation.bodyFatKg,
-      variationSecondaryType: "absoluteKg",
-    },
-    {
-      directionMetric: "muscle",
-      label: "Músculo",
-      secondaryLabel: "Músculo kg",
-      secondaryValue: dashboard.display.summary.averages.muscleKg,
-      type: "percentage",
-      value: dashboard.display.summary.averages.musclePercentage,
-      variation: dashboard.display.variation.musclePercentage,
-      variationSecondary: dashboard.display.variation.muscleKg,
-      variationSecondaryType: "absoluteKg",
-    },
-  ]
+export const WEEKLY_TARGET_DAYS = 7
+
+const DAY_LETTERS = ["S", "T", "Q", "Q", "S", "S", "D"]
+
+type WeeklyMetric = {
+  /** Unit of the variation chip. */
+  changeUnit: string
+  key: keyof WeeklyAverages
+  label: string
+  /** Unit shown next to the average. */
+  unit: string
 }
 
-export function getAvailableDaysSoFar(currentWeek: WeekSummary): number {
-  const today = getTodayIsoDate()
-  const latestAvailableDate =
-    today > currentWeek.weekEndDate ? currentWeek.weekEndDate : today
-  const availableDays =
-    getDateOnlyDifferenceInDays(
-      currentWeek.weekStartDate,
-      latestAvailableDate,
-    ) + 1
+/** Rows of the weekly card, in display order. */
+export const WEEKLY_METRICS: WeeklyMetric[] = [
+  { changeUnit: "kg", key: "weightKg", label: "Peso", unit: "kg" },
+  { changeUnit: "p.p.", key: "bodyFatPercentage", label: "Gordura", unit: "%" },
+  { changeUnit: "p.p.", key: "musclePercentage", label: "Músculo", unit: "%" },
+  { changeUnit: "cm", key: "waistCm", label: "Cintura", unit: "cm" },
+  { changeUnit: "h", key: "sleepHours", label: "Sono", unit: "h" },
+  { changeUnit: "pts", key: "disposition", label: "Disposição", unit: "/5" },
+]
 
-  return Math.max(1, Math.min(7, availableDays))
+export type VariationChip = {
+  direction: "down" | "none" | "stable" | "up"
+  text: string
 }
 
-export function getOutcomeClass(
-  metric: DashboardCardModel["directionMetric"],
-  direction: MetricDirection | null,
-): OutcomeClass {
-  if (direction === null) {
-    return "metric-card-unavailable"
-  }
-
-  if (direction === "stable") {
-    return "metric-card-stable"
-  }
-
-  if (metric === "bodyFat") {
-    return direction === "down"
-      ? "metric-card-positive"
-      : "metric-card-negative"
-  }
-
-  return direction === "up" ? "metric-card-positive" : "metric-card-negative"
+function roundToOneDecimal(value: number): number {
+  return Number(value.toFixed(1))
 }
 
-export function getDirectionLabel(direction: MetricDirection | null): string {
-  const labels: Record<MetricDirection, string> = {
-    down: "Caiu",
-    stable: "Estável",
-    up: "Subiu",
+/** Neutral chip text; "Estável" means the change rounds to zero at the displayed precision. */
+export function getVariationChip(
+  current: number | null | undefined,
+  previous: number | null | undefined,
+  unit: string,
+): VariationChip {
+  if (current == null || previous == null) {
+    return { direction: "none", text: "Sem comparação" }
   }
 
-  return direction ? labels[direction] : "Sem comparação"
+  const change = roundToOneDecimal(
+    roundToOneDecimal(current) - roundToOneDecimal(previous),
+  )
+
+  if (change === 0) {
+    return { direction: "stable", text: "Estável" }
+  }
+
+  const word = change > 0 ? "Subiu" : "Caiu"
+
+  return {
+    direction: change > 0 ? "up" : "down",
+    text: `${word} ${formatOneDecimal(Math.abs(change))} ${unit}`,
+  }
 }
 
-export function formatPrimaryValue(
-  value: number | null,
-  type: DashboardCardModel["type"],
-): string {
-  if (value === null) {
-    return "-"
-  }
-
-  return type === "percentage"
-    ? `${formatDisplayNumber(value)}%`
-    : `${formatDisplayNumber(value)} kg`
+export type WeekDay = {
+  date: string
+  isToday: boolean
+  letter: string
+  status: "future" | "missing" | "recorded"
 }
 
-export function formatSecondaryValue(value: number | null): string {
-  return formatOptionalPreciseDisplayNumber(value)
-}
+/** The seven days of a week (Monday to Sunday) with their dot state. */
+export function getWeekDays(week: WeekSummary, today: string): WeekDay[] {
+  const recorded = new Set(week.recordedDates)
 
-export function formatPrimaryVariation(
-  variation: MetricVariation | undefined,
-  type: DashboardCardModel["type"],
-): string {
-  if (!variation) {
-    return "-"
-  }
+  return DAY_LETTERS.map((letter, index) => {
+    const date = shiftIsoDate(week.weekStartDate, index)
 
-  const value =
-    type === "percentage"
-      ? variation.absolutePercentagePoints
-      : variation.absolute
-
-  if (value === undefined) {
-    return "-"
-  }
-
-  const suffix = type === "percentage" ? " p.p." : " kg"
-
-  return `${formatSignedDisplayNumber(value)}${suffix}`
-}
-
-export function formatSecondaryVariation(
-  variation: MetricVariation | undefined,
-  type: DashboardCardModel["variationSecondaryType"],
-): string {
-  if (!variation) {
-    return type === "relativePercentage"
-      ? "Sem variação relativa"
-      : "Sem variação em kg"
-  }
-
-  if (type === "relativePercentage") {
-    return variation.relativePercentage === null
-      ? "Sem variação relativa"
-      : `${formatSignedDisplayNumber(variation.relativePercentage)}%`
-  }
-
-  if (variation.absolute === undefined) {
-    return "Sem variação em kg"
-  }
-
-  return `${formatSignedDisplayNumber(variation.absolute)} kg`
+    return {
+      date,
+      isToday: date === today,
+      letter,
+      status: recorded.has(date)
+        ? "recorded"
+        : date > today
+          ? "future"
+          : "missing",
+    }
+  })
 }

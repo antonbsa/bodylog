@@ -90,7 +90,7 @@ The comparison should include:
 - relative percentage variation when a previous value exists;
 - direction: `up`, `down`, or `stable`.
 
-Waist (cm), sleep (h) and disposition (points) are compared with a neutral variation: `absolute` in the metric's own unit and the relative percentage. They have no stable threshold in the API (direction is `stable` only when the averages are equal); the display threshold is a UI rule. A metric missing in either week has no entry in the variation, never a zero. Resting metabolism and derived values are not part of the redesign's additions.
+Waist (cm), sleep (h) and disposition (points) are compared with a neutral variation: `absolute` in the metric's own unit and the relative percentage. They have no stable threshold in the API (direction is `stable` only when the averages are equal); the web UI does not read `direction` and decides "Estável" from the rounded averages (`docs/product/ui-direction.md`). A metric missing in either week has no entry in the variation, never a zero. Resting metabolism and derived values are not part of the redesign's additions.
 
 For percentage-based metrics such as body fat percentage and muscle percentage, absolute variation must be displayed as percentage points.
 

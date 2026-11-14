@@ -337,9 +337,9 @@ Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI ca
 ```
 
 `current` always represents the actual current week in the configured user time
-zone. `display` provides the summary values the dashboard cards should render:
-it uses the current week when it has records and falls back to the latest
-recorded week when the current week is still empty.
+zone, and the web UI renders `current` and `previous` only. `display` uses the
+current week when it has records and falls back to the latest recorded week
+when the current week is still empty; the web UI does not read it.
 
 ## CSV Export
 

@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test"
 const THEME_STORAGE_KEY = "bodylog-theme"
 
 const MAIN_ROUTES = [
-  { heading: "Resumo da semana", path: "/", tab: "Início" },
+  { heading: "Início", path: "/", tab: "Início" },
   { heading: "Histórico", path: "/historico", tab: "Histórico" },
   { heading: "Tendências", path: "/tendencias", tab: "Tendências" },
   { heading: "Ajustes", path: "/ajustes", tab: "Ajustes" },

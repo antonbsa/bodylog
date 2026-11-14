@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   formatDayLabel,
   formatDayMonth,
+  formatWeekRange,
   getMonthRange,
   getTodayIsoDate,
   isPastOrTodayIsoDate,
@@ -20,6 +21,11 @@ describe("registration date helpers", () => {
   it("formats the date bar label and the DD/MM form", () => {
     expect(formatDayLabel("2026-11-12")).toBe("qui, 12 nov")
     expect(formatDayMonth("2026-06-10")).toBe("10/06")
+  })
+
+  it("formats week ranges with an en dash, spelling both months across a month end", () => {
+    expect(formatWeekRange("2026-11-09", "2026-11-15")).toBe("9–15 nov")
+    expect(formatWeekRange("2026-11-30", "2026-12-06")).toBe("30 nov – 6 dez")
   })
 
   it("accepts only real dates up to today", () => {
