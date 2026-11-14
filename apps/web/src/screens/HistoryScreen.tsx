@@ -1,4 +1,4 @@
-import { HistoryWeekCard } from "./components/HistoryWeekCard"
+import { HistoryWeekCard, WeekAverages } from "./components/HistoryWeekCard"
 import { PageTitle } from "./components/PageTitle"
 import { useHistoryWeeks } from "../hooks/useHistoryWeeks"
 import { useRefreshOnResume } from "../hooks/useRefreshOnResume"
@@ -8,17 +8,10 @@ import { getTodayIsoDate } from "../utils/date-format"
 const MISSING = "—"
 // Placeholder rows besides "Média"; a typical week card has about this many records.
 const PLACEHOLDER_ROWS = 5
-
-function ColumnHeadings() {
-  return (
-    <div aria-hidden className="hcols hgrid">
-      <span />
-      <span>Peso</span>
-      <span>Gordura</span>
-      <span>Músculo</span>
-      <span />
-    </div>
-  )
+const NO_AVERAGES = {
+  bodyFatPercentage: null,
+  musclePercentage: null,
+  weightKg: null,
 }
 
 /** Stands in for a week card while loading or after a failed load, so the screen keeps its height. */
@@ -45,13 +38,7 @@ function PlaceholderWeek({
           </div>
         ) : (
           <>
-            <div className="havg hgrid">
-              <span className="d">Média</span>
-              <span className="n num">{MISSING}</span>
-              <span className="n num">{MISSING}</span>
-              <span className="n num">{MISSING}</span>
-              <span />
-            </div>
+            <WeekAverages averages={NO_AVERAGES} />
             {Array.from({ length: PLACEHOLDER_ROWS }, (_, index) => (
               <div className="hrow hgrid" key={index}>
                 <span className="d num">{MISSING}</span>
@@ -97,7 +84,6 @@ export function HistoryScreen() {
         </section>
       ) : (
         <>
-          <ColumnHeadings />
           {state.status === "loaded" ? (
             state.weeks.map((week) => (
               <HistoryWeekCard

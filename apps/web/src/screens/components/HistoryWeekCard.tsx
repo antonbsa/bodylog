@@ -23,6 +23,37 @@ function Cell({ unit, value }: { unit: string; value: number | null }) {
   )
 }
 
+/** Pinned "Média" block; it carries the column headings so they stay next to their values while scrolling. */
+export function WeekAverages({
+  averages,
+}: {
+  averages: Pick<
+    HistoryWeek["summary"]["averages"],
+    "bodyFatPercentage" | "musclePercentage" | "weightKg"
+  >
+}) {
+  return (
+    <div className="havg-sticky">
+      <div className="havg">
+        <div aria-hidden className="hcols hgrid">
+          <span />
+          <span>Peso</span>
+          <span>Gordura</span>
+          <span>Músculo</span>
+          <span />
+        </div>
+        <div className="havg-values hgrid">
+          <span className="d">Média</span>
+          <Cell unit="kg" value={averages.weightKg} />
+          <Cell unit="%" value={averages.bodyFatPercentage} />
+          <Cell unit="%" value={averages.musclePercentage} />
+          <span />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function HistoryWeekCard({
   onOpenDate,
   week,
@@ -46,13 +77,7 @@ export function HistoryWeekCard({
         </span>
       </div>
       <div className="card hlist">
-        <div className="havg hgrid">
-          <span className="d">Média</span>
-          <Cell unit="kg" value={averages.weightKg} />
-          <Cell unit="%" value={averages.bodyFatPercentage} />
-          <Cell unit="%" value={averages.musclePercentage} />
-          <span />
-        </div>
+        <WeekAverages averages={averages} />
         {week.measurements.map((measurement) => (
           <button
             className="hrow hgrid"

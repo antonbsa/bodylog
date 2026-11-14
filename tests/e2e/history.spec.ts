@@ -150,7 +150,10 @@ test("lists weeks newest first with averages, counts and rows", async ({
   await page.goto("/historico")
 
   await expect(page.getByRole("heading", { name: "Histórico" })).toBeVisible()
-  await expect(page.locator(".hcols")).toHaveText("PesoGorduraMúsculo")
+  await expect(page.locator(".hcols")).toHaveText([
+    "PesoGorduraMúsculo",
+    "PesoGorduraMúsculo",
+  ])
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
     "9–15 nov",
     "2–8 nov",
@@ -159,12 +162,14 @@ test("lists weeks newest first with averages, counts and rows", async ({
 
   const first = weekCards(page).first()
 
-  await expect(first.locator(".havg")).toHaveText("Média72,7kg18,6%41,4%")
+  await expect(first.locator(".havg-values")).toHaveText(
+    "Média72,7kg18,6%41,4%",
+  )
   await expect(first.locator(".hrow")).toHaveText([
     "qua 11/1172,4kg18,6%41,4%Com anotação",
     "seg 09/1173,0kg——",
   ])
-  await expect(weekCards(page).nth(1).locator(".havg")).toHaveText(
+  await expect(weekCards(page).nth(1).locator(".havg-values")).toHaveText(
     "Média74,2kg——",
   )
 })
