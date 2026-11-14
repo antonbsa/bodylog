@@ -160,6 +160,8 @@ Phosphor. The prototype draws simple stand-ins on a 24px grid with a 1.6px strok
 
 A pill above the tab bar, inverted colors (`--fg` on `--bg`), about 2.6 seconds, `role="status"`. Used for save, delete, import and export feedback.
 
+Failures (save, delete, export, import, and a CSV import with row errors) use the same pill but stay until the user closes them with a "Fechar" (×) button, show the full error text and are announced with `role="alert"`. On Registro, which has no tab bar, the toast sits above the bottom action area; a failed save or delete stays on Registro. A new toast replaces the current one.
+
 ## Formatting
 
 `pt-BR`: decimal comma, `72,4 kg`, `18,6%`, dates as `DD/MM` in labels and `seg 09/11` in lists, week ranges as `9–15 nov`. Unavailable values are an em dash. Internal storage and API payloads stay numeric values and ISO dates.

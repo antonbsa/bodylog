@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react"
 import { ChartLineUp, GearSix, House, List, Plus } from "@phosphor-icons/react"
 import { NavLink, useLocation } from "react-router"
 
@@ -38,9 +39,32 @@ function Tab({
 export function TabBar() {
   const { replace } = useTabNavigate()
   const { pathname } = useLocation()
+  const barRef = useRef<HTMLDivElement>(null)
+
+  // Publishes the bar height (safe area included) so toasts can sit above it.
+  useLayoutEffect(() => {
+    const bar = barRef.current
+    const root = document.documentElement
+
+    if (!bar) {
+      return
+    }
+
+    const publish = () =>
+      root.style.setProperty("--tabbar-h", `${bar.offsetHeight}px`)
+    const observer = new ResizeObserver(publish)
+
+    observer.observe(bar)
+    publish()
+
+    return () => {
+      observer.disconnect()
+      root.style.removeProperty("--tabbar-h")
+    }
+  }, [])
 
   return (
-    <div className="tabbar">
+    <div className="tabbar" ref={barRef}>
       <nav aria-label="Navegação principal" className="tabbar-grid">
         <Tab end icon={House} label="Início" to="/" />
         <Tab icon={List} label="Histórico" to="/historico" />

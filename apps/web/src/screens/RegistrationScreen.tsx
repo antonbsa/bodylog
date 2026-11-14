@@ -10,6 +10,7 @@ import {
   type RegistrationData,
 } from "../hooks/useRegistrationData"
 import { useKeyboardOpenFlag } from "../hooks/useKeyboardOpenFlag"
+import { useToast } from "../hooks/useToast"
 import { readOrigin, useTabNavigate } from "../hooks/useTabNavigate"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
 import { DispositionField } from "./components/DispositionField"
@@ -71,12 +72,12 @@ export function RegistrationScreen() {
   const date = isPastOrTodayIsoDate(requestedDate) ? requestedDate : today
 
   const { data, error: loadError, reload } = useRegistrationData(date)
+  const toast = useToast()
   const [form, setForm] = useState<FormValues>(EMPTY_FORM)
   const [touched, setTouched] = useState<
     Partial<Record<NumericFieldKey, true>>
   >({})
   const [showAllErrors, setShowAllErrors] = useState(false)
-  const [actionError, setActionError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [dialog, setDialog] = useState<Dialog | null>(null)
@@ -112,7 +113,6 @@ export function RegistrationScreen() {
       setTouched({})
       changedFields.current.clear()
       setShowAllErrors(false)
-      setActionError(null)
     }
   }
 
@@ -213,15 +213,15 @@ export function RegistrationScreen() {
       return
     }
 
-    setActionError(null)
     setIsSubmitting(true)
 
     try {
       await saveMeasurementByDate(date, input)
       invalidateMeasurementData(queryClient)
+      toast.showSuccess(`Medida de ${formatDayMonth(date)} salva`)
       navigate("/")
     } catch (error) {
-      setActionError(formatApiErrorMessage(error))
+      toast.showError(formatApiErrorMessage(error))
       setIsSubmitting(false)
     }
   }
@@ -231,15 +231,15 @@ export function RegistrationScreen() {
       return
     }
 
-    setActionError(null)
     setIsDeleting(true)
 
     try {
       await deleteMeasurement(data.measurement.id)
       invalidateMeasurementData(queryClient)
+      toast.showSuccess(`Medida de ${formatDayMonth(date)} excluída`)
       navigate("/")
     } catch (error) {
-      setActionError(formatApiErrorMessage(error))
+      toast.showError(formatApiErrorMessage(error))
       setIsDeleting(false)
       setDialog(null)
     }
@@ -398,11 +398,6 @@ export function RegistrationScreen() {
       </main>
 
       <footer className="reg-foot gut" ref={footerRef}>
-        {actionError ? (
-          <p className="reg-error" role="alert">
-            {actionError}
-          </p>
-        ) : null}
         <button
           className="reg-save"
           disabled={isBusy || data === null}

@@ -184,6 +184,12 @@ function getToday(): string {
   ].join("-")
 }
 
+function formatDayMonth(isoDate: string): string {
+  const [, month, day] = isoDate.split("-")
+
+  return `${day}/${month}`
+}
+
 const field = (page: Page, label: string) =>
   page.getByLabel(label, { exact: true })
 
@@ -232,7 +238,9 @@ test("creates a measurement for today and returns to Início", async ({
   await page.getByRole("button", { name: "Salvar" }).click()
 
   await expect(page).toHaveURL("/")
-  await expect(page.getByRole("status")).toHaveCount(0)
+  await expect(page.getByRole("status")).toHaveText(
+    `Medida de ${formatDayMonth(getToday())} salva`,
+  )
   expect(state.puts).toEqual([
     {
       body: {
@@ -487,7 +495,7 @@ test("shows a field error only after changing the field and leaving it", async (
   await expect(rangeError).toBeVisible()
 })
 
-test("a failed save keeps the values and shows an inline error", async ({
+test("a failed save keeps the values and shows a persistent failure toast", async ({
   page,
 }) => {
   await mockApi(page, { failPut: true })
@@ -496,12 +504,23 @@ test("a failed save keeps the values and shows an inline error", async ({
   await field(page, "Peso").pressSequentially("725")
   await page.getByRole("button", { name: "Salvar" }).click()
 
-  await expect(page.getByRole("alert")).toContainText(
-    "Não foi possível salvar a medida.",
-  )
+  const toast = page.getByRole("alert")
+
+  await expect(toast).toContainText("Não foi possível salvar a medida.")
   await expect(page).toHaveURL(/\/registro/)
   await expect(field(page, "Peso")).toHaveValue("72,5")
   await expect(page.getByRole("button", { name: "Salvar" })).toBeEnabled()
+
+  const toastBox = await toast.boundingBox()
+  const footBox = await page.locator(".reg-foot").boundingBox()
+
+  expect(toastBox && footBox && toastBox.y + toastBox.height <= footBox.y).toBe(
+    true,
+  )
+  await page.waitForTimeout(3500)
+  await expect(toast).toBeVisible()
+  await toast.getByRole("button", { name: "Fechar" }).click()
+  await expect(toast).toHaveCount(0)
 })
 
 test("cancel without changes leaves immediately", async ({ page }) => {
@@ -695,6 +714,7 @@ test("deletes an existing measurement after confirming", async ({ page }) => {
   await dialog.getByRole("button", { name: "Excluir" }).click()
 
   await expect(page).toHaveURL("/")
+  await expect(page.getByRole("status")).toHaveText("Medida de 10/06 excluída")
   expect(state.deletedIds).toEqual([`measurement-${EXISTING_DATE}`])
 })
 

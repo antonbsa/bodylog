@@ -246,18 +246,6 @@ input:disabled {
   color: var(--accent-fg);
 }
 
-.app-header {
-  display: grid;
-  gap: 8px;
-  padding: 20px 0 28px;
-}
-
-.app-header .header-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
 .login-shell {
   display: grid;
   align-items: center;

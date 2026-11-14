@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Theme } from "@radix-ui/themes"
 
 import { App } from "./App"
+import { ToastProvider } from "./components/ToastProvider"
 import { useResolvedTheme } from "./hooks/useResolvedTheme"
 import "@radix-ui/themes/styles.css"
 import "./styles/fonts.css"
@@ -15,6 +16,8 @@ import "./styles/home.css"
 import "./styles/history.css"
 import "./styles/trends.css"
 import "./styles/calendar.css"
+import "./styles/settings.css"
+import "./styles/toast.css"
 
 // iOS Safari ignores user-scalable=no for pinch, so cancel its gesture events.
 for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
@@ -52,7 +55,9 @@ function Root() {
     >
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <App />
+          <ToastProvider>
+            <App />
+          </ToastProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </Theme>

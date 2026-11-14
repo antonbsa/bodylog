@@ -1,42 +1,31 @@
-import { useRef, useState } from "react"
+import { useRef, useState, useSyncExternalStore } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { Callout } from "@radix-ui/themes"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { PageTitle } from "./components/PageTitle"
-import { Button } from "../components/Button"
 import { invalidateMeasurementData } from "../api/queryKeys"
 import {
   exportMeasurementsCsv,
   importMeasurementsCsv,
 } from "../api/measurements"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
+import { useToast } from "../hooks/useToast"
+import {
+  getThemePreference,
+  setThemePreference,
+  subscribeToTheme,
+  type ThemePreference,
+} from "../theme"
 import {
   formatImportPartialMessage,
   formatImportSuccessMessage,
 } from "../utils/csv-import-summary"
-import type { CsvImportSummary } from "../../../../types/measurements"
 
-type ExportState =
-  | {
-      message: string
-      status: "error"
-    }
-  | {
-      message: null
-      status: "idle" | "loading"
-    }
-
-type ImportState =
-  | {
-      message: string
-      status: "error"
-    }
-  | {
-      message: null
-      status: "idle" | "loading"
-      summary: CsvImportSummary | null
-    }
+const THEME_OPTIONS: Array<{ label: string; value: ThemePreference }> = [
+  { label: "Sistema", value: "system" },
+  { label: "Claro", value: "light" },
+  { label: "Escuro", value: "dark" },
+]
 
 type SettingsScreenProps = {
   onLogout: () => Promise<void> | void
@@ -44,24 +33,19 @@ type SettingsScreenProps = {
 
 export function SettingsScreen({ onLogout }: SettingsScreenProps) {
   const queryClient = useQueryClient()
-  const [exportState, setExportState] = useState<ExportState>({
-    message: null,
-    status: "idle",
-  })
-  const [importState, setImportState] = useState<ImportState>({
-    message: null,
-    status: "idle",
-    summary: null,
-  })
+  const toast = useToast()
+  const themePreference = useSyncExternalStore(
+    subscribeToTheme,
+    getThemePreference,
+  )
+  const [isExporting, setIsExporting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const importFileInputRef = useRef<HTMLInputElement | null>(null)
 
   function handleExportCsv() {
-    setExportState({
-      message: null,
-      status: "loading",
-    })
+    setIsExporting(true)
 
     exportMeasurementsCsv()
       .then((csvBlob) => {
@@ -72,17 +56,10 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
         link.download = "bodylog-measurements.csv"
         link.click()
         URL.revokeObjectURL(url)
-        setExportState({
-          message: null,
-          status: "idle",
-        })
+        toast.showSuccess("CSV exportado")
       })
-      .catch((error: unknown) => {
-        setExportState({
-          message: formatApiErrorMessage(error),
-          status: "error",
-        })
-      })
+      .catch((error: unknown) => toast.showError(formatApiErrorMessage(error)))
+      .finally(() => setIsExporting(false))
   }
 
   function handleImportCsv(file: File | undefined) {
@@ -90,28 +67,22 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
       return
     }
 
-    setImportState({
-      message: null,
-      status: "loading",
-      summary: null,
-    })
+    setIsImporting(true)
 
     importMeasurementsCsv(file)
       .then((summary) => {
         invalidateMeasurementData(queryClient)
-        setImportState({
-          message: null,
-          status: "idle",
-          summary,
-        })
+
+        if (summary.errors.length > 0) {
+          toast.showError(formatImportPartialMessage(summary))
+        } else {
+          toast.showSuccess(formatImportSuccessMessage(summary))
+        }
       })
-      .catch((error: unknown) => {
-        setImportState({
-          message: formatApiErrorMessage(error),
-          status: "error",
-        })
-      })
+      .catch((error: unknown) => toast.showError(formatApiErrorMessage(error)))
       .finally(() => {
+        setIsImporting(false)
+
         if (importFileInputRef.current) {
           importFileInputRef.current.value = ""
         }
@@ -140,45 +111,58 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
 
   return (
     <>
-      <header className="app-header">
-        <PageTitle>Ajustes</PageTitle>
-        <div className="header-actions">
-          <Button
-            disabled={exportState.status === "loading"}
-            onClick={handleExportCsv}
-            type="button"
-            variant="secondary"
-          >
-            {exportState.status === "loading"
-              ? "Exportando..."
-              : "Exportar CSV"}
-          </Button>
-          <Button
-            disabled={importState.status === "loading"}
-            onClick={() => importFileInputRef.current?.click()}
-            type="button"
-            variant="secondary"
-          >
-            {importState.status === "loading"
-              ? "Importando..."
-              : "Importar CSV"}
-          </Button>
-          <input
-            ref={importFileInputRef}
-            accept=".csv,text/csv"
-            className="visually-hidden"
-            onChange={(event) => handleImportCsv(event.target.files?.[0])}
-            type="file"
-          />
-          <Button
-            onClick={() => setIsLogoutDialogOpen(true)}
-            type="button"
-            variant="secondary"
-          >
-            Sair
-          </Button>
+      <PageTitle>Ajustes</PageTitle>
+
+      <div className="card">
+        <div className="set-block">
+          <span className="k" id="theme-label">
+            Tema
+          </span>
+          <div aria-labelledby="theme-label" className="seg" role="radiogroup">
+            {THEME_OPTIONS.map((option) => (
+              <button
+                aria-checked={option.value === themePreference}
+                key={option.value}
+                onClick={() => setThemePreference(option.value)}
+                role="radio"
+                type="button"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </header>
+        <button
+          className="set-row"
+          disabled={isExporting}
+          onClick={handleExportCsv}
+          type="button"
+        >
+          {isExporting ? "Exportando..." : "Exportar CSV"}
+        </button>
+        <button
+          className="set-row"
+          disabled={isImporting}
+          onClick={() => importFileInputRef.current?.click()}
+          type="button"
+        >
+          {isImporting ? "Importando..." : "Importar CSV"}
+        </button>
+        <input
+          ref={importFileInputRef}
+          accept=".csv,text/csv"
+          hidden
+          onChange={(event) => handleImportCsv(event.target.files?.[0])}
+          type="file"
+        />
+        <button
+          className="set-row danger"
+          onClick={() => setIsLogoutDialogOpen(true)}
+          type="button"
+        >
+          Sair
+        </button>
+      </div>
 
       <ConfirmationDialog
         confirmLabel="Sair"
@@ -191,34 +175,6 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
         open={isLogoutDialogOpen}
         title="Sair do BodyLog"
       />
-
-      {exportState.status === "error" ? (
-        <Callout.Root color="red" role="alert">
-          <Callout.Text>{exportState.message}</Callout.Text>
-        </Callout.Root>
-      ) : null}
-
-      {importState.status === "error" ? (
-        <Callout.Root color="red" role="alert">
-          <Callout.Text>{importState.message}</Callout.Text>
-        </Callout.Root>
-      ) : null}
-
-      {importState.status !== "error" && importState.summary ? (
-        importState.summary.errors.length > 0 ? (
-          <Callout.Root color="red" role="alert">
-            <Callout.Text>
-              {formatImportPartialMessage(importState.summary)}
-            </Callout.Text>
-          </Callout.Root>
-        ) : (
-          <Callout.Root color="green" role="status">
-            <Callout.Text>
-              {formatImportSuccessMessage(importState.summary)}
-            </Callout.Text>
-          </Callout.Root>
-        )
-      ) : null}
     </>
   )
 }
