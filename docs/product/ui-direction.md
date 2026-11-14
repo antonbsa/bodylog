@@ -24,6 +24,7 @@ Bottom tab bar: Início, Histórico, a central add button, Tendências, Ajustes 
 - The bar sits in the layout flow (full-height flex column, not `position: fixed`), with safe-area bottom padding, a solid background and a thin top border.
 - Each tab is an icon (Phosphor) above a 12px label. The active tab uses the accent color and `aria-current="page"`.
 - In the tab layout, switching tabs and opening or closing the registration screen replace the history entry instead of pushing, because the iOS edge-swipe gesture follows browser history and native tab apps do not stack tabs. Cancelar returns to the origin tab (kept in location state), save and delete go to Início, and a future desktop layout without the bottom bar may use normal history.
+- Only the tab content area rubber-bands at its edges on iOS; the page itself does not, so the tab bar never moves. The registration screen scrolls the page, so it has no rubber-band.
 - The central button is a 52px accent circle on the same plane as the bar, without a label, `aria-label="Registrar medida"`. It opens today's registration. No floating action button and no gear menu.
 - The bar is hidden on Login and on the registration screen.
 - Each main screen starts with a large bold page title that takes focus on navigation.
@@ -57,7 +58,7 @@ The weekly block has no metabolism or derived values: metabolism shows only in t
 
 ### Registro
 
-Full-screen route (for example `/registro?data=YYYY-MM-DD`), outside the tab layout. The page scrolls with the document: the header (Cancelar and date bar) is sticky at the top and the footer is fixed at the bottom.
+Full-screen route (for example `/registro?data=YYYY-MM-DD`), outside the tab layout. The page scrolls with the document: the header (Cancelar and date bar) is sticky at the top and the footer is fixed at the bottom. The scrollbar is hidden, since the document scrollbar would run under both and a page cannot inset it.
 
 - Header: "Cancelar", then the date bar with a previous-day arrow, the date label ("qui, 12 nov") and a next-day arrow. The arrows are 44px circles; next is disabled on today. Tapping the date opens the native date picker (a transparent `input type="date"` laid over the label), and future dates are not allowed.
 - A badge states the mode: "Nova medida" or "Editando medida de DD/MM". Selecting a date with a record loads it for editing; a date without one shows an empty form.
