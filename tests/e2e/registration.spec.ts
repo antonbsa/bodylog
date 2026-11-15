@@ -253,7 +253,7 @@ test("creates a measurement for today and returns to Início", async ({
   await page.getByRole("button", { name: "Salvar" }).click()
 
   await expect(page).toHaveURL("/")
-  await expect(page.getByRole("status")).toHaveText(
+  await expect(page.locator(".toast-region").getByRole("status")).toHaveText(
     `Medida de ${formatDayMonth(getToday())} salva`,
   )
   expect(state.puts).toEqual([
@@ -748,7 +748,9 @@ test("deletes an existing measurement after confirming", async ({ page }) => {
   await dialog.getByRole("button", { name: "Excluir" }).click()
 
   await expect(page).toHaveURL("/")
-  await expect(page.getByRole("status")).toHaveText("Medida de 10/06 excluída")
+  await expect(page.locator(".toast-region").getByRole("status")).toHaveText(
+    "Medida de 10/06 excluída",
+  )
   expect(state.deletedIds).toEqual([`measurement-${EXISTING_DATE}`])
 })
 

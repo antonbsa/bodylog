@@ -88,7 +88,12 @@ export function RegistrationScreen() {
   const requestedDate = searchParams.get("data")
   const date = isPastOrTodayIsoDate(requestedDate) ? requestedDate : today
 
-  const { data, error: loadError, reload } = useRegistrationData(date)
+  const { data: liveData, error: loadError, reload } = useRegistrationData(date)
+  // Frozen during a save/delete so the post-write refetch doesn't redraw Registro before it leaves.
+  const [writeSnapshot, setWriteSnapshot] = useState<RegistrationData | null>(
+    null,
+  )
+  const data = writeSnapshot ?? liveData
   const toast = useToast()
   const [form, setForm] = useState<FormValues>(EMPTY_FORM)
   const [touched, setTouched] = useState<
@@ -231,6 +236,7 @@ export function RegistrationScreen() {
     }
 
     setIsSubmitting(true)
+    setWriteSnapshot(data)
 
     try {
       await saveMeasurementByDate(date, input)
@@ -239,6 +245,7 @@ export function RegistrationScreen() {
       navigate("/")
     } catch (error) {
       toast.showError(formatApiErrorMessage(error))
+      setWriteSnapshot(null)
       setIsSubmitting(false)
     }
   }
@@ -249,6 +256,7 @@ export function RegistrationScreen() {
     }
 
     setIsDeleting(true)
+    setWriteSnapshot(data)
 
     try {
       await deleteMeasurement(data.measurement.id)
@@ -257,6 +265,7 @@ export function RegistrationScreen() {
       navigate("/")
     } catch (error) {
       toast.showError(formatApiErrorMessage(error))
+      setWriteSnapshot(null)
       setIsDeleting(false)
       setDialog(null)
     }
