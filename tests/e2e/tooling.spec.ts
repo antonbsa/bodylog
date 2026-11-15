@@ -45,52 +45,6 @@ async function mockWeeklyDashboard(page: Page) {
             restingMetabolismKcal: 1700,
           },
         },
-        display: {
-          mode: "current-week",
-          summary: {
-            weekStartDate: "2026-06-08",
-            weekEndDate: "2026-06-14",
-            measurementCount: 2,
-            isCurrentWeek: true,
-            isPartialWeek: true,
-            averages: {
-              weightKg: 73,
-              bmi: 25.87,
-              bodyFatPercentage: 14,
-              bodyFatKg: 10.36,
-              musclePercentage: 44,
-              muscleKg: 32.56,
-              restingMetabolismKcal: 1700,
-            },
-          },
-          variation: {
-            weightKg: {
-              absolute: 1,
-              relativePercentage: 1.39,
-              direction: "up",
-            },
-            bodyFatPercentage: {
-              absolutePercentagePoints: -2.2,
-              relativePercentage: -13.58,
-              direction: "down",
-            },
-            bodyFatKg: {
-              absolute: -1.31,
-              relativePercentage: -11.23,
-              direction: "down",
-            },
-            musclePercentage: {
-              absolutePercentagePoints: 1.25,
-              relativePercentage: 2.92,
-              direction: "up",
-            },
-            muscleKg: {
-              absolute: 1.77,
-              relativePercentage: 5.75,
-              direction: "up",
-            },
-          },
-        },
         previous: {
           weekStartDate: "2026-06-01",
           weekEndDate: "2026-06-07",
@@ -107,33 +61,6 @@ async function mockWeeklyDashboard(page: Page) {
             restingMetabolismKcal: 1690,
           },
         },
-        variation: {
-          weightKg: {
-            absolute: 1,
-            relativePercentage: 1.39,
-            direction: "up",
-          },
-          bodyFatPercentage: {
-            absolutePercentagePoints: -2.2,
-            relativePercentage: -13.58,
-            direction: "down",
-          },
-          bodyFatKg: {
-            absolute: -1.31,
-            relativePercentage: -11.23,
-            direction: "down",
-          },
-          musclePercentage: {
-            absolutePercentagePoints: 1.25,
-            relativePercentage: 2.92,
-            direction: "up",
-          },
-          muscleKg: {
-            absolute: 1.77,
-            relativePercentage: 5.75,
-            direction: "up",
-          },
-        },
       }),
       contentType: "application/json",
       status: 200,
@@ -142,6 +69,13 @@ async function mockWeeklyDashboard(page: Page) {
 }
 
 async function mockMeasurementList(page: Page) {
+  await page.route("**/api/history/weeks*", (route) =>
+    route.fulfill({
+      body: JSON.stringify({ nextBefore: null, weeks: [] }),
+      contentType: "application/json",
+      status: 200,
+    }),
+  )
   await page.route("**/api/measurements?*", async (route) => {
     await route.fulfill({
       body: JSON.stringify({
@@ -239,10 +173,8 @@ test("login screen opens the app after a valid password", async ({ page }) => {
   await page.getByLabel("Senha").fill("senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
 
-  await expect(
-    page.getByRole("heading", { name: "Resumo da semana" }),
-  ).toBeVisible()
-  await expect(page.getByText("Peso médio")).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
+  await expect(page.getByText("Esta semana")).toBeVisible()
 })
 
 test("authenticated session survives a page reload", async ({ page }) => {
@@ -288,10 +220,8 @@ test("authenticated session survives a page reload", async ({ page }) => {
   await page.getByRole("button", { name: "Entrar" }).click()
   await page.reload()
 
-  await expect(
-    page.getByRole("heading", { name: "Resumo da semana" }),
-  ).toBeVisible()
-  await expect(page.getByText("Peso médio")).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
+  await expect(page.getByText("Esta semana")).toBeVisible()
 })
 
 test("logout returns to the login screen", async ({ page }) => {
@@ -329,6 +259,7 @@ test("logout returns to the login screen", async ({ page }) => {
   await page.goto("/")
   await page.getByLabel("Senha").fill("senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
+  await page.getByRole("link", { name: "Ajustes" }).click()
   await page.getByRole("button", { name: "Sair" }).click()
 
   const logoutDialog = page.getByRole("alertdialog", {
@@ -343,9 +274,7 @@ test("logout returns to the login screen", async ({ page }) => {
 
   await logoutDialog.getByRole("button", { name: "Cancelar" }).click()
   await expect(logoutDialog).toBeHidden()
-  await expect(
-    page.getByRole("heading", { name: "Resumo da semana" }),
-  ).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Ajustes" })).toBeVisible()
   expect(logoutRequestCount).toBe(0)
 
   await page.getByRole("button", { name: "Sair" }).click()

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
 import { Measurement } from "../../apps/api/src/domain/measurement"
+import {
+  isWithinMeasurementLimit,
+  normalizeNotes,
+} from "../../domain/measurement"
 
 const USER_HEIGHT_CM = 168
 
@@ -57,9 +61,39 @@ describe("Measurement", () => {
       bodyFatPercentage: 14.46,
       musclePercentage: 43.72,
       restingMetabolismKcal: null,
+      waistCm: null,
+      sleepHours: null,
+      disposition: null,
+      notes: null,
       createdAt: "2026-06-09T12:00:00.000Z",
       updatedAt: "2026-06-09T12:00:00.000Z",
     })
+  })
+})
+
+describe("measurement limits", () => {
+  it.each([
+    ["waistCm", 30, 250],
+    ["sleepHours", 0, 24],
+    ["disposition", 1, 5],
+  ] as const)(
+    "%s accepts its boundaries and rejects values beyond",
+    (field, min, max) => {
+      expect(isWithinMeasurementLimit(field, min)).toBe(true)
+      expect(isWithinMeasurementLimit(field, max)).toBe(true)
+      expect(isWithinMeasurementLimit(field, min - 0.1)).toBe(false)
+      expect(isWithinMeasurementLimit(field, max + 0.1)).toBe(false)
+    },
+  )
+
+  it("requires an integer disposition", () => {
+    expect(isWithinMeasurementLimit("disposition", 3)).toBe(true)
+    expect(isWithinMeasurementLimit("disposition", 3.5)).toBe(false)
+  })
+
+  it("trims notes and turns blank notes into null", () => {
+    expect(normalizeNotes("  hello  ")).toBe("hello")
+    expect(normalizeNotes(" \n ")).toBeNull()
   })
 })
 
@@ -75,6 +109,10 @@ function createMeasurement(input: {
     bodyFatPercentage: input.bodyFatPercentage,
     musclePercentage: input.musclePercentage,
     restingMetabolismKcal: null,
+    waistCm: null,
+    sleepHours: null,
+    disposition: null,
+    notes: null,
     createdAt: "2026-06-09T12:00:00.000Z",
     updatedAt: "2026-06-09T12:00:00.000Z",
   })

@@ -115,6 +115,10 @@ offset=number
       "bodyFatPercentage": 14.46,
       "musclePercentage": 43.72,
       "restingMetabolismKcal": 1700,
+      "waistCm": 80.5,
+      "sleepHours": 7.5,
+      "disposition": 4,
+      "notes": "string or null",
       "derived": {
         "bmi": 25.83,
         "bodyFatKg": 10.54,
@@ -144,11 +148,18 @@ Finds a measurement by date.
     "bodyFatPercentage": null,
     "musclePercentage": null,
     "restingMetabolismKcal": null,
+    "waistCm": null,
+    "sleepHours": null,
+    "disposition": null,
+    "notes": null,
     "createdAt": "string",
     "updatedAt": "string"
-  }
+  },
+  "heightCm": 168
 }
 ```
+
+`heightCm` is the configured user height, so the registration screen can recompute the BMI live while editing.
 
 #### Response 404
 
@@ -171,14 +182,20 @@ Creates or updates the measurement for a date.
   "weightKg": 72.9,
   "bodyFatPercentage": 14.46,
   "musclePercentage": 43.72,
-  "restingMetabolismKcal": 1700
+  "restingMetabolismKcal": 1700,
+  "waistCm": 80.5,
+  "sleepHours": 7.5,
+  "disposition": 4,
+  "notes": "Slept well"
 }
 ```
 
 #### Rules
 
 - `weightKg` is required.
-- Other fields accept `number` or `null`.
+- Other fields accept `number` or `null` (`notes` accepts a string or `null`); an omitted field is stored as `null`.
+- Values outside the limits are rejected with the `INVALID_MEASUREMENT_INPUT` validation error (400): weight 20–300 kg, `bodyFatPercentage` and `musclePercentage` 1–80, `restingMetabolismKcal` 500–5000, `waistCm` 30–250, `sleepHours` 0–24, `disposition` an integer 1–5.
+- `notes` is trimmed; a blank string after trimming is stored as `null`.
 - If the date already exists, update it.
 - If the date does not exist, create it.
 
@@ -193,6 +210,10 @@ Creates or updates the measurement for a date.
     "bodyFatPercentage": 14.46,
     "musclePercentage": 43.72,
     "restingMetabolismKcal": 1700,
+    "waistCm": 80.5,
+    "sleepHours": 7.5,
+    "disposition": 4,
+    "notes": "Slept well",
     "createdAt": "string",
     "updatedAt": "string"
   }
@@ -217,9 +238,11 @@ Deletes a measurement.
 
 ### GET /api/dashboard/weekly
 
-Returns the weekly summary for the current week and comparison against the previous week.
+Returns the weekly summaries of the current week and the previous week.
 
-The response must include week date ranges and measurement counts so the UI can derive current and previous week registration reliability.
+The response must include week date ranges and measurement counts so the UI can show the weekly registration count against the 7-day target.
+
+Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI can draw the day dots; `measurementCount` is the recorded count. The weekly registration target is 7 (`0035-use-seven-day-weekly-target.md`) and the response carries no reliability label. Weekly averages include `waistCm`, `sleepHours` and `disposition`. The API returns raw averages and counts only; the UI computes variation (`0039-compute-weekly-variation-in-the-ui.md`).
 
 #### Response 200
 
@@ -229,6 +252,7 @@ The response must include week date ranges and measurement counts so the UI can 
     "weekStartDate": "YYYY-MM-DD",
     "weekEndDate": "YYYY-MM-DD",
     "measurementCount": 4,
+    "recordedDates": ["YYYY-MM-DD"],
     "isCurrentWeek": true,
     "isPartialWeek": true,
     "averages": {
@@ -238,39 +262,17 @@ The response must include week date ranges and measurement counts so the UI can 
       "bodyFatKg": 10.54,
       "musclePercentage": 43.72,
       "muscleKg": 31.87,
-      "restingMetabolismKcal": 1700
-    }
-  },
-  "display": {
-    "mode": "current-week",
-    "summary": {
-      "weekStartDate": "YYYY-MM-DD",
-      "weekEndDate": "YYYY-MM-DD",
-      "measurementCount": 4,
-      "isCurrentWeek": true,
-      "isPartialWeek": true,
-      "averages": {
-        "weightKg": 72.9,
-        "bmi": 25.83,
-        "bodyFatPercentage": 14.46,
-        "bodyFatKg": 10.54,
-        "musclePercentage": 43.72,
-        "muscleKg": 31.87,
-        "restingMetabolismKcal": 1700
-      }
-    },
-    "variation": {
-      "weightKg": {
-        "absolute": 1.15,
-        "relativePercentage": 1.6,
-        "direction": "up"
-      }
+      "restingMetabolismKcal": 1700,
+      "waistCm": 80.5,
+      "sleepHours": 7.5,
+      "disposition": 4
     }
   },
   "previous": {
     "weekStartDate": "YYYY-MM-DD",
     "weekEndDate": "YYYY-MM-DD",
     "measurementCount": 7,
+    "recordedDates": ["YYYY-MM-DD"],
     "averages": {
       "weightKg": 71.75,
       "bmi": 25.42,
@@ -278,28 +280,94 @@ The response must include week date ranges and measurement counts so the UI can 
       "bodyFatKg": 11.62,
       "musclePercentage": 42.75,
       "muscleKg": 30.67,
-      "restingMetabolismKcal": 1680
-    }
-  },
-  "variation": {
-    "weightKg": {
-      "absolute": 1.15,
-      "relativePercentage": 1.6,
-      "direction": "up"
-    },
-    "bodyFatPercentage": {
-      "absolutePercentagePoints": -1.74,
-      "relativePercentage": -10.74,
-      "direction": "down"
+      "restingMetabolismKcal": 1680,
+      "waistCm": 82,
+      "sleepHours": 7,
+      "disposition": 3
     }
   }
 }
 ```
 
-`current` always represents the actual current week in the configured user time
-zone. `display` provides the summary values the dashboard cards should render:
-it uses the current week when it has records and falls back to the latest
-recorded week when the current week is still empty.
+`current` always represents the actual current week in the configured user time zone, even when it has no records yet; the web UI reads `current` and `previous` only.
+
+## History
+
+### GET /api/history/weeks
+
+Returns the weeks that have at least one record, newest first, for the Histórico screen. A page holds 8 weeks and a week is never split across pages, so each week summary matches the one Início shows.
+
+#### Optional query params
+
+```txt
+before=YYYY-MM-DD
+```
+
+`before` excludes measurements on or after that date. To get the next older page, pass the `nextBefore` of the previous response. An invalid date returns the `INVALID_DATE` validation error (400).
+
+#### Response 200
+
+```json
+{
+  "weeks": [
+    {
+      "summary": {
+        "weekStartDate": "YYYY-MM-DD",
+        "weekEndDate": "YYYY-MM-DD",
+        "measurementCount": 4,
+        "recordedDates": ["YYYY-MM-DD"],
+        "isCurrentWeek": true,
+        "isPartialWeek": true,
+        "averages": {
+          "weightKg": 72.9,
+          "bodyFatPercentage": 14.46,
+          "musclePercentage": 43.72
+        }
+      },
+      "measurements": [
+        {
+          "id": "string",
+          "date": "YYYY-MM-DD",
+          "weightKg": 72.9,
+          "notes": "string or null",
+          "derived": { "bmi": 25.83, "bodyFatKg": 10.54, "muscleKg": 31.87 }
+        }
+      ]
+    }
+  ],
+  "nextBefore": "YYYY-MM-DD or null"
+}
+```
+
+`summary` has the same shape as a weekly dashboard week (the example shows a few averages only) and `measurements` are the items of `GET /api/measurements`, newest first. `nextBefore` is the `weekStartDate` of the last returned week when older records exist, otherwise `null`. An empty history returns `{ "weeks": [], "nextBefore": null }`.
+
+## Trends
+
+### GET /api/trends
+
+Returns every measurement as one point, oldest first, for the Tendências screen. It is not paged because the screen switches metric and period on the client, and `GET /api/measurements` caps `limit` at 100, which would break the "Tudo" period.
+
+#### Response 200
+
+```json
+{
+  "points": [
+    {
+      "date": "YYYY-MM-DD",
+      "weightKg": 72.9,
+      "bodyFatPercentage": 14.5,
+      "musclePercentage": 43.7,
+      "waistCm": null,
+      "sleepHours": 7.5,
+      "disposition": 4,
+      "restingMetabolismKcal": 1650,
+      "bmi": 25.83
+    }
+  ]
+}
+```
+
+Every metric can be `null`; `bmi` is derived from the configured user height. No records return `{ "points": [] }`.
 
 ## CSV Export
 
@@ -310,8 +378,8 @@ Downloads all measurements as CSV.
 #### Response 200
 
 ```csv
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
-2026-06-10,72.9,14.46,43.72,1700,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
+2026-06-10,72.9,14.46,43.72,1700,80.5,7.5,4,Slept well,2026-06-09T12:00:00.000Z,2026-06-09T12:00:00.000Z
 ```
 
 #### Rules
@@ -336,19 +404,22 @@ Multipart upload containing a CSV file in a `file` field.
 Full canonical format:
 
 ```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
 ```
 
 Minimal canonical format:
 
 ```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes
 ```
+
+Files exported before the redesign, without `waist_cm,sleep_hours,disposition,notes`, still import (with or without `created_at,updated_at`); the new fields are stored as `null`.
 
 #### Rules
 
 - Validates headers exactly against supported canonical formats.
-- Validates each row.
+- Validates each row, including the limits of every numeric field; an invalid new value is reported per row (for example `Invalid waist`, `Invalid sleep hours`, `Invalid disposition`).
+- Trims `notes`; blank notes are stored as `null`. Notes with commas or line breaks must be quoted.
 - Upserts records by `date`.
 - Uses the current import timestamp when `created_at` or `updated_at` are
   omitted or empty.

@@ -16,8 +16,14 @@ V1 allows at most one measurement per date.
 | `bodyFatPercentage`     | number/null |       no | Body fat percentage from the scale.                      |
 | `musclePercentage`      | number/null |       no | Muscle percentage from the scale.                        |
 | `restingMetabolismKcal` | number/null |       no | Resting metabolism from the scale.                       |
+| `waistCm`               | number/null |       no | Waist in centimeters, one decimal (30–250).              |
+| `sleepHours`            | number/null |       no | Hours slept the previous night, one decimal (0–24).      |
+| `disposition`           | number/null |       no | Integer from 1 (indisposto) to 5 (disposto).             |
+| `notes`                 | string/null |       no | Free text, trimmed; blank notes are stored as `null`.    |
 | `createdAt`             | string      |      yes | Creation timestamp.                                      |
 | `updatedAt`             | string      |      yes | Last update timestamp.                                   |
+
+Hard validation limits that block saving: weight 20–300 kg, body fat and muscle 1–80%, resting metabolism 500–5000 kcal, waist 30–250 cm, sleep 0–24 h, disposition integer 1–5 (`0032-add-waist-sleep-disposition-and-notes-fields.md`). The limits live in `domain/measurement.ts`.
 
 ## Derived Values
 
@@ -59,6 +65,8 @@ Each measurement belongs to exactly one week based on its `date`.
 - Missing days are ignored.
 - Missing optional values are ignored for that specific metric.
 - A metric average should be `null` when no values are available for that metric.
+- Waist, sleep and disposition are averaged like the other optional metrics.
+- Each week also lists the `recordedDates` (ascending) that have a measurement; `measurementCount` is their count. The weekly registration target is 7 (`0035-use-seven-day-weekly-target.md`).
 
 Example:
 
@@ -76,11 +84,7 @@ The V1 compares:
 partial current week vs previous full week
 ```
 
-The comparison should include:
-
-- absolute variation;
-- relative percentage variation when a previous value exists;
-- direction: `up`, `down`, or `stable`.
+The API returns weekly averages only; the UI computes the variation between the two weeks (`0039-compute-weekly-variation-in-the-ui.md`). Missing metrics in either week produce no comparison, never a zero.
 
 For percentage-based metrics such as body fat percentage and muscle percentage, absolute variation must be displayed as percentage points.
 
@@ -89,22 +93,6 @@ Example:
 ```txt
 16.20% → 14.46% = -1.74 percentage points
 ```
-
-## Direction Rule
-
-V1 stable thresholds:
-
-- weight: less than `0.5 kg`;
-- body fat mass: less than `0.4 kg`;
-- muscle mass: less than `0.3 kg`.
-
-Direction rules:
-
-- `up`: current value is greater than previous value by at least the relevant threshold;
-- `down`: current value is lower than previous value by at least the relevant threshold;
-- `stable`: absolute change is below the relevant threshold.
-
-Weight direction uses average weight in kg. Body fat and muscle direction use derived mass in kg for threshold evaluation, while percentage values still display percentage-point variation.
 
 ## Future Postgres Portability
 
@@ -134,16 +122,25 @@ CREATE TABLE measurements (
 CREATE INDEX idx_measurements_date ON measurements(date);
 ```
 
+Migration `0002_add_waist_sleep_disposition_notes.sql` adds the four nullable columns; existing rows keep them empty:
+
+```sql
+ALTER TABLE measurements ADD COLUMN waist_cm REAL;
+ALTER TABLE measurements ADD COLUMN sleep_hours REAL;
+ALTER TABLE measurements ADD COLUMN disposition INTEGER;
+ALTER TABLE measurements ADD COLUMN notes TEXT;
+```
+
 ## CSV Format
 
-Canonical V1 CSV headers:
+Canonical CSV headers:
 
 ```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,created_at,updated_at
+date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
 ```
 
 CSV export uses this full canonical format and omits the internal `id` field.
-CSV import should upsert records by `date`; `created_at` and `updated_at` may be
+CSV import also accepts files without the four new columns (the earlier format) and without the audit timestamps. CSV import should upsert records by `date`; `created_at` and `updated_at` may be
 used as backup metadata when present but should not be required for spreadsheet
 import compatibility.
 

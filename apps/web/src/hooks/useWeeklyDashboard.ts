@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { getWeeklyDashboard } from "../api/dashboard"
+import { queryKeys } from "../api/queryKeys"
 import type { WeeklyDashboard } from "../../../../types/dashboard"
 
 export type WeeklyDashboardState = {
@@ -14,42 +15,25 @@ export function useWeeklyDashboard(): {
   reload: () => void
   state: WeeklyDashboardState
 } {
-  const [state, setState] = useState<WeeklyDashboardState>({
-    dashboard: null,
-    message: null,
-    status: "loading",
+  const query = useQuery({
+    queryFn: getWeeklyDashboard,
+    queryKey: queryKeys.dashboard,
   })
-  const requestIdRef = useRef(0)
 
-  const reload = useCallback(() => {
-    const requestId = (requestIdRef.current += 1)
+  const status = query.data ? "loaded" : query.isError ? "error" : "loading"
+  const state: WeeklyDashboardState = {
+    dashboard: query.data ?? null,
+    message:
+      status === "error" && query.error
+        ? formatApiErrorMessage(query.error)
+        : null,
+    status,
+  }
 
-    setState((currentState) => ({
-      dashboard: currentState.dashboard,
-      message: null,
-      status: "loading",
-    }))
-
-    getWeeklyDashboard()
-      .then((dashboard) => {
-        if (requestId === requestIdRef.current) {
-          setState({ dashboard, message: null, status: "loaded" })
-        }
-      })
-      .catch((error: unknown) => {
-        if (requestId === requestIdRef.current) {
-          setState({
-            dashboard: null,
-            message: formatApiErrorMessage(error),
-            status: "error",
-          })
-        }
-      })
-  }, [])
-
-  useEffect(() => {
-    reload()
-  }, [reload])
-
-  return { reload, state }
+  return {
+    reload: () => {
+      query.refetch()
+    },
+    state,
+  }
 }

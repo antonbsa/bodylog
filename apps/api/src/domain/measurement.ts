@@ -1,4 +1,7 @@
-import { roundToTwoDecimals } from "./numeric"
+import {
+  calculateDerivedValues,
+  type DerivedMeasurementValues,
+} from "../../../../domain/measurement"
 
 export type MeasurementFields = {
   id: string
@@ -7,14 +10,12 @@ export type MeasurementFields = {
   bodyFatPercentage: number | null
   musclePercentage: number | null
   restingMetabolismKcal: number | null
+  waistCm: number | null
+  sleepHours: number | null
+  disposition: number | null
+  notes: string | null
   createdAt: string
   updatedAt: string
-}
-
-export type DerivedMeasurementValues = {
-  bmi: number
-  bodyFatKg: number | null
-  muscleKg: number | null
 }
 
 /**
@@ -29,6 +30,10 @@ export class Measurement {
   readonly bodyFatPercentage: number | null
   readonly musclePercentage: number | null
   readonly restingMetabolismKcal: number | null
+  readonly waistCm: number | null
+  readonly sleepHours: number | null
+  readonly disposition: number | null
+  readonly notes: string | null
   readonly createdAt: string
   readonly updatedAt: string
 
@@ -39,24 +44,16 @@ export class Measurement {
     this.bodyFatPercentage = fields.bodyFatPercentage
     this.musclePercentage = fields.musclePercentage
     this.restingMetabolismKcal = fields.restingMetabolismKcal
+    this.waistCm = fields.waistCm
+    this.sleepHours = fields.sleepHours
+    this.disposition = fields.disposition
+    this.notes = fields.notes
     this.createdAt = fields.createdAt
     this.updatedAt = fields.updatedAt
   }
 
   getDerivedValues(heightCm: number): DerivedMeasurementValues {
-    const heightM = heightCm / 100
-
-    return {
-      bmi: roundToTwoDecimals(this.weightKg / (heightM * heightM)),
-      bodyFatKg:
-        this.bodyFatPercentage === null
-          ? null
-          : roundToTwoDecimals((this.weightKg * this.bodyFatPercentage) / 100),
-      muscleKg:
-        this.musclePercentage === null
-          ? null
-          : roundToTwoDecimals((this.weightKg * this.musclePercentage) / 100),
-    }
+    return calculateDerivedValues(this, heightCm)
   }
 
   toJSON(): MeasurementFields {
@@ -67,6 +64,10 @@ export class Measurement {
       bodyFatPercentage: this.bodyFatPercentage,
       musclePercentage: this.musclePercentage,
       restingMetabolismKcal: this.restingMetabolismKcal,
+      waistCm: this.waistCm,
+      sleepHours: this.sleepHours,
+      disposition: this.disposition,
+      notes: this.notes,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }

@@ -12,6 +12,10 @@ type MeasurementRow = {
   body_fat_percentage: number | null
   muscle_percentage: number | null
   resting_metabolism_kcal: number | null
+  waist_cm: number | null
+  sleep_hours: number | null
+  disposition: number | null
+  notes: string | null
   created_at: string
   updated_at: string
 }
@@ -22,6 +26,8 @@ type MeasurementRepositoryOptions = {
 }
 
 type ListMeasurementsOptions = {
+  /** Exclusive upper bound, unlike the inclusive `to`. */
+  before?: string
   from?: string
   limit?: number
   offset?: number
@@ -35,6 +41,10 @@ const measurementColumns = `
   body_fat_percentage,
   muscle_percentage,
   resting_metabolism_kcal,
+  waist_cm,
+  sleep_hours,
+  disposition,
+  notes,
   created_at,
   updated_at
 `
@@ -60,6 +70,10 @@ export class MeasurementRepository {
       bodyFatPercentage: input.bodyFatPercentage ?? null,
       musclePercentage: input.musclePercentage ?? null,
       restingMetabolismKcal: input.restingMetabolismKcal ?? null,
+      waistCm: input.waistCm ?? null,
+      sleepHours: input.sleepHours ?? null,
+      disposition: input.disposition ?? null,
+      notes: input.notes ?? null,
       createdAt: timestamp,
       updatedAt: timestamp,
     })
@@ -74,10 +88,14 @@ export class MeasurementRepository {
             body_fat_percentage,
             muscle_percentage,
             resting_metabolism_kcal,
+            waist_cm,
+            sleep_hours,
+            disposition,
+            notes,
             created_at,
             updated_at
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .bind(
@@ -87,6 +105,10 @@ export class MeasurementRepository {
         measurement.bodyFatPercentage,
         measurement.musclePercentage,
         measurement.restingMetabolismKcal,
+        measurement.waistCm,
+        measurement.sleepHours,
+        measurement.disposition,
+        measurement.notes,
         measurement.createdAt,
         measurement.updatedAt,
       )
@@ -108,6 +130,10 @@ export class MeasurementRepository {
             body_fat_percentage = ?,
             muscle_percentage = ?,
             resting_metabolism_kcal = ?,
+            waist_cm = ?,
+            sleep_hours = ?,
+            disposition = ?,
+            notes = ?,
             updated_at = ?
           WHERE date = ?
         `,
@@ -117,6 +143,10 @@ export class MeasurementRepository {
         input.bodyFatPercentage ?? null,
         input.musclePercentage ?? null,
         input.restingMetabolismKcal ?? null,
+        input.waistCm ?? null,
+        input.sleepHours ?? null,
+        input.disposition ?? null,
+        input.notes ?? null,
         this.currentTimestamp(),
         date,
       )
@@ -156,6 +186,10 @@ export class MeasurementRepository {
               body_fat_percentage = ?,
               muscle_percentage = ?,
               resting_metabolism_kcal = ?,
+              waist_cm = ?,
+              sleep_hours = ?,
+              disposition = ?,
+              notes = ?,
               created_at = ?,
               updated_at = ?
             WHERE date = ?
@@ -166,6 +200,10 @@ export class MeasurementRepository {
           input.bodyFatPercentage ?? null,
           input.musclePercentage ?? null,
           input.restingMetabolismKcal ?? null,
+          input.waistCm ?? null,
+          input.sleepHours ?? null,
+          input.disposition ?? null,
+          input.notes ?? null,
           input.createdAt,
           input.updatedAt,
           input.date,
@@ -191,6 +229,10 @@ export class MeasurementRepository {
       bodyFatPercentage: input.bodyFatPercentage ?? null,
       musclePercentage: input.musclePercentage ?? null,
       restingMetabolismKcal: input.restingMetabolismKcal ?? null,
+      waistCm: input.waistCm ?? null,
+      sleepHours: input.sleepHours ?? null,
+      disposition: input.disposition ?? null,
+      notes: input.notes ?? null,
       createdAt: input.createdAt,
       updatedAt: input.updatedAt,
     })
@@ -205,10 +247,14 @@ export class MeasurementRepository {
             body_fat_percentage,
             muscle_percentage,
             resting_metabolism_kcal,
+            waist_cm,
+            sleep_hours,
+            disposition,
+            notes,
             created_at,
             updated_at
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .bind(
@@ -218,6 +264,10 @@ export class MeasurementRepository {
         measurement.bodyFatPercentage,
         measurement.musclePercentage,
         measurement.restingMetabolismKcal,
+        measurement.waistCm,
+        measurement.sleepHours,
+        measurement.disposition,
+        measurement.notes,
         measurement.createdAt,
         measurement.updatedAt,
       )
@@ -241,6 +291,11 @@ export class MeasurementRepository {
     if (options.to) {
       whereClauses.push("date <= ?")
       bindings.push(options.to)
+    }
+
+    if (options.before) {
+      whereClauses.push("date < ?")
+      bindings.push(options.before)
     }
 
     const whereSql =
@@ -305,6 +360,10 @@ function mapMeasurementRow(row: MeasurementRow): Measurement {
     bodyFatPercentage: row.body_fat_percentage,
     musclePercentage: row.muscle_percentage,
     restingMetabolismKcal: row.resting_metabolism_kcal,
+    waistCm: row.waist_cm,
+    sleepHours: row.sleep_hours,
+    disposition: row.disposition,
+    notes: row.notes,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   })

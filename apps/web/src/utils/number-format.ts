@@ -22,12 +22,6 @@ export function formatOptionalPreciseDisplayNumber(
   return value === null ? "-" : formatPreciseDisplayNumber(value)
 }
 
-export function formatSignedDisplayNumber(value: number): string {
-  const sign = value > 0 ? "+" : ""
-
-  return `${sign}${formatPreciseDisplayNumber(value)}`
-}
-
 export function formatInputNumber(value: number | null): string {
   return value === null ? "" : String(value).replace(".", ",")
 }
@@ -42,4 +36,30 @@ export function parseDecimalInput(value: string): number | undefined {
   const parsedValue = Number(normalizedValue)
 
   return Number.isFinite(parsedValue) ? parsedValue : undefined
+}
+
+const ptBrOneDecimalFormatter = new Intl.NumberFormat("pt-BR", {
+  maximumFractionDigits: 1,
+  minimumFractionDigits: 1,
+})
+
+export function formatOneDecimal(value: number): string {
+  return ptBrOneDecimalFormatter.format(value)
+}
+
+const fixedFormatters = new Map<number, Intl.NumberFormat>()
+
+/** pt-BR number with exactly `decimals` fraction digits. */
+export function formatFixed(value: number, decimals: number): string {
+  let formatter = fixedFormatters.get(decimals)
+
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("pt-BR", {
+      maximumFractionDigits: decimals,
+      minimumFractionDigits: decimals,
+    })
+    fixedFormatters.set(decimals, formatter)
+  }
+
+  return formatter.format(value)
 }

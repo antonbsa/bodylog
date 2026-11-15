@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by `0036-track-tasks-only-as-github-issues.md`
 
 ## Context
 

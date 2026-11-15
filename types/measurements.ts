@@ -5,14 +5,28 @@ export type Measurement = {
   bodyFatPercentage: number | null
   musclePercentage: number | null
   restingMetabolismKcal: number | null
+  waistCm: number | null
+  sleepHours: number | null
+  disposition: number | null
+  notes: string | null
   createdAt: string
   updatedAt: string
+}
+
+/** Response of `GET /api/measurements/by-date/:date`; height lets the form recompute derived values. */
+export type MeasurementLookup = {
+  heightCm: number
+  item: Measurement
 }
 
 export type MeasurementInput = {
   bodyFatPercentage: number | null
   musclePercentage: number | null
   restingMetabolismKcal: number | null
+  waistCm: number | null
+  sleepHours: number | null
+  disposition: number | null
+  notes: string | null
   weightKg: number
 }
 

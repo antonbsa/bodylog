@@ -6,16 +6,7 @@ This file stores useful ideas that are explicitly outside the current V1 scope u
 
 ### Daily Observations
 
-Add optional notes to daily measurements.
-
-Possible use cases:
-
-- unusual hydration;
-- bad sleep;
-- post-workout measurement;
-- post-meal measurement;
-- injury context;
-- unusual sodium/carbohydrate intake.
+Adopted: optional notes on measurements are part of the mobile redesign (`0032-add-waist-sleep-disposition-and-notes-fields.md`).
 
 ### Optional Measurement Time
 
@@ -55,14 +46,7 @@ The V1 desktop experience only needs to be usable. Future versions can include m
 
 ### Charts
 
-Add visual trend charts for:
-
-- weight;
-- body fat percentage;
-- body fat mass;
-- muscle percentage;
-- muscle mass;
-- resting metabolism.
+Adopted in part: a single line chart per metric in the Tendências screen is part of the mobile redesign (`0030-allow-charts-in-trends.md`). Charts elsewhere and advanced chart features stay future ideas.
 
 ### Moving Averages
 
@@ -113,7 +97,7 @@ V1 interface labels and copy are `pt-BR` only.
 
 ### Separate Authenticated Pages
 
-Split the single V1 dashboard into separate authenticated views when history, import/export, settings, or deeper analysis need more space.
+Adopted: the mobile redesign splits the single V1 dashboard into separate screens behind a bottom tab bar (`0033-use-bottom-navigation.md`). Original idea: split the single V1 dashboard into separate authenticated views when history, import/export, settings, or deeper analysis need more space.
 
 ### Automatic Interpretation
 

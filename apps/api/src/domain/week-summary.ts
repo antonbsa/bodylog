@@ -1,5 +1,5 @@
 import type { Measurement } from "./measurement"
-import { roundToTwoDecimals } from "./numeric"
+import { roundToTwoDecimals } from "../../../../domain/numeric"
 import type { WeekRange } from "./week-range"
 
 export type WeeklyAverages = {
@@ -10,6 +10,9 @@ export type WeeklyAverages = {
   musclePercentage: number | null
   muscleKg: number | null
   restingMetabolismKcal: number | null
+  waistCm: number | null
+  sleepHours: number | null
+  disposition: number | null
 }
 
 export const weeklyAverageMetricKeys = [
@@ -20,6 +23,9 @@ export const weeklyAverageMetricKeys = [
   "musclePercentage",
   "muscleKg",
   "restingMetabolismKcal",
+  "waistCm",
+  "sleepHours",
+  "disposition",
 ] as const satisfies readonly (keyof WeeklyAverages)[]
 
 type WeekSummaryOptions = {
@@ -41,6 +47,7 @@ export class WeekSummary {
   readonly weekStartDate: string
   readonly weekEndDate: string
   readonly measurementCount: number
+  readonly recordedDates: string[]
   readonly isCurrentWeek: boolean
   readonly isPartialWeek: boolean
   readonly averages: WeeklyAverages
@@ -50,12 +57,14 @@ export class WeekSummary {
     isCurrentWeek: boolean
     isPartialWeek: boolean
     measurementCount: number
+    recordedDates: string[]
     weekEndDate: string
     weekStartDate: string
   }) {
     this.weekStartDate = fields.weekStartDate
     this.weekEndDate = fields.weekEndDate
     this.measurementCount = fields.measurementCount
+    this.recordedDates = fields.recordedDates
     this.isCurrentWeek = fields.isCurrentWeek
     this.isPartialWeek = fields.isPartialWeek
     this.averages = fields.averages
@@ -78,6 +87,9 @@ export class WeekSummary {
       isPartialWeek:
         options.isCurrentWeek && options.currentDate < range.weekEndDate,
       measurementCount: weeklyMeasurements.length,
+      recordedDates: weeklyMeasurements
+        .map((measurement) => measurement.date)
+        .sort(),
       weekEndDate: range.weekEndDate,
       weekStartDate: range.weekStartDate,
     })
@@ -109,6 +121,9 @@ function calculateWeeklyAverages(
       accumulators.restingMetabolismKcal,
       measurement.restingMetabolismKcal,
     )
+    addOptionalValue(accumulators.waistCm, measurement.waistCm)
+    addOptionalValue(accumulators.sleepHours, measurement.sleepHours)
+    addOptionalValue(accumulators.disposition, measurement.disposition)
   }
 
   return weeklyAverageMetricKeys.reduce<WeeklyAverages>(
@@ -132,6 +147,9 @@ function createMetricAccumulators(): Record<
     musclePercentage: { values: [] },
     muscleKg: { values: [] },
     restingMetabolismKcal: { values: [] },
+    waistCm: { values: [] },
+    sleepHours: { values: [] },
+    disposition: { values: [] },
   }
 }
 
@@ -144,6 +162,9 @@ function createEmptyAverages(): WeeklyAverages {
     musclePercentage: null,
     muscleKg: null,
     restingMetabolismKcal: null,
+    waistCm: null,
+    sleepHours: null,
+    disposition: null,
   }
 }
 

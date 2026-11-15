@@ -1,0 +1,39 @@
+/* Ajustes: one card with the theme selector, CSV actions and logout. */
+.set-block {
+  padding: 4px 0 16px;
+}
+
+.set-block .k {
+  display: block;
+  margin: 12px 0;
+  font-size: 17px;
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 17px;
+  text-align: left;
+}
+
+.set-row:disabled {
+  color: var(--fg-2);
+}
+
+.set-row + .set-row,
+.set-block + .set-row {
+  border-top: 1px solid var(--line);
+}
+
+.set-row.danger {
+  color: var(--danger);
+}

@@ -22,7 +22,7 @@ V1 excludes:
 - multi-user support;
 - complex authentication;
 - Google Sheets integration;
-- advanced charts;
+- charts outside the Tendências screen and advanced chart features (`0030-allow-charts-in-trends.md`);
 - offline-first behavior;
 - health recommendations or automatic interpretation;
 - serverless Postgres migration.
@@ -44,7 +44,7 @@ V1 excludes:
 
 - The user can log a daily measurement faster than using the spreadsheet.
 - Existing records load when their date is selected for editing.
-- The dashboard shows weekly averages, registration reliability, and V1 expected-outcome movement colors.
+- The dashboard shows weekly averages, the registration count against the 7-day target, and neutral variation (`0035-use-seven-day-weekly-target.md`, `0031-use-neutral-variation-color.md`).
 - CSV import can populate historical records.
 - CSV export provides a portable backup.
 - The app is usable from a smartphone.

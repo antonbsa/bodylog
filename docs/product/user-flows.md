@@ -9,6 +9,8 @@
 5. If valid, the user is redirected to the weekly dashboard.
 6. If invalid, the system shows an error message.
 
+The target UI is the mobile redesign in `docs/product/ui-direction.md`: separate screens (Início, Histórico, Tendências, Ajustes) behind a bottom tab bar and registration as a full-screen route (`0033-use-bottom-navigation.md`). Where the flows below say "dashboard" they refer to Início, and "modal" to the registration screen.
+
 ## Flow 2 — View Weekly Dashboard
 
 1. The authenticated user opens the app.
@@ -16,19 +18,19 @@
 3. The dashboard displays current week averages.
 4. The dashboard displays variation against the previous full week.
 5. The dashboard indicates that the current week may be partial.
-6. The dashboard shows registration reliability for the current week.
-7. The dashboard shows direction indicators and V1 expected-outcome colors for summary metrics.
+6. The dashboard shows the current week registration count against the 7-day target, with the recorded days (`0035-use-seven-day-weekly-target.md`).
+7. The dashboard shows direction indicators and neutral variation for summary metrics (`0031-use-neutral-variation-color.md`).
 8. The dashboard displays recent measurement history on the same page.
 9. The user can open the measurement form from the dashboard.
 
 ## Flow 3 — Create a Daily Measurement
 
 1. The user taps the register button.
-2. The measurement form opens as a mobile full-viewport modal or desktop constrained modal with today's date selected.
+2. The measurement form opens as a full-screen registration route with today's date selected.
 3. The system checks whether a record already exists for the selected date.
 4. If no record exists, the form is empty.
 5. The user enters at least weight.
-6. The user optionally enters body fat percentage, muscle percentage, and resting metabolism.
+6. The user optionally enters body fat percentage, muscle percentage, resting metabolism, waist, sleep, disposition, and notes (`0032-add-waist-sleep-disposition-and-notes-fields.md`).
 7. The user saves.
 8. The system creates the measurement.
 9. The dashboard and history reflect the new record.

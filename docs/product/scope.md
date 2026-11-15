@@ -14,7 +14,7 @@
 
 The V1 UI direction is documented in `docs/product/ui-direction.md`.
 
-V1 uses a single authenticated dashboard page with sections for weekly summary, measurement history, and actions. The measurement form opens from that dashboard as a full-viewport mobile modal or a constrained desktop modal.
+The mobile redesign replaces the single-dashboard direction: separate screens (Início, Histórico, Tendências, Ajustes) behind a bottom tab bar, and registration as a full-screen route. See ADR 0033.
 
 ### Measurements
 
@@ -24,7 +24,8 @@ V1 uses a single authenticated dashboard page with sections for weekly summary, 
 - Optional fields:
   - body fat percentage;
   - muscle percentage;
-  - resting metabolism.
+  - resting metabolism;
+  - waist, sleep hours, disposition (1–5) and notes.
 - BMI calculated from configured height.
 - Body fat mass calculated when possible.
 - Muscle mass calculated when possible.
@@ -40,8 +41,9 @@ V1 uses a single authenticated dashboard page with sections for weekly summary, 
 - Show relative percentage variation.
 - Show percentage-point variation for percentage metrics.
 - Show metric direction as up/down/stable.
-- Use V1 expected-outcome color semantics for summary variation, without adding health advice, diagnosis, recommendations, or motivational interpretation.
-- Show registration reliability based on weekly record count.
+- Show variation in one neutral tone, without adding health advice, diagnosis, recommendations, or motivational interpretation (ADR 0031).
+- Show the weekly registration count against a 7-day target, with the recorded days (ADR 0035).
+- Show trend charts in the Tendências screen only (ADR 0030).
 
 ### Data Management
 
@@ -73,7 +75,7 @@ V1 uses a single authenticated dashboard page with sections for weekly summary, 
 - Google Sheets automatic integration.
 - Offline-first behavior.
 - Automatic sync.
-- Advanced charts.
+- Charts outside the Tendências screen and advanced chart features.
 - Desktop-optimized dashboards.
 - Training tracking.
 - Diet tracking.
@@ -85,7 +87,6 @@ V1 uses a single authenticated dashboard page with sections for weekly summary, 
 
 ## V1.1 / V2 Candidates
 
-- Daily notes/observations.
 - Optional measurement time.
 - Full offline-first logging.
 - Sync after reconnecting.

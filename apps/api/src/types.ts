@@ -13,6 +13,10 @@ export type CreateMeasurementInput = {
   bodyFatPercentage?: number | null
   musclePercentage?: number | null
   restingMetabolismKcal?: number | null
+  waistCm?: number | null
+  sleepHours?: number | null
+  disposition?: number | null
+  notes?: string | null
 }
 
 export type ImportedMeasurementInput = CreateMeasurementInput & {
@@ -25,4 +29,8 @@ export type UpdateMeasurementByDateInput = {
   bodyFatPercentage?: number | null
   musclePercentage?: number | null
   restingMetabolismKcal?: number | null
+  waistCm?: number | null
+  sleepHours?: number | null
+  disposition?: number | null
+  notes?: string | null
 }

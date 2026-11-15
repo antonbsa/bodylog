@@ -1,0 +1,232 @@
+/* Início: Today card and "Esta semana" card. Chips and values are neutral; the accent marks only today and the primary button. */
+.card {
+  --mrow-height: 72px;
+
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.card + .card {
+  margin-top: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.btn.block {
+  width: 100%;
+}
+
+.btn.ghost {
+  min-height: 44px;
+  padding: 0 16px;
+  background: var(--surface-2);
+  color: var(--fg);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.today-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.today-label {
+  color: var(--fg-2);
+  font-size: 14px;
+}
+
+.big {
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.unit {
+  margin-left: 4px;
+  color: var(--fg-2);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.today-value {
+  margin: 10px 0 14px;
+}
+
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.mini-label {
+  display: block;
+  color: var(--fg-2);
+  font-size: 12px;
+}
+
+.mini-value {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.mini-value small {
+  margin-left: 2px;
+  color: var(--fg-2);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.empty-msg {
+  margin: 6px 0 16px;
+  color: var(--fg-2);
+  font-size: 15px;
+}
+
+.home-error {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--line);
+  color: var(--fg);
+  font-size: 15px;
+}
+
+.home-error p {
+  margin: 0;
+}
+
+/* Rows have a fixed height so the error state reserves exactly their space. */
+.week-rows-reserved {
+  min-height: calc(6 * var(--mrow-height));
+  align-content: start;
+}
+
+.week-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.week-head h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.count {
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin: 16px 0 8px;
+  text-align: center;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-2);
+  font-size: 12px;
+}
+
+.day.is-today .day-letter {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.day.is-today .dot {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--accent);
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--fg-3);
+  border-radius: 50%;
+}
+
+.day[data-status="recorded"] .dot {
+  border-color: var(--fg);
+  background: var(--fg);
+}
+
+.day[data-status="future"] .dot {
+  opacity: 0.3;
+}
+
+.vs {
+  margin: 0 0 4px;
+  color: var(--fg-2);
+  font-size: 13px;
+}
+
+.mrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: var(--mrow-height);
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+
+.mrow-label {
+  display: block;
+  color: var(--fg-2);
+  font-size: 13px;
+}
+
+.mrow-value {
+  display: block;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.mrow-value .unit {
+  font-size: 13px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--fg-2);
+  font-size: 13px;
+  white-space: nowrap;
+}

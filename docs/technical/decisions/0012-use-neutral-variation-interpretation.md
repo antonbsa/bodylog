@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, amended by `0022-decide-v1-ui-direction.md`
+Accepted, amended by `0022-decide-v1-ui-direction.md` and `0031-use-neutral-variation-color.md`
 
 ## Context
 

@@ -43,6 +43,75 @@ describe("WeekSummary", () => {
     })
   })
 
+  it("averages waist, sleep and disposition ignoring missing values", () => {
+    const summary = WeekSummary.forRange(
+      [
+        measurement({
+          date: "2026-06-08",
+          weightKg: 70,
+          waistCm: 80,
+          sleepHours: 7,
+          disposition: 4,
+        }),
+        measurement({
+          date: "2026-06-09",
+          weightKg: 70,
+          waistCm: 81,
+          sleepHours: 8,
+          disposition: 3,
+        }),
+        measurement({ date: "2026-06-10", weightKg: 70 }),
+      ],
+      getWeekRange("2026-06-10"),
+      {
+        currentDate: "2026-06-10",
+        heightCm: USER_HEIGHT_CM,
+        isCurrentWeek: true,
+      },
+    )
+
+    expect(summary.averages).toMatchObject({
+      waistCm: 80.5,
+      sleepHours: 7.5,
+      disposition: 3.5,
+    })
+  })
+
+  it("returns null for new metrics nobody recorded, never zero", () => {
+    const summary = WeekSummary.forRange(
+      [measurement({ date: "2026-06-08", weightKg: 70 })],
+      getWeekRange("2026-06-08"),
+      {
+        currentDate: "2026-06-10",
+        heightCm: USER_HEIGHT_CM,
+        isCurrentWeek: true,
+      },
+    )
+
+    expect(summary.averages.waistCm).toBeNull()
+    expect(summary.averages.sleepHours).toBeNull()
+    expect(summary.averages.disposition).toBeNull()
+  })
+
+  it("returns the recorded dates in order and the count for the week", () => {
+    const summary = WeekSummary.forRange(
+      [
+        measurement({ date: "2026-06-10", weightKg: 70 }),
+        measurement({ date: "2026-06-07", weightKg: 70 }),
+        measurement({ date: "2026-06-08", weightKg: 70 }),
+      ],
+      getWeekRange("2026-06-10"),
+      {
+        currentDate: "2026-06-10",
+        heightCm: USER_HEIGHT_CM,
+        isCurrentWeek: true,
+      },
+    )
+
+    expect(summary.recordedDates).toEqual(["2026-06-08", "2026-06-10"])
+    expect(summary.measurementCount).toBe(2)
+  })
+
   it("returns null averages when the week has no measurements", () => {
     const range = getWeekRange("2026-06-15")
 
@@ -62,6 +131,9 @@ function measurement(input: {
   date: string
   musclePercentage?: number | null
   restingMetabolismKcal?: number | null
+  waistCm?: number | null
+  sleepHours?: number | null
+  disposition?: number | null
   weightKg: number
 }): Measurement {
   return new Measurement({
@@ -71,6 +143,10 @@ function measurement(input: {
     bodyFatPercentage: input.bodyFatPercentage ?? null,
     musclePercentage: input.musclePercentage ?? null,
     restingMetabolismKcal: input.restingMetabolismKcal ?? null,
+    waistCm: input.waistCm ?? null,
+    sleepHours: input.sleepHours ?? null,
+    disposition: input.disposition ?? null,
+    notes: null,
     createdAt: "2026-06-10T12:00:00.000Z",
     updatedAt: "2026-06-10T12:00:00.000Z",
   })

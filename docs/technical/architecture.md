@@ -30,6 +30,7 @@ infra/
   scripts/    local infrastructure tooling
   errors/     shared structured error definitions
 types/      shared API/web TypeScript shapes
+domain/     shared pure measurement rules (limits, notes, derived values)
 ```
 
 The root package owns shared scripts for installation, typechecking, tests, D1 commands, and deployment entry points.
@@ -41,30 +42,38 @@ The root package owns shared scripts for installation, typechecking, tests, D1 c
 - React
 - Vite
 - TypeScript
+- react-router (declarative mode)
+- Phosphor icons
+- Radix Themes for behavior and not-yet-redone components (`0026-use-radix-ui-components.md`)
 - PWA basics
 
 ### Responsibilities
 
 - Render the authenticated app.
-- Show the single-page weekly dashboard.
-- Open the measurement form as a modal from the dashboard.
-- List recent measurements on the dashboard.
+- Route between the Início, Histórico, Tendências and Ajustes screens behind a bottom tab bar, plus a registration route without the bar.
+- Show the weekly summary on Início and the measurement history on Histórico as weekly cards, paged by week (`GET /api/history/weeks`).
+- Apply the light, dark or system theme before first paint, from the preference stored in the browser.
 - Call API endpoints.
 - Handle CSV import/export UI.
 - Keep the UX mobile-first.
 
-### V1 UI Structure
+### UI Structure
 
-V1 authenticated UI structure:
+Routes, handled client-side by `react-router`:
 
 ```txt
-/login
-/dashboard
+/                  Início (tab)
+/historico         Histórico (tab)
+/tendencias        Tendências (tab, placeholder until the redesign sub-issue lands)
+/ajustes           Ajustes (tab; CSV export/import and logout for now)
+/registro?data=YYYY-MM-DD   registration, outside the tab layout, no bar
 ```
 
-The dashboard is the main authenticated screen and contains weekly summary, measurement history, and relevant actions as sections. The measurement form opens from the dashboard as a full-viewport mobile modal or a constrained desktop modal.
+The tab screens share a full-height flex layout: a scrolling content area above a bottom tab bar that sits in the layout flow (not fixed), with a central button that opens `/registro` for today (`0033-use-bottom-navigation.md`, `docs/product/ui-direction.md`). Unauthenticated visits show the login screen without the bar, and unknown paths show the not-found screen. The registration route is a full-screen form outside the tab layout: a sticky header with the date bar, a form that scrolls with the document (so iOS scrolls focused fields natively) and a fixed footer that is hidden while the iOS keyboard is open (detected from the visual viewport height). Numeric fields use a right-to-left digit mask, and validation limits, notes normalization and derived values come from `domain/measurement.ts` at the repo root, so the web form and the API share them. Tab switches and opening or closing `/registro` replace the history entry (decided in `apps/web/src/hooks/useTabNavigate.ts`) because the iOS edge swipe follows history; Cancelar returns to the origin path kept in location state. Server data goes through TanStack Query (one client in `main.tsx`, keys in `apps/web/src/api/queryKeys.ts`), so screens show cached data while refetching and Registro prefetches the adjacent days; see `docs/technical/decisions/0037-use-tanstack-query-for-server-state.md`.
 
-Separate authenticated pages for history, settings, import/export, or deeper dashboard analysis are deferred.
+Deep links rely on Cloudflare Pages serving `index.html` for unknown paths, which Pages does only when the build has no top-level `404.html`; do not add one to `apps/web/public`.
+
+Colors are CSS custom properties in `apps/web/src/styles/tokens.css`. The theme preference (`system`, `light` or `dark`) is stored in `localStorage` and applied as `data-theme` on `<html>` by an inline script in `apps/web/index.html`, with `apps/web/src/theme.ts` as the module that reads and writes it. `system` leaves `data-theme` unset so the `prefers-color-scheme` media query decides. Geist and Geist Mono are self-hosted from `apps/web/public/fonts`.
 
 ## Backend
 
