@@ -1,6 +1,10 @@
-# BodyLog
+<p align="center">
+  <img src="apps/web/icons/app-icon.svg" alt="BodyLog icon" width="96" height="96">
+</p>
 
-A personal, mobile-first PWA for logging daily body metrics from a bioimpedance scale and tracking weekly progress through simple averages and comparisons.
+<h1 align="center">BodyLog</h1>
+
+<p align="center">A personal, mobile-first PWA for logging daily body metrics from a bioimpedance scale and tracking weekly progress through simple averages and comparisons.</p>
 
 The V1 goal is not to build a generic fitness platform. The goal is to make daily logging faster than a spreadsheet while keeping weekly progress easier to read.
 
