@@ -156,6 +156,12 @@ Geist for text and Geist Mono with tabular figures for every number, both self-h
 
 Phosphor. The prototype draws simple stand-ins on a 24px grid with a 1.6px stroke (2px for the active tab).
 
+### App icon
+
+A symbol with no letters, so it survives a rename: a line of daily readings (one dot per day, today's dot larger) resting on a scale platform. The line starts and ends at the same height, so it never suggests a good or bad trend. Accent `#58a6ff` on `#111111` for app icons; the favicon is transparent and follows the color scheme (`#0969da` light, `#58a6ff` dark).
+
+Sources live in `apps/web/icons/`: `symbol.svg` (the mark on a 256 grid), `app-icon.svg` (rounded tile, `purpose: any`) and `app-icon-full.svg` (full-bleed tile with the mark inside the maskable safe circle, used for `apple-touch-icon.png` and `icon-maskable-512.png`, since iOS paints transparent pixels black and maskable icons must be opaque). `apps/web/public/icon.svg` is the favicon and `favicon.ico` (16/32/48) its fallback. After changing a source, re-render the PNGs and the ICO at the sizes listed in `manifest.webmanifest` and `index.html`.
+
 ### Toasts
 
 A pill above the tab bar, inverted colors (`--fg` on `--bg`), about 2.6 seconds, `role="status"`. Used for save, delete, import and export feedback.
