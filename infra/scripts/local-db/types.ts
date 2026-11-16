@@ -1,4 +1,4 @@
-export const databaseName = "body_metrics_tracker"
+export const databaseBinding = "DB"
 export const seedIdPrefix = "dev-seed:"
 
 export type SeedMeasurement = {

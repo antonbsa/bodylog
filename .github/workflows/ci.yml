@@ -95,7 +95,7 @@ jobs:
           key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Unit and API tests
-        run: npm run test:api
+        run: npm run test:unit
 
   e2e:
     name: E2E tests

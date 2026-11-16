@@ -123,7 +123,7 @@ Validate the current backend base:
 
 ```sh
 npm run typecheck
-npm run test:api
+npm run test:unit
 npm run test:e2e
 ```
 
@@ -132,7 +132,6 @@ Automated tests live in the root `tests/` directory.
 Run D1 migrations:
 
 ```sh
-npx wrangler d1 create body_metrics_tracker
 npm run db:migrate:local
 npm run db:migrate:remote
 ```
