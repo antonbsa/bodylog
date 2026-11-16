@@ -27,8 +27,8 @@ enabled = true
 
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "body_metrics_tracker"
-database_id = "6666c800-569f-4971-b19c-fa8b807a98e1"
+database_name = "bodylog-prod"
+database_id = "9b2326c6-b999-41d3-8ce7-6eaf3f5c9043"
 migrations_dir = "../../infra/migrations"
 
 # Kept out of the top level: `wrangler dev` fails when ../web/dist is missing.
