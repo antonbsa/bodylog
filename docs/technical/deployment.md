@@ -50,11 +50,7 @@ The production Worker serves the web app and the API from one origin, `https://b
 
 ### Database
 
-Suggested name:
-
-```txt
-body_metrics_tracker
-```
+Names: `bodylog-dev` (local), `bodylog-preview` (future, issue #39) and `bodylog-prod` (production). Production still runs on the original `body_metrics_tracker` until the move below.
 
 ### Migrations
 
@@ -66,6 +62,18 @@ Example:
 infra/migrations/
   0001_create_measurements.sql
 ```
+
+### Migrate production D1 to `bodylog-prod`
+
+Owner runbook. Production has no data today, so the move needs no export or import. Run from `apps/api` unless noted:
+
+1. Create the database: `npx wrangler d1 create bodylog-prod`.
+2. In `[[env.production.d1_databases]]` of `apps/api/wrangler.toml`, set `database_name = "bodylog-prod"` and the new `database_id`, then commit.
+3. From the repo root, apply the migrations to the new database: `npm run db:migrate:remote`.
+4. Deploy with `npm run deploy` (from the repo root) or the deploy workflow.
+5. Once the deploy is verified, delete the old database: `npx wrangler d1 delete body_metrics_tracker`.
+
+If production held data, export it before step 2 with `npx wrangler d1 export body_metrics_tracker --remote --output <file>` and load it after step 3 with `npx wrangler d1 execute bodylog-prod --remote --file <file>`.
 
 ## Environments
 
@@ -132,8 +140,8 @@ The deploy workflow runs after CI passes and runs `npm run deploy`, which builds
 
 `apps/api/wrangler.toml` is the only Wrangler config:
 
-- The top level is local dev only: worker `bodylog-dev`, non-secret vars, and the D1 binding with a placeholder `database_id`, so an accidental `--remote` without `--env production` cannot reach production data. Local API development loads the root `.env.development` file through `--env-file`.
-- `[env.production]` re-declares everything production needs, because named environments do not inherit vars or bindings: worker `bodylog`, vars, observability, the `body_metrics_tracker` D1 database and `[env.production.assets]`.
+- The top level is local dev only: worker `bodylog-dev`, non-secret vars, and the `bodylog-dev` D1 binding with a placeholder `database_id`, so an accidental `--remote` without `--env production` cannot reach production data. Local API development loads the root `.env.development` file through `--env-file`.
+- `[env.production]` re-declares everything production needs, because named environments do not inherit vars or bindings: worker `bodylog`, vars, observability, the D1 database (`body_metrics_tracker` until the move to `bodylog-prod`) and `[env.production.assets]`.
 - Assets stay out of the top level because `wrangler dev` fails when `apps/web/dist` is missing.
 
 `[env.production.assets]` uses `not_found_handling = "single-page-application"` so client routes such as `/historico` get `index.html`, and `run_worker_first = ["/api/*"]` so every API request, including unknown ones, reaches the Worker and gets a JSON response. `apps/web/public/_headers` is copied into `dist/` and applied by Workers Static Assets, which keeps `Cache-Control: no-cache` on `/` and `/index.html`.
