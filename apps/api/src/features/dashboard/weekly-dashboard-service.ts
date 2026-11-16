@@ -1,7 +1,7 @@
-import type { MeasurementRepository } from "../measurements/measurement-repository"
-import type { WeeklyDashboard } from "../../../../types/dashboard"
-import { getPreviousWeekRange, getWeekRange } from "../domain/week-range"
-import { WeekSummary } from "../domain/week-summary"
+import type { MeasurementRepository } from "../../db/repositories/measurements"
+import type { WeeklyDashboard } from "../../../../../types/dashboard"
+import { getPreviousWeekRange, getWeekRange } from "../../domain/week-range"
+import { WeekSummary } from "../../domain/week-summary"
 
 type WeeklyDashboardConfig = {
   currentDate: string

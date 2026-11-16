@@ -1,8 +1,8 @@
-import type { MeasurementRepository } from "../measurements/measurement-repository"
-import type { Measurement } from "../domain/measurement"
-import type { HistoryWeeksPage } from "../../../../types/history"
-import { getWeekRange } from "../domain/week-range"
-import { WeekSummary } from "../domain/week-summary"
+import type { MeasurementRepository } from "../../db/repositories/measurements"
+import type { Measurement } from "../../domain/measurement"
+import type { HistoryWeeksPage } from "../../../../../types/history"
+import { getWeekRange } from "../../domain/week-range"
+import { WeekSummary } from "../../domain/week-summary"
 
 export const HISTORY_PAGE_WEEKS = 8
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { app } from "../../apps/api/src/index"
+import { app } from "../../apps/api/src/app"
 
 const env = {
   DB: {

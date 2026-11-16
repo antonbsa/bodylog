@@ -1,9 +1,9 @@
-import { NotFoundError, ValidationError } from "../../../infra/errors"
+import { NotFoundError, ValidationError } from "../../../../infra/errors"
 import {
   isWithinMeasurementLimit,
   normalizeNotes,
-} from "../../../domain/measurement"
-import type { MeasurementInput } from "../../../types/measurements"
+} from "../../../../domain/measurement"
+import type { MeasurementInput } from "../../../../types/measurements"
 
 type ErrorDetails = {
   action: string

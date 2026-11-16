@@ -5,7 +5,7 @@ import {
   HISTORY_PAGE_WEEKS,
   getHistoryWeeks,
   type HistoryRepository,
-} from "../../apps/api/src/history/history-service"
+} from "../../apps/api/src/features/history/history-service"
 import { shiftIsoDate } from "../../apps/web/src/utils/date-format"
 
 const CONFIG = { currentDate: "2026-06-10", heightCm: 168 }

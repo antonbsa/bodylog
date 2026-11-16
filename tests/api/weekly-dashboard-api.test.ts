@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { app } from "../../apps/api/src/index"
+import { app } from "../../apps/api/src/app"
 import {
   createSessionCookieValue,
   SESSION_COOKIE_NAME,
-} from "../../apps/api/src/auth/session"
-import { getCurrentDateOnly } from "../../apps/api/src/dashboard/weekly-dashboard-service"
+} from "../../apps/api/src/features/auth/session"
+import { getCurrentDateOnly } from "../../apps/api/src/features/dashboard/weekly-dashboard-service"
 import type { WeeklyDashboard } from "../../types/dashboard"
 
 type MeasurementRow = {
