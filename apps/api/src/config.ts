@@ -47,25 +47,3 @@ export function getUserTimeZone(
 
   return env.USER_TIME_ZONE
 }
-
-export function getFrontendOrigin(
-  env: Pick<AppBindings, "PRODUCTION_FRONTEND_ORIGIN">,
-): string | null {
-  if (!env.PRODUCTION_FRONTEND_ORIGIN) {
-    return null
-  }
-
-  try {
-    const url = new URL(env.PRODUCTION_FRONTEND_ORIGIN)
-
-    if (url.origin !== env.PRODUCTION_FRONTEND_ORIGIN) {
-      throw new Error(
-        "PRODUCTION_FRONTEND_ORIGIN must be an origin without a path",
-      )
-    }
-
-    return url.origin
-  } catch {
-    throw new Error("PRODUCTION_FRONTEND_ORIGIN must be a valid URL origin")
-  }
-}

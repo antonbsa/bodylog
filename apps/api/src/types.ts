@@ -1,7 +1,6 @@
 export type AppBindings = {
   APP_PASSWORD: string
   DB: D1Database
-  PRODUCTION_FRONTEND_ORIGIN?: string
   SESSION_SECRET: string
   USER_HEIGHT_CM: string
   USER_TIME_ZONE: string

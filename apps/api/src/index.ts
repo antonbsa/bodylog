@@ -4,12 +4,12 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie"
 import {
   AppError,
   InternalServerError,
+  NotFoundError,
   UnauthorizedError,
   ValidationError,
 } from "../../../infra/errors"
 import {
   getAppPassword,
-  getFrontendOrigin,
   getSessionSecret,
   getUserHeightCm,
   getUserTimeZone,
@@ -41,9 +41,6 @@ import type { AppBindings } from "./types"
 
 export const app = new Hono<{ Bindings: AppBindings }>()
 
-const corsAllowedMethods = "GET,POST,PUT,DELETE,OPTIONS"
-const defaultCorsAllowedHeaders = "Content-Type"
-
 const protectedApiRoutePrefixes = [
   "/api/measurements",
   "/api/dashboard",
@@ -62,119 +59,33 @@ app.onError((error, c) => {
   return c.json(appError.toJSON(), appError.statusCode)
 })
 
+// In production only /api/* reaches the Worker (run_worker_first); other paths are static assets or the SPA.
+app.notFound((c) => {
+  const error = new NotFoundError({
+    action: "Verifique o endereço e tente novamente.",
+    message: "Rota não encontrada.",
+  })
+
+  return c.json(error.toJSON(), error.statusCode)
+})
+
 function isProtectedApiRoute(path: string): boolean {
   return protectedApiRoutePrefixes.some(
     (prefix) => path === prefix || path.startsWith(`${prefix}/`),
   )
 }
 
-function getAllowedCorsOrigin(
-  requestOrigin: string | undefined,
-  env: Pick<AppBindings, "PRODUCTION_FRONTEND_ORIGIN">,
-): string | null {
-  if (!requestOrigin) {
-    return null
-  }
-
-  const frontendOrigin = getFrontendOrigin(env)
-
-  if (frontendOrigin && requestOrigin === frontendOrigin) {
-    return requestOrigin
-  }
-
-  try {
-    const originUrl = new URL(requestOrigin)
-    const isLocalOrigin =
-      originUrl.protocol === "http:" &&
-      (originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1")
-
-    return isLocalOrigin ? requestOrigin : null
-  } catch {
-    return null
-  }
-}
-
-function isLocalHostname(hostname: string): boolean {
-  return hostname === "localhost" || hostname === "127.0.0.1"
-}
-
-function isSameOrChildHostname(hostname: string, parentHostname: string) {
-  return hostname === parentHostname || hostname.endsWith(`.${parentHostname}`)
-}
-
-function isSameSiteFrontendOrigin(
-  requestUrl: URL,
-  env: Pick<AppBindings, "PRODUCTION_FRONTEND_ORIGIN">,
-): boolean {
-  const frontendOrigin = getFrontendOrigin(env)
-
-  if (!frontendOrigin) {
-    return false
-  }
-
-  try {
-    const frontendUrl = new URL(frontendOrigin)
-
-    return (
-      requestUrl.protocol === frontendUrl.protocol &&
-      (isSameOrChildHostname(requestUrl.hostname, frontendUrl.hostname) ||
-        isSameOrChildHostname(frontendUrl.hostname, requestUrl.hostname))
-    )
-  } catch {
-    return false
-  }
-}
-
-function getSessionCookieSettings(
-  requestUrl: URL,
-  env: Pick<AppBindings, "PRODUCTION_FRONTEND_ORIGIN">,
-): {
-  sameSite: "Lax" | "None"
-  secure: boolean
-} {
-  if (isLocalHostname(requestUrl.hostname)) {
-    return {
-      sameSite: "Lax",
-      secure: false,
-    }
-  }
-
-  if (isSameSiteFrontendOrigin(requestUrl, env)) {
-    return {
-      sameSite: "Lax",
-      secure: true,
-    }
-  }
+function getSessionCookieOptions(requestUrl: string) {
+  const { hostname } = new URL(requestUrl)
+  const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1"
 
   return {
-    sameSite: "None",
-    secure: true,
-  }
+    httpOnly: true,
+    path: "/",
+    sameSite: "Lax",
+    secure: !isLocalhost,
+  } as const
 }
-
-app.use("/api/*", async (c, next) => {
-  const allowedOrigin = getAllowedCorsOrigin(c.req.header("origin"), c.env)
-
-  if (allowedOrigin) {
-    c.header("access-control-allow-origin", allowedOrigin)
-    c.header("access-control-allow-credentials", "true")
-    c.header("vary", "Origin")
-  }
-
-  if (c.req.method === "OPTIONS") {
-    c.header("access-control-allow-methods", corsAllowedMethods)
-    c.header(
-      "access-control-allow-headers",
-      c.req.header("access-control-request-headers") ??
-        defaultCorsAllowedHeaders,
-    )
-    c.header("access-control-max-age", "86400")
-
-    return c.body(null, 204)
-  }
-
-  await next()
-})
 
 app.use("/api/*", async (c, next) => {
   if (isProtectedApiRoute(c.req.path)) {
@@ -191,7 +102,7 @@ app.use("/api/*", async (c, next) => {
   await next()
 })
 
-app.get("/", (c) => {
+app.get("/api/health", (c) => {
   return c.json({
     ok: true,
   })
@@ -366,16 +277,11 @@ app.post("/api/auth/login", async (c) => {
     })
   }
 
-  const requestUrl = new URL(c.req.url)
-  const sessionCookieSettings = getSessionCookieSettings(requestUrl, c.env)
   const sessionValue = await createSessionCookieValue(getSessionSecret(c.env))
 
   setCookie(c, SESSION_COOKIE_NAME, sessionValue, {
-    httpOnly: true,
+    ...getSessionCookieOptions(c.req.url),
     maxAge: SESSION_MAX_AGE_SECONDS,
-    path: "/",
-    sameSite: sessionCookieSettings.sameSite,
-    secure: sessionCookieSettings.secure,
   })
 
   return c.json({
@@ -399,15 +305,7 @@ app.get("/api/auth/session", async (c) => {
 })
 
 app.post("/api/auth/logout", (c) => {
-  const requestUrl = new URL(c.req.url)
-  const sessionCookieSettings = getSessionCookieSettings(requestUrl, c.env)
-
-  deleteCookie(c, SESSION_COOKIE_NAME, {
-    httpOnly: true,
-    path: "/",
-    sameSite: sessionCookieSettings.sameSite,
-    secure: sessionCookieSettings.secure,
-  })
+  deleteCookie(c, SESSION_COOKIE_NAME, getSessionCookieOptions(c.req.url))
 
   return c.json({
     ok: true,

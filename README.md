@@ -23,7 +23,7 @@ The V1 goal is not to build a generic fitness platform. The goal is to make dail
 - **Backend:** Hono + TypeScript
 - **Runtime:** Cloudflare Workers
 - **Database:** Cloudflare D1
-- **Deployment:** Cloudflare Pages / Workers
+- **Deployment:** one Cloudflare Worker serving the web app (Workers Static Assets) and the API
 - **Future V2 migration:** serverless Postgres
 
 ## Core Metrics
@@ -154,54 +154,36 @@ npm run db:query:local -- "SELECT COUNT(*) AS count FROM measurements"
 npm run db:query:remote -- "SELECT COUNT(*) AS count FROM measurements"
 ```
 
-Deploy the Worker to Cloudflare:
+Deploy to Cloudflare: one Worker (`bodylog`) serves the built web app and the API from the same origin.
 
 ```sh
-npm run deploy:api
+npm run deploy
 ```
 
-Deploy the built frontend to Cloudflare Pages:
+`npm run deploy` builds `apps/web` and runs `wrangler deploy --env production` from `apps/api`, uploading `apps/web/dist` as the Worker's static assets. The top level of `apps/api/wrangler.toml` is local dev only; production always goes through `--env production`.
 
-```sh
-npm run build
-npm run deploy:web -- --project-name <cloudflare-pages-project-name> --branch main
-```
-
-For local interactive deployment, authenticate Wrangler once through the browser:
-
-```sh
-npx wrangler login
-npm run deploy:api
-```
-
-For non-interactive deployment, such as CI or an agent environment, Wrangler requires `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to be set before deployment.
+For local interactive deployment, authenticate Wrangler once through the browser with `npx wrangler login`. For non-interactive deployment, such as CI or an agent environment, Wrangler requires `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` to be set before deployment.
 Local API development explicitly loads the committed `.env.development` file with non-production auth defaults through Wrangler's `--env-file` flag. Production secrets must be configured through Cloudflare, not committed.
-Non-secret Worker variables such as `USER_HEIGHT_CM` and `USER_TIME_ZONE` are configured in `apps/api/wrangler.toml`. Deployment automation injects `PRODUCTION_FRONTEND_ORIGIN` so the API can allow credentialed requests from the production Pages origin.
-The frontend Pages deployment uses `apps/web/wrangler.toml`.
+Non-secret Worker variables such as `USER_HEIGHT_CM` and `USER_TIME_ZONE` are configured in `apps/api/wrangler.toml`.
 
 ```sh
-npx wrangler secret put APP_PASSWORD --config apps/api/wrangler.toml
-npx wrangler secret put SESSION_SECRET --config apps/api/wrangler.toml
-npm run deploy:api
+cd apps/api
+npx wrangler secret put APP_PASSWORD --env production
+npx wrangler secret put SESSION_SECRET --env production
 ```
 
-GitHub deployment automation runs on direct pushes to `main` and deploys both Cloudflare targets after checks pass. Required GitHub configuration:
+GitHub deployment automation runs after CI passes on `main` and runs `npm run deploy`. Required GitHub configuration:
 
 ```txt
 Secrets:
 CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
-
-Variables:
-CLOUDFLARE_PAGES_PROJECT_NAME
-PRODUCTION_FRONTEND_ORIGIN
-VITE_API_BASE_URL
 ```
 
 Current API base:
 
 ```txt
-GET /
+GET /api/health
 POST /api/auth/login
 ```
 

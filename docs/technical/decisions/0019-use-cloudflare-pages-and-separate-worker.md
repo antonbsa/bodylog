@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [0040 — Serve the Web App from the API Worker](./0040-serve-the-web-app-from-the-api-worker.md)
 
 ## Context
 

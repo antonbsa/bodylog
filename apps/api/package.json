@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --config wrangler.toml --env-file ../../.env.development --port 8787 --show-interactive-dev-session false",
-    "deploy": "wrangler deploy --config wrangler.toml",
+    "deploy": "wrangler deploy --config wrangler.toml --env production",
     "test": "vitest run --config ../../vitest.config.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

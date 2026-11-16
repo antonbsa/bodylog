@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit && vite build",
-    "deploy": "wrangler pages deploy",
     "dev": "vite --host localhost --port ${BODYLOG_WEB_PORT:-5173} --strictPort",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.json --noEmit"

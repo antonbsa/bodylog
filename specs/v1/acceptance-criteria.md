@@ -46,7 +46,7 @@
 
 ## Production Readiness
 
-- The production frontend is reachable on Cloudflare Pages.
+- The production frontend is served by the API Worker through Workers Static Assets.
 - The production API is reachable on Cloudflare Workers.
 - The production frontend can call the production API.
 - The production API has the production D1 binding configured.

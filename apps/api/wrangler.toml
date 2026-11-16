@@ -1,4 +1,6 @@
-name = "bodylog-api"
+# The top level is local dev only; production lives in [env.production]. Named environments
+# don't inherit vars or bindings, so production re-declares everything it needs.
+name = "bodylog-dev"
 main = "src/index.ts"
 compatibility_date = "2026-05-25"
 
@@ -6,11 +8,31 @@ compatibility_date = "2026-05-25"
 USER_HEIGHT_CM = "168"
 USER_TIME_ZONE = "America/Sao_Paulo"
 
-[observability]
+# Placeholder id so an accidental `--remote` without `--env production` can't reach production data.
+[[d1_databases]]
+binding = "DB"
+database_name = "body_metrics_tracker"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "../../infra/migrations"
+
+[env.production]
+name = "bodylog"
+
+[env.production.vars]
+USER_HEIGHT_CM = "168"
+USER_TIME_ZONE = "America/Sao_Paulo"
+
+[env.production.observability]
 enabled = true
 
-[[d1_databases]]
+[[env.production.d1_databases]]
 binding = "DB"
 database_name = "body_metrics_tracker"
 database_id = "6666c800-569f-4971-b19c-fa8b807a98e1"
 migrations_dir = "../../infra/migrations"
+
+# Kept out of the top level: `wrangler dev` fails when ../web/dist is missing.
+[env.production.assets]
+directory = "../web/dist"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]

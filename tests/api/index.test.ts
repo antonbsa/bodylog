@@ -5,18 +5,30 @@ import { app } from "../../apps/api/src/index"
 const env = {
   DB: {
     prepare: () => {
-      throw new Error("Root liveness route must not query D1")
+      throw new Error("Health route must not query D1")
     },
   } as unknown as D1Database,
 }
 
 describe("api base", () => {
-  it("responds to the public root route with a liveness response", async () => {
-    const response = await app.request("/", {}, env)
+  it("responds to the public health route with a liveness response", async () => {
+    const response = await app.request("/api/health", {}, env)
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
       ok: true,
+    })
+  })
+
+  it("answers unknown api routes with a JSON 404", async () => {
+    const response = await app.request("/api/x", {}, env)
+
+    expect(response.status).toBe(404)
+    expect(await response.json()).toEqual({
+      action: "Verifique o endereço e tente novamente.",
+      message: "Rota não encontrada.",
+      name: "NotFoundError",
+      statusCode: 404,
     })
   })
 
