@@ -300,7 +300,7 @@ test("basic PWA manifest and icons are reachable", async ({
     .getAttribute("href")
 
   expect(manifestPath).toBe("/manifest.webmanifest")
-  expect(appleTouchIconPath).toBe("/icons/icon-192.png")
+  expect(appleTouchIconPath).toBe("/icons/apple-touch-icon.png")
 
   if (!manifestPath) {
     throw new Error("Manifest link is missing")
@@ -326,7 +326,7 @@ test("basic PWA manifest and icons are reachable", async ({
   expect(manifest.id).toBe("/")
   expect(manifest.start_url).toBe("/")
   expect(manifest.display).toBe("standalone")
-  expect(manifest.theme_color).toBe("#0d1117")
+  expect(manifest.theme_color).toBe("#111111")
 
   const icons = manifest.icons ?? []
   expect(icons).toEqual(
@@ -339,6 +339,12 @@ test("basic PWA manifest and icons are reachable", async ({
       expect.objectContaining({
         sizes: "512x512",
         src: "/icons/icon-512.png",
+        type: "image/png",
+      }),
+      expect.objectContaining({
+        purpose: "maskable",
+        sizes: "512x512",
+        src: "/icons/icon-maskable-512.png",
         type: "image/png",
       }),
     ]),

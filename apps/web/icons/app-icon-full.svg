@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>BodyLog</title>
+  <rect width="512" height="512" fill="#111111"/>
+  <g fill="#58a6ff" transform="translate(82.525 91.3) scale(1.35)"><path d="M48.95 100.95L88.95 60.95L79.05 51.05L39.05 91.05ZM79.05 60.95L119.05 100.95L128.95 91.05L88.95 51.05ZM119.05 100.95L159.05 140.95L168.95 131.05L128.95 91.05ZM168.95 140.95L208.95 100.95L199.05 91.05L159.05 131.05Z"/><circle cx="44" cy="96" r="20"/><circle cx="84" cy="56" r="20"/><circle cx="124" cy="96" r="20"/><circle cx="164" cy="136" r="20"/><circle cx="204" cy="96" r="29"/><rect x="24" y="176" width="208" height="32" rx="16"/></g>
+</svg>
