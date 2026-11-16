@@ -8,8 +8,7 @@ Vercel compatibility is not a V1 requirement.
 
 ## Cloudflare Components
 
-- Cloudflare Pages for the frontend.
-- Cloudflare Worker with Hono for the API.
+- One Cloudflare Worker with Hono that serves the API under `/api/*` and the built web app through Workers Static Assets.
 - Cloudflare D1 for the database.
 - Cloudflare Secrets for the app password and session secret.
 
@@ -39,36 +38,19 @@ SESSION_SECRET
 ```txt
 USER_HEIGHT_CM=168
 USER_TIME_ZONE=America/Sao_Paulo
-PRODUCTION_FRONTEND_ORIGIN=https://bodylog.antonbsa.dev
-VITE_API_BASE_URL=https://api.bodylog.antonbsa.dev
 ```
 
 `USER_HEIGHT_CM` configures the single user's height in centimeters for BMI calculations. The API converts this value to meters before applying the BMI formula. Height is not a secret and should be configured as a Worker variable, not as a Cloudflare secret.
 
 `USER_TIME_ZONE` configures the single user's IANA time zone for dashboard date and week boundaries. It is not a secret and should be configured as a Worker variable.
 
-`PRODUCTION_FRONTEND_ORIGIN` configures the exact production frontend origin allowed by API CORS. It is not a secret. Deployment automation passes it to `wrangler deploy` from the GitHub `PRODUCTION_FRONTEND_ORIGIN` variable.
-
-`VITE_API_BASE_URL` configures the frontend API origin. It is not a secret because Vite exposes `VITE_*` values to the browser.
-
-The production frontend and API should use same-site custom domains for reliable installed-PWA session persistence on iOS:
-
-```txt
-Frontend: https://bodylog.antonbsa.dev
-API:      https://api.bodylog.antonbsa.dev
-```
-
-The API remains a separate Worker, but requests from the frontend to the API are same-site under this domain layout. That allows the session cookie to use `Secure` + `SameSite=Lax` in production. The default Cloudflare domains, such as `pages.dev` for the frontend and `workers.dev` for the API, are cross-site and can lose session cookies in iOS standalone web apps.
+The production Worker serves the web app and the API from one origin, `https://bodylog.antonbsa.dev`, so the session cookie is first-party: `HttpOnly`, `SameSite=Lax` and `Secure` (except on `localhost`). There is no CORS handling and no API base URL (`0040-serve-the-web-app-from-the-api-worker.md`).
 
 ## D1
 
 ### Database
 
-Suggested name:
-
-```txt
-body_metrics_tracker
-```
+Names: `bodylog-dev` (local), `bodylog-preview` (future, issue #39) and `bodylog-prod` (production).
 
 ### Migrations
 
@@ -87,7 +69,7 @@ infra/migrations/
 
 - Frontend running through Vite.
 - Hono API running through Wrangler local/dev.
-- Local or preview D1 database.
+- Local D1 database (its own state, keyed by the placeholder `database_id` at the top level of `apps/api/wrangler.toml`).
 - Non-production defaults loaded from the committed `.env.development` file through Wrangler's `--env-file` flag.
 - `npm run dev` starts the API on `http://localhost:8787` and the frontend on `http://localhost:5173`.
 
@@ -98,14 +80,12 @@ Vite frontend dev server from apps/web
 Wrangler API dev server from apps/api
 ```
 
-The frontend should call the API through an environment-configured base URL.
-In local development, `VITE_API_BASE_URL` is empty and Vite proxies `/api` requests to the local Worker.
+The frontend calls relative `/api/...` URLs. In local development Vite proxies `/api` requests to the local Worker, so the browser still sees one origin.
 
 ### Production
 
-- Frontend deployed to Cloudflare Pages.
-- API deployed to a separate Cloudflare Worker.
-- Secrets configured through Wrangler or the Cloudflare dashboard.
+- Worker `bodylog` (`[env.production]`) serving `apps/web/dist` and the API at `https://bodylog.antonbsa.dev`.
+- Secrets configured with `npx wrangler secret put <NAME> --env production` from `apps/api`.
 - Remote D1 database.
 
 ## Automation
@@ -140,60 +120,30 @@ CLOUDFLARE_API_TOKEN
 CLOUDFLARE_ACCOUNT_ID
 ```
 
-Expected deployment variables:
+No deployment variables are needed.
 
-```txt
-CLOUDFLARE_PAGES_PROJECT_NAME
-PRODUCTION_FRONTEND_ORIGIN
-VITE_API_BASE_URL
-```
-
-`PRODUCTION_FRONTEND_ORIGIN` should be the production frontend origin, such as `https://bodylog.antonbsa.dev`, without a trailing path. `VITE_API_BASE_URL` should be the Worker API origin, such as `https://api.bodylog.antonbsa.dev`.
-
-The deploy workflow runs the project checks first, builds the frontend with `VITE_API_BASE_URL`, deploys the Worker with `PRODUCTION_FRONTEND_ORIGIN`, and then deploys `apps/web/dist` to Cloudflare Pages.
+The deploy workflow runs after CI passes and runs `npm run deploy`, which builds the web app and deploys the Worker with `wrangler deploy --env production`, uploading `apps/web/dist` as its static assets.
 
 ## Wrangler Configuration
 
-Wrangler configuration is split by deployment target:
+`apps/api/wrangler.toml` is the only Wrangler config:
 
-```txt
-apps/api/wrangler.toml
-apps/web/wrangler.toml
-```
+- The top level is local dev only: worker `bodylog-dev`, non-secret vars, and the `bodylog-dev` D1 binding with a placeholder `database_id`, so an accidental `--remote` without `--env production` cannot reach production data. Local API development loads the root `.env.development` file through `--env-file`.
+- `[env.production]` re-declares everything production needs, because named environments do not inherit vars or bindings: worker `bodylog`, vars, observability, the `bodylog-prod` D1 database and `[env.production.assets]`.
+- Assets stay out of the top level because `wrangler dev` fails when `apps/web/dist` is missing.
 
-The API config owns the Worker entry point, non-secret Worker variables, observability, and the D1 binding. Local API development uses this config with the root `.env.development` file loaded explicitly through `--env-file`, avoiding a named Wrangler environment solely for local secrets.
+`[env.production.assets]` uses `not_found_handling = "single-page-application"` so client routes such as `/historico` get `index.html`, and `run_worker_first = ["/api/*"]` so every API request, including unknown ones, reaches the Worker and gets a JSON response. `apps/web/public/_headers` is copied into `dist/` and applied by Workers Static Assets, which keeps `Cache-Control: no-cache` on `/` and `/index.html`.
 
-The web config owns stable Cloudflare Pages settings such as the Pages build output directory. The Pages project name remains an external deployment variable so local and CI deploys can target the configured Cloudflare project without committing account-specific identifiers.
+Remote D1 scripts (`db:migrate:remote`, `db:query:remote`) pass `--env production`. Check the config without deploying with `npm run build`, then `npx wrangler deploy --dry-run --env production` from `apps/api`: it lists the static assets and the `DB` binding.
 
 ## Deployment Strategy
 
-Selected strategy: Cloudflare Pages + separate Worker.
+Selected strategy: one Worker serving the web app and the API (`0040-serve-the-web-app-from-the-api-worker.md`).
 
-### Frontend
-
-- React/Vite frontend deployed to Cloudflare Pages.
-- Frontend build is static assets generated by Vite.
-- Frontend and API are developed as separate local processes.
-- Frontend package lives under `apps/web`.
-
-### API
-
-- Hono API deployed as a separate Cloudflare Worker.
-- API owns authentication, data routes, D1 access, CSV import/export, and dashboard endpoints.
-- D1 remains bound only to the Worker.
-- API package lives under `apps/api`.
-
-### Reason
-
-This keeps the React/Vite app and backend API independently understandable, testable, and deployable while still staying fully inside Cloudflare for V1.
-
-### Tradeoffs
-
-- Requires CORS and cookie/session configuration across the Pages and Worker origins.
-- Requires two deployment targets instead of one.
-- Requires frontend environment configuration for the API base URL.
-
-These tradeoffs are acceptable for V1 because the project benefits from a clear separation between frontend and API.
+- The React/Vite build in `apps/web/dist` is served as Workers Static Assets.
+- The Hono API in `apps/api` owns authentication, data routes, D1 access, CSV import/export and dashboard endpoints under `/api/*`.
+- D1 is bound only to the Worker.
+- One origin means no CORS, no API base URL, one deploy step and one custom domain.
 
 ## Risks
 

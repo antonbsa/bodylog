@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-import { databaseName } from "./types"
+import { databaseBinding } from "./types"
 
 const localPersistTo = process.env.BODYLOG_D1_PERSIST_TO ?? null
 const wranglerConfigPath = "apps/api/wrangler.toml"
@@ -14,7 +14,7 @@ export function applyLocalMigrations(): void {
     "d1",
     "migrations",
     "apply",
-    databaseName,
+    databaseBinding,
     "--local",
     ...persistToArgs(),
   ])
@@ -25,7 +25,7 @@ export function getMeasurementCount(): number {
     [
       "d1",
       "execute",
-      databaseName,
+      databaseBinding,
       "--local",
       ...persistToArgs(),
       "--json",
@@ -59,7 +59,7 @@ export function executeSql(sql: string): void {
       [
         "d1",
         "execute",
-        databaseName,
+        databaseBinding,
         "--local",
         ...persistToArgs(),
         "--file",

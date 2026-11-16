@@ -99,21 +99,17 @@ describe("auth login", () => {
     ).toBe(true)
   })
 
-  it("uses same-site production cookies for custom frontend and API domains", async () => {
+  it("marks the session cookie Secure and SameSite=Lax outside localhost", async () => {
     const response = await app.request(
-      "https://api.bodylog.antonbsa.dev/api/auth/login",
+      "https://bodylog.antonbsa.dev/api/auth/login",
       {
         body: JSON.stringify({ password: "correct-password" }),
         headers: {
           "content-type": "application/json",
-          origin: "https://bodylog.antonbsa.dev",
         },
         method: "POST",
       },
-      {
-        ...env,
-        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.antonbsa.dev",
-      },
+      env,
     )
 
     expect(response.status).toBe(200)
@@ -126,31 +122,23 @@ describe("auth login", () => {
     expect(setCookieHeader).toContain("SameSite=Lax")
   })
 
-  it("keeps cross-site production cookies compatible with separate Cloudflare default domains", async () => {
+  it("leaves the session cookie non-Secure on localhost", async () => {
     const response = await app.request(
-      "https://bodylog-api.antonbsa.workers.dev/api/auth/login",
+      "http://localhost:8787/api/auth/login",
       {
         body: JSON.stringify({ password: "correct-password" }),
         headers: {
           "content-type": "application/json",
-          origin: "https://bodylog.pages.dev",
         },
         method: "POST",
       },
-      {
-        ...env,
-        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
-      },
+      env,
     )
-
-    expect(response.status).toBe(200)
 
     const setCookieHeader = response.headers.get("set-cookie")
 
-    expect(setCookieHeader).toContain(`${SESSION_COOKIE_NAME}=`)
-    expect(setCookieHeader).toContain("HttpOnly")
-    expect(setCookieHeader).toContain("Secure")
-    expect(setCookieHeader).toContain("SameSite=None")
+    expect(setCookieHeader).toContain("SameSite=Lax")
+    expect(setCookieHeader).not.toContain("Secure")
   })
 })
 
@@ -276,14 +264,14 @@ describe("protected api routes", () => {
   })
 
   it("keeps public api routes accessible without a session", async () => {
-    const response = await app.request("/", {}, env)
+    const response = await app.request("/api/health", {}, env)
 
     expect(response.status).toBe(200)
   })
 })
 
 describe("api cors", () => {
-  it("allows local frontend origins for development", async () => {
+  it("emits no CORS headers, since the web app shares the API origin", async () => {
     const response = await app.request(
       "/api/auth/session",
       {
@@ -294,86 +282,7 @@ describe("api cors", () => {
       env,
     )
 
-    expect(response.status).toBe(401)
-    expect(response.headers.get("access-control-allow-origin")).toBe(
-      "http://localhost:5173",
-    )
-    expect(response.headers.get("access-control-allow-credentials")).toBe(
-      "true",
-    )
-  })
-
-  it("allows the configured production frontend origin", async () => {
-    const response = await app.request(
-      "/api/auth/session",
-      {
-        headers: {
-          origin: "https://bodylog.pages.dev",
-        },
-      },
-      {
-        ...env,
-        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
-      },
-    )
-
-    expect(response.status).toBe(401)
-    expect(response.headers.get("access-control-allow-origin")).toBe(
-      "https://bodylog.pages.dev",
-    )
-    expect(response.headers.get("access-control-allow-credentials")).toBe(
-      "true",
-    )
-  })
-
-  it("does not allow unrelated origins", async () => {
-    const response = await app.request(
-      "/api/auth/session",
-      {
-        headers: {
-          origin: "https://example.com",
-        },
-      },
-      {
-        ...env,
-        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
-      },
-    )
-
-    expect(response.status).toBe(401)
     expect(response.headers.get("access-control-allow-origin")).toBeNull()
     expect(response.headers.get("access-control-allow-credentials")).toBeNull()
-  })
-
-  it("responds to protected route preflight before auth", async () => {
-    const response = await app.request(
-      "/api/measurements",
-      {
-        headers: {
-          "access-control-request-headers": "content-type",
-          "access-control-request-method": "GET",
-          origin: "https://bodylog.pages.dev",
-        },
-        method: "OPTIONS",
-      },
-      {
-        ...env,
-        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
-      },
-    )
-
-    expect(response.status).toBe(204)
-    expect(response.headers.get("access-control-allow-origin")).toBe(
-      "https://bodylog.pages.dev",
-    )
-    expect(response.headers.get("access-control-allow-credentials")).toBe(
-      "true",
-    )
-    expect(response.headers.get("access-control-allow-methods")).toBe(
-      "GET,POST,PUT,DELETE,OPTIONS",
-    )
-    expect(response.headers.get("access-control-allow-headers")).toBe(
-      "content-type",
-    )
   })
 })

@@ -378,7 +378,7 @@ test("basic PWA manifest and icons are reachable", async ({
   expect(installability.installabilityErrors).toEqual([])
 })
 
-test("Cloudflare Pages headers revalidate the HTML entry", async () => {
+test("static asset headers revalidate the HTML entry", async () => {
   const headers = await readFile(
     new URL("../../apps/web/public/_headers", import.meta.url),
     "utf8",

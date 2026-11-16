@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest"
 
 import {
   getAppPassword,
-  getFrontendOrigin,
   getSessionSecret,
   getUserHeightCm,
   getUserTimeZone,
@@ -66,30 +65,5 @@ describe("getUserTimeZone", () => {
     expect(() => getUserTimeZone({ USER_TIME_ZONE: "not-a-zone" })).toThrow(
       "USER_TIME_ZONE must be a valid IANA time zone",
     )
-  })
-})
-
-describe("getFrontendOrigin", () => {
-  it("reads the configured production frontend origin", () => {
-    expect(
-      getFrontendOrigin({
-        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev",
-      }),
-    ).toBe("https://bodylog.pages.dev")
-  })
-
-  it("treats missing frontend origin as optional", () => {
-    expect(getFrontendOrigin({})).toBeNull()
-  })
-
-  it("rejects invalid or path-based frontend origins", () => {
-    expect(() =>
-      getFrontendOrigin({ PRODUCTION_FRONTEND_ORIGIN: "not-a-url" }),
-    ).toThrow("PRODUCTION_FRONTEND_ORIGIN must be a valid URL origin")
-    expect(() =>
-      getFrontendOrigin({
-        PRODUCTION_FRONTEND_ORIGIN: "https://bodylog.pages.dev/dashboard",
-      }),
-    ).toThrow("PRODUCTION_FRONTEND_ORIGIN must be a valid URL origin")
   })
 })

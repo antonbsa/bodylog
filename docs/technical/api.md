@@ -2,11 +2,11 @@
 
 ## Base Rules
 
-All data routes require authentication.
+All data routes require authentication. The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404.
 
 ## Status
 
-### GET /
+### GET /api/health
 
 Returns the public API liveness response. This endpoint confirms the Worker can
 respond; it does not check database connectivity.
