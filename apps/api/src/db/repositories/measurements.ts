@@ -1,9 +1,9 @@
-import { Measurement } from "../domain/measurement"
+import { Measurement } from "../../domain/measurement"
 import type {
   CreateMeasurementInput,
   ImportedMeasurementInput,
   UpdateMeasurementByDateInput,
-} from "../types"
+} from "../../types"
 
 type MeasurementRow = {
   id: string

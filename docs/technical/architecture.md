@@ -93,6 +93,22 @@ Colors are CSS custom properties in `apps/web/src/styles/tokens.css`. The theme 
 - Derived metric calculations.
 - Data access through repository/service layers.
 
+### Source Layout
+
+```txt
+apps/api/src/
+  index.ts              wrangler main; re-exports the app
+  app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
+  config.ts             env-derived settings (password, session secret, height, time zone)
+  types.ts              API-only bindings and input types
+  features/<name>/      routes.ts plus that feature's services (auth, measurements, dashboard, history, trends, csv)
+  db/repositories/      D1 access, one file per table
+  http/                 cross-feature HTTP helpers (request validation, session guard)
+  domain/               API domain objects (Measurement, week range, week summary)
+```
+
+`app.ts` mounts `/api/auth/*` and `/api/health` as public routes. Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
+
 ## Database
 
 ### V1 Database

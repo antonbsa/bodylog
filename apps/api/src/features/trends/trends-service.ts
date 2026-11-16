@@ -1,5 +1,5 @@
-import type { MeasurementRepository } from "../measurements/measurement-repository"
-import type { TrendsResponse } from "../../../../types/trends"
+import type { MeasurementRepository } from "../../db/repositories/measurements"
+import type { TrendsResponse } from "../../../../../types/trends"
 
 export type TrendsRepository = Pick<MeasurementRepository, "list">
 

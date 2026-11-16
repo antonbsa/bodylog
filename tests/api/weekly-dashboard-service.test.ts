@@ -1,7 +1,7 @@
 import {
   WeeklyDashboardRepository,
   getWeeklyDashboard,
-} from "../../apps/api/src/dashboard/weekly-dashboard-service"
+} from "../../apps/api/src/features/dashboard/weekly-dashboard-service"
 import { describe, expect, it } from "vitest"
 
 import { Measurement } from "../../apps/api/src/domain/measurement"

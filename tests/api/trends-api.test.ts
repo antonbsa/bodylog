@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { app } from "../../apps/api/src/index"
+import { app } from "../../apps/api/src/app"
 import {
   createSessionCookieValue,
   SESSION_COOKIE_NAME,
-} from "../../apps/api/src/auth/session"
+} from "../../apps/api/src/features/auth/session"
 import type { TrendsResponse } from "../../types/trends"
 
 type MeasurementRow = {

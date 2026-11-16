@@ -33,3 +33,7 @@ export type UpdateMeasurementByDateInput = {
   disposition?: number | null
   notes?: string | null
 }
+
+export type AppEnv = {
+  Bindings: AppBindings
+}

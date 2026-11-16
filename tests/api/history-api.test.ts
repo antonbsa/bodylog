@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { app } from "../../apps/api/src/index"
+import { app } from "../../apps/api/src/app"
 import {
   createSessionCookieValue,
   SESSION_COOKIE_NAME,
-} from "../../apps/api/src/auth/session"
+} from "../../apps/api/src/features/auth/session"
 import type { HistoryWeeksPage } from "../../types/history"
 
 type MeasurementRow = {

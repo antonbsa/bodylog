@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { MeasurementRepository } from "../../apps/api/src/measurements/measurement-repository"
+import { MeasurementRepository } from "../../apps/api/src/db/repositories/measurements"
 
 type MeasurementRow = {
   id: string
