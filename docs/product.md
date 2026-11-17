@@ -125,16 +125,16 @@ The system must allow the user to create a body measurement for a selected date.
 
 #### Acceptance Criteria
 
-- [ ] The date defaults to today.
-- [ ] The user can select a different date.
-- [ ] `weightKg` is required.
-- [ ] `bodyFatPercentage` is optional.
-- [ ] `musclePercentage` is optional.
-- [ ] `restingMetabolismKcal` is optional.
-- [ ] `waistCm`, `sleepHours`, `disposition` (1–5) and `notes` are optional (ADR 0032).
-- [ ] The system stores at most one measurement per date.
-- [ ] If the selected date has no record, the form is empty and creates a new measurement.
-- [ ] If the selected date already has a record, the form loads the existing data for editing.
+- The date defaults to today.
+- The user can select a different date.
+- `weightKg` is required.
+- `bodyFatPercentage` is optional.
+- `musclePercentage` is optional.
+- `restingMetabolismKcal` is optional.
+- `waistCm`, `sleepHours`, `disposition` (1–5) and `notes` are optional (ADR 0032).
+- The system stores at most one measurement per date.
+- If the selected date has no record, the form is empty and creates a new measurement.
+- If the selected date already has a record, the form loads the existing data for editing.
 
 ---
 
@@ -144,10 +144,10 @@ The system must allow the user to update an existing measurement.
 
 #### Acceptance Criteria
 
-- [ ] Existing measurements can be opened for editing.
-- [ ] Updating a measurement preserves the same date.
-- [ ] Updated values are reflected in the history list.
-- [ ] Updated values are reflected in weekly averages and variations.
+- Existing measurements can be opened for editing.
+- Updating a measurement preserves the same date.
+- Updated values are reflected in the history list.
+- Updated values are reflected in weekly averages and variations.
 
 ---
 
@@ -157,10 +157,10 @@ The system must allow the user to delete an existing measurement.
 
 #### Acceptance Criteria
 
-- [ ] A measurement can be deleted from its edit screen (ADR 0033).
-- [ ] The user must confirm deletion before it happens.
-- [ ] Deleted records no longer appear in history.
-- [ ] Weekly averages and variations are recalculated after deletion.
+- A measurement can be deleted from its edit screen (ADR 0033).
+- The user must confirm deletion before it happens.
+- Deleted records no longer appear in history.
+- Weekly averages and variations are recalculated after deletion.
 
 ---
 
@@ -170,12 +170,12 @@ The system must display recorded measurements.
 
 #### Acceptance Criteria
 
-- [ ] Measurements are listed in descending date order.
-- [ ] Each item shows the original recorded fields.
-- [ ] Each item shows derived body fat mass when possible.
-- [ ] Each item shows derived muscle mass when possible.
-- [ ] Missing optional fields are displayed clearly.
-- [ ] The list is usable on mobile.
+- Histórico groups recorded days into week cards, newest week first, and within a card lists days newest first.
+- Each week card shows its period, its count of recorded days and a "Média" row with the week's average weight, body fat and muscle.
+- Each day row shows the date with weekday, weight, body fat percentage and muscle percentage, with an em dash for a missing value.
+- A day row shows a note icon when the record has notes.
+- Derived values (BMI, body fat mass, muscle mass) are not listed in Histórico; they appear in the registration screen in edit mode and in Tendências.
+- The list is usable on mobile.
 
 ---
 
@@ -185,10 +185,10 @@ The system must calculate derived body metrics from the stored values.
 
 #### Acceptance Criteria
 
-- [ ] BMI is calculated from weight and configured height.
-- [ ] Body fat mass is calculated when weight and body fat percentage are available.
-- [ ] Muscle mass is calculated when weight and muscle percentage are available.
-- [ ] Derived values are not required to be stored in the database.
+- BMI is calculated from weight and configured height.
+- Body fat mass is calculated when weight and body fat percentage are available.
+- Muscle mass is calculated when weight and muscle percentage are available.
+- Derived values are not required to be stored in the database.
 
 #### Formulas
 
@@ -206,13 +206,14 @@ The system must group measurements by week and calculate weekly averages.
 
 #### Acceptance Criteria
 
-- [ ] Weeks start on Monday.
-- [ ] Weeks end on Sunday.
-- [ ] Only days with measurements are included in averages.
-- [ ] Missing days are not counted as zero.
-- [ ] The system shows how many measurements were used in the current week.
-- [ ] The UI shows the current week registration count against a 7-day target, with the recorded days (ADR 0035).
-- [ ] Weekly averages include all available metrics and derived metrics, including waist, sleep and disposition.
+- Weeks start on Monday.
+- Weeks end on Sunday.
+- Only days with measurements are included in averages.
+- Missing days are not counted as zero.
+- The system shows how many measurements were used in the current week.
+- The UI shows the current week registration count against a 7-day target, with the recorded days (ADR 0035).
+- The API returns weekly averages for all ten recorded metrics.
+- Início shows six of them: weight, body fat, muscle, waist, sleep and disposition; metabolism and derived values are not shown there.
 
 ---
 
@@ -222,15 +223,14 @@ The system must compare the current week against the previous week.
 
 #### Acceptance Criteria
 
-- [ ] The current week is compared even when incomplete.
-- [ ] The comparison uses the partial current week against the previous full week.
-- [ ] The UI clearly indicates when the current week is partial.
-- [ ] Absolute variation is displayed.
-- [ ] Relative percentage variation is displayed when applicable.
-- [ ] Percentage-based metrics display absolute changes in percentage points.
-- [ ] The system indicates whether each metric moved up, down, or stayed stable.
-- [ ] A metric is stable when its change rounds to zero at the displayed precision (ADR 0039).
-- [ ] The UI shows variations in one neutral tone, without health advice, diagnosis, recommendations, or motivational interpretation (ADR 0031).
+- The current week is compared even when incomplete.
+- The comparison uses the partial current week against the previous full week.
+- The UI clearly indicates when the current week is partial.
+- Absolute variation is displayed.
+- Percentage-based metrics display absolute changes in percentage points.
+- The system indicates whether each metric moved up, down, or stayed stable.
+- A metric is stable when its change rounds to zero at the displayed precision (ADR 0039).
+- The UI shows variations in one neutral tone, without health advice, diagnosis, recommendations, or motivational interpretation (ADR 0031).
 
 ---
 
@@ -240,15 +240,15 @@ The system must provide a dashboard as the main screen.
 
 #### Acceptance Criteria
 
-- [ ] The dashboard is the initial authenticated screen.
-- [ ] The dashboard shows current week averages.
-- [ ] If the current week has no records yet, the dashboard summary cards show empty values (`-`) instead of another week's metrics.
-- [ ] The dashboard shows comparison against the previous week.
-- [ ] The dashboard includes a button to open the measurement form.
-- [ ] The dashboard is mobile-first.
-- [ ] The authenticated app uses separate screens (Início, Histórico, Tendências, Ajustes) with a bottom tab bar (ADR 0033).
-- [ ] The measurement form is a full-screen route opened from the central add button or from a history row.
-- [ ] Charts are limited to the Tendências screen (ADR 0030).
+- The dashboard is the initial authenticated screen.
+- The dashboard shows current week averages for weight, body fat, muscle, waist, sleep and disposition.
+- If the current week has no records yet, the dashboard summary cards show empty values (`-`) instead of another week's metrics.
+- The dashboard shows comparison against the previous week.
+- The dashboard includes a button to open the measurement form.
+- The dashboard is mobile-first.
+- The authenticated app uses separate screens (Início, Histórico, Tendências, Ajustes) with a bottom tab bar (ADR 0033).
+- The measurement form is a full-screen route opened from the central add button or from a history row.
+- Charts are limited to the Tendências screen (ADR 0030).
 
 ---
 
@@ -258,10 +258,10 @@ The system must allow the user to export measurements as CSV.
 
 #### Acceptance Criteria
 
-- [ ] The user can download a CSV file with all measurements, including the new optional fields.
-- [ ] The CSV includes raw stored fields.
-- [ ] The CSV format is documented.
-- [ ] Export works without Google Sheets integration.
+- The user can download a CSV file with all measurements, including the new optional fields.
+- The CSV includes raw stored fields.
+- The CSV format is documented.
+- Export works without Google Sheets integration.
 
 ---
 
@@ -271,12 +271,12 @@ The system must allow the user to import historical measurements from a CSV file
 
 #### Acceptance Criteria
 
-- [ ] The user can upload a CSV file.
-- [ ] The system validates headers.
-- [ ] The system validates rows.
-- [ ] The system upserts records by date.
-- [ ] The system returns an import summary.
-- [ ] Invalid rows are reported clearly.
+- The user can upload a CSV file.
+- The system validates headers.
+- The system validates rows.
+- The system upserts records by date.
+- The system returns an import summary.
+- Invalid rows are reported clearly.
 
 ---
 
@@ -286,12 +286,12 @@ The system must protect the app with simple single-user authentication.
 
 #### Acceptance Criteria
 
-- [ ] The user must enter a password before accessing the app.
-- [ ] The password is stored as a Cloudflare secret or environment variable.
-- [ ] The password is not committed to the repository.
-- [ ] Authenticated state is stored using a secure session approach.
-- [ ] All data routes require authentication.
-- [ ] Logout is available.
+- The user must enter a password before accessing the app.
+- The password is stored as a Cloudflare secret or environment variable.
+- The password is not committed to the repository.
+- Authenticated state is stored using a secure session approach.
+- All data routes require authentication.
+- Logout is available.
 
 ---
 
@@ -301,10 +301,10 @@ The system must be installable as a basic PWA.
 
 #### Acceptance Criteria
 
-- [ ] The app has a manifest.
-- [ ] The app has basic icons.
-- [ ] The app can be installed on a smartphone.
-- [ ] Offline-first support is not required.
+- The app has a manifest.
+- The app has basic icons.
+- The app can be installed on a smartphone.
+- Offline-first support is not required.
 
 ---
 
@@ -314,13 +314,13 @@ The system must present the interface using the documented UI direction.
 
 #### Acceptance Criteria
 
-- [ ] All visible labels and interface copy are in `pt-BR`.
-- [ ] The UI supports light and dark themes, following the system with a manual override (ADR 0034).
-- [ ] Values use `pt-BR` display formatting.
-- [ ] Empty summary values display `-`.
-- [ ] The history screen displays a "Nenhuma medida ainda." message with a "Registrar hoje" action when no records exist.
-- [ ] The UI includes loading, empty, error, disabled, and submitting states where applicable.
-- [ ] The UI avoids strong gradients, heavy glassmorphism, gamified fitness visuals, floating AI assistant patterns, and generic motivational copy.
+- All visible labels and interface copy are in `pt-BR`.
+- The UI supports light and dark themes, following the system with a manual override (ADR 0034).
+- Values use `pt-BR` display formatting.
+- Empty summary values display `-`.
+- The history screen displays a "Nenhuma medida ainda." message with a "Registrar hoje" action when no records exist.
+- The UI includes loading, empty, error, disabled, and submitting states where applicable.
+- The UI avoids strong gradients, heavy glassmorphism, gamified fitness visuals, floating AI assistant patterns, and generic motivational copy.
 
 ## Non-Functional Requirements
 
@@ -371,7 +371,7 @@ The data access layer should be isolated enough to support a future migration fr
 
 - Weeks run Monday to Sunday; the current week can be partial.
 - Compare the partial current week against the previous full week.
-- Show weekly averages, absolute variation, relative percentage variation, and percentage-point variation for percentage metrics.
+- Show weekly averages, absolute variation, and percentage-point variation for percentage metrics.
 - Show metric direction as up/down/stable, in one neutral tone, without health advice, diagnosis, recommendations, or motivational interpretation (`0031-use-neutral-variation-color.md`).
 - Show the weekly registration count against a 7-day target, with the recorded days (`0035-use-seven-day-weekly-target.md`).
 - Show trend charts in the Tendências screen only (`0030-allow-charts-in-trends.md`).
