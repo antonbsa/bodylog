@@ -16,6 +16,7 @@ const compat = new FlatCompat({
 export default [
   {
     ignores: [
+      ".agents/**",
       "apps/web/dist/**",
       "coverage/**",
       "node_modules/**",

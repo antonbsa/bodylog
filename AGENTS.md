@@ -1,195 +1,94 @@
-# AGENTS.md
+# Project Guidance
 
-This file defines how AI coding agents should work on this repository.
+BodyLog is a personal, single-user, mobile-first tracker for daily bioimpedance records and weekly progress, replacing a spreadsheet. V1 favors delivery over product completeness.
 
-## Project Goal
+## Project Map
 
-Build a personal, mobile-first body metrics tracker that replaces a spreadsheet workflow for daily bioimpedance records and weekly progress analysis.
+- Monorepo: `apps/api` (Hono on Cloudflare Workers + D1, also serving the built web app), `apps/web` (React/Vite PWA with Radix Themes), `infra` (D1 migrations, local-db scripts, shared error classes), `tests/{api,web,e2e}`, plus root `domain/` and `types/` shared by both apps.
+- Package-specific rules live in nested files, loaded when you work there: [apps/api/AGENTS.md](apps/api/AGENTS.md), [apps/web/AGENTS.md](apps/web/AGENTS.md), [infra/AGENTS.md](infra/AGENTS.md), [tests/AGENTS.md](tests/AGENTS.md).
+- Product: [overview](docs/product/overview.md), [requirements](docs/product/requirements.md), [scope](docs/product/scope.md), [user flows](docs/product/user-flows.md); [future ideas](docs/product/future-ideas.md) are context only, never work to implement unasked. UI work also reads [ui-direction](docs/product/ui-direction.md) and the visual reference [mobile-redesign.html](docs/product/prototype/mobile-redesign.html).
+- Technical: [architecture](docs/technical/architecture.md), [HTTP API](docs/technical/api.md), [database](docs/technical/database.md), [deployment](docs/technical/deployment.md). Decisions: `docs/technical/decisions/` (ADRs). Version-level specs and acceptance criteria: `specs/v1/`.
+- Where guidance goes: needed on most edits → this file; scoped to a directory → that directory's `AGENTS.md` (plus a `CLAUDE.md` containing `@AGENTS.md`); a decision → ADR; stable product or technical knowledge → `docs/`; version-level scope → `specs/`.
+- Agent instructions follow the code: a change that moves, renames or removes a package, directory, script or convention updates the instruction that names it in the same change. Symptom: an `AGENTS.md` sends the agent to a path or command that no longer exists. Why it slips: tests and lint don't read prose, and nested files load only when someone works in that directory. Verify with `grep -rn "<old name>" AGENTS.md apps/*/AGENTS.md infra/AGENTS.md tests/AGENTS.md .claude`.
 
-The V1 priority is delivery, not product completeness.
+## Workflow
 
-## Required Context Before Coding
+Issue → ADR if a decision changes → implementation → review → PR → release.
 
-Before implementing any task, read these files:
+1. **Issue.** Executable work is tracked only as GitHub issues (ADR 0036): one parent issue per initiative with native sub-issues, each holding Context, Scope, Out of scope, Acceptance criteria, Validation and Open points (`.github/ISSUE_TEMPLATE/`). Read the selected issue and its parent with `gh issue view <n>` before coding. New work is drafted as issue text and shown to the owner; create the issue only after the owner approves it. `specs/*/tasks/` files are history: leave them as they are and note superseded tasks in the issues.
+2. **Decision.** When the work changes an accepted decision, add or update an ADR under `docs/technical/decisions/` before broad coding, and update the current-state docs (requirements, architecture, API, database) it affects in the same change.
+3. **Implement** only the selected issue, with its tests. When the issue leaves the approach open, show the owner a plan first. An ambiguity that blocks the work is a question for the owner; one that doesn't is resolved with the simplest option the specs allow and reported as an assumption.
+4. **Review** the diff against the issue's acceptance criteria and these instructions; UI issues are validated with a screenshot compared against the prototype.
+5. **PR.** The parent issue's Workflow says whether its sub-issues share one branch and PR (ADR 0036's default) or get one each. Report validation notes and modified files to the owner; post them on GitHub only when the owner asks, since comments are public and unreviewed.
+6. **Release.** Production deploys are the owner's call: `deploy.yml` deploys after CI passes on `main`, and `gh release create` runs only with `--draft`, since publishing a release becomes the production deploy (#39).
 
-1. `docs/product/overview.md`
-2. `docs/product/requirements.md`
-3. `docs/product/scope.md`
-4. `docs/technical/architecture.md`
-5. `docs/technical/database.md`
-6. `docs/technical/api.md`
-7. `specs/v1/spec.md`
-8. `specs/v1/implementation-plan.md`
-9. `specs/v1/acceptance-criteria.md`
-10. The selected GitHub issue and its parent issue (`gh issue view <n>`)
-11. For UI work, `docs/product/ui-direction.md` and the visual reference `docs/product/prototype/mobile-redesign.html`
+## Language
 
-Use `docs/product/future-ideas.md` only to understand future ideas. Do not implement future ideas unless explicitly requested.
+- Chat replies follow the language the user writes in that turn.
+- Everything that lands in the repo is English: code, identifiers, comments, commits, docs, issue/PR text. User-visible app text is Brazilian Portuguese.
 
-## Documentation and Task Conventions
+## Code Comments
 
-- Use `docs/` for stable product, technical, architectural, and planning knowledge.
-- Use `specs/` for version-level specifications, acceptance criteria, implementation strategy, and open questions.
-- Keep requirements and architecture as current-state living documents.
-- Capture important decisions as ADR-style files under `docs/technical/decisions/`.
-- Do not add execution task tracking under `docs/` or `specs/`.
+A comment carries only what the code can't say: the why (business rule, third-party bug, trade-off, workaround), a pitfall that looks safe to simplify, or an invariant the types don't express. One line is the target, two the ceiling.
 
-## Task Workflow
+- A function's description goes in `/** */` directly above it; `//` is for comments inside bodies. Add `@param`/`@returns` only for meaning the types don't carry.
+- A durable decision gets a one-line ADR pointer after the fact (`// ... (ADR 0040)`). The story of a change goes in the commit or PR.
+- Update or delete comments the change outgrew, and say so in the summary.
 
-Executable work is tracked only as GitHub issues: one parent issue per initiative with native sub-issues, one per task. Each issue holds scope, acceptance criteria and validation; UI tasks are validated with a screenshot compared against `docs/product/prototype/mobile-redesign.html`.
+## Commits
 
-Before implementing a task:
+- Conventional Commits: `feat:` runtime behavior, `fix:` bug fixes, `docs:` docs/specs/agent instructions, `test:` test-only, `chore:` tooling/deps/formatting/maintenance (and any docs + tooling mix), `refactor:` restructuring without behavior change.
+- Subject: imperative, ≤72 chars, no trailing period; it must stand alone in `git log --oneline`.
+- Body is optional; skip it when the subject says everything. When present: 1–4 `- ` bullets, one line each, no hard wrap. Each says why or what's non-obvious (constraint, rejected alternative, side effect), never a file-by-file how.
+- Context that has a home elsewhere stays in its issue/ADR/PR; the commit points to it in a footer (`Refs: #35, ADR 0040`). Only the first commit of a branch carries the footer.
+- Commits and PR descriptions carry the user's authorship only: no `Co-Authored-By` trailer or attribution line (`attribution` in `.claude/settings.json` turns off Claude's defaults).
+- When your work changed git-tracked files, end the final response with one suggested commit message; with no tracked change, write nothing about commits. While iterating on the same uncommitted work, keep updating that one suggestion to cover the whole change set.
+- Mention only git-tracked files, in the commit suggestion and the rest of the reply; gitignored paths (`.env.local`, `.agents/`) stay out of it.
 
-1. Read the related docs/specs.
-2. Read the selected issue and its parent issue with `gh issue view <n>`.
-3. When the issue is not clear enough, show an implementation plan to the owner before coding.
-4. Implement only the selected issue.
-5. Report validation notes and modified files to the owner; post them on the issue only when the owner asks, since GitHub comments are public and are not reviewed first.
-6. Do not introduce unrelated changes.
+## Markdown
 
-When creating new work:
+Don't hard-wrap prose: one paragraph, one line. Fenced code, tables and list continuations keep their own formatting.
 
-1. Add stable knowledge to `docs/`.
-2. Add version-level scope to `specs/`.
-3. Draft executable work as an issue and show the text to the owner. Create the issue only after the owner approves that text.
+## Env Vars
 
-Existing files under `specs/v1/tasks/` are history that the owner removes later. Do not edit them or add new task files; note superseded tasks in the issues instead.
+- `.env.development` at the repo root is committed with placeholder secrets; `wrangler dev` reads it through `--env-file`, and Vite reads root env files (`envDir: "../.."`).
+- `.env.local` and `.env.production` (gitignored) hold real values that exist nowhere else. Never delete, move or overwrite them, directly or through `git clean`/`rm -rf`/"reset to clean"; `.claude/settings.json` and the guard hooks (Tooling) block the obvious paths. If a task seems to need one changed, stop and ask.
+- Production secrets (`APP_PASSWORD`, `SESSION_SECRET`) are Cloudflare secrets set with `npx wrangler secret put <NAME> --env production` from `apps/api`; document a new one in [deployment](docs/technical/deployment.md) and never commit its value.
 
-Work for one initiative goes on one feature branch with one commit per task and a single pull request linked to the parent issue.
+## Engineering
 
-## V1 Technical Decisions
-
-- Frontend: React + Vite + TypeScript
-- Backend: Hono + TypeScript
-- Runtime: Cloudflare Workers
-- Database: Cloudflare D1
-- Deploy target: Cloudflare only
-- Automation: CI workflows for PRs to `main`, direct pushes to `main`, and deployment
-- Authentication: simple single-user password using secrets/environment variables
-- V2 planned database migration: serverless Postgres
-
-Do not add Vercel compatibility to V1.
-
-## Scope Rules
-
-Do:
-
-- Keep the app mobile-first.
-- Keep the implementation small and understandable.
-- Preserve TypeScript across frontend and backend.
-- Implement one requirement at a time.
-- Add automated tests together with implemented behavior.
-- Keep data access isolated behind a repository/service layer.
-- Declare cross-boundary request/response shapes once in the root `types/` package; do not redeclare per-app copies in `apps/web` or `apps/api`.
-- Put code that both apps run (pure measurement rules such as limits, notes normalization and derived values) in the root `domain/` module, and import from each app only its own `src/`. A cross-app import such as `apps/web` reaching into `apps/api/src` still typechecks and bundles, so CI won't flag it; verify with `grep -rn "api/src" apps/web/src` and `grep -rn "web/src" apps/api/src` both returning nothing.
-- Update docs when implementation decisions change.
-- Prefer boring, explicit code over unnecessary abstraction.
-
-Do not:
-
-- Turn the project into a generic fitness tracker.
-- Add multi-user support.
-- Add complex authentication.
-- Add charts outside the Tendências screen (ADR 0030); there is one line chart at a time, with no ideal bands or targets.
-- Add Google Sheets integration in V1.
-- Add offline-first behavior in V1.
-- Add recommendations or automatic health interpretation.
-- Introduce dependencies without a clear reason.
+- Build the simplest thing that fully meets the current requirement, end to end; add capability on top of something that already works. No speculative abstractions, config or indirection.
+- Small is fine, throwaway isn't: the simplest version should be one you'll extend, not one you'll replace.
+- Before writing your own code, use what the project's dependencies already offer, then a well-maintained library; a new dependency needs a stated reason.
+- For a design with no precedent in the codebase, follow how established products solve it.
+- V1 stack (ADRs 0013–0017, 0040): TypeScript everywhere, React + Vite, Hono on Cloudflare Workers, D1, deployed to Cloudflare only (no Vercel compatibility); auth is one password from secrets; V2 plans serverless Postgres, which is why SQL stays behind repositories.
+- Shared code: request/response shapes are declared once in root `types/`, and rules both apps run (measurement limits, notes normalization, derived values) live in root `domain/`. Each app imports only its own `src/` plus these roots. Symptom: `apps/web` imports from `apps/api/src` (or the reverse). Why it slips: the import typechecks and bundles, so CI stays green. Verify with `grep -rn "api/src" apps/web/src` and `grep -rn "web/src" apps/api/src`, both returning nothing.
 
 ## Product Rules
 
-- V1 must allow one measurement per date.
-- If a selected date already has a record, load it into the form for editing.
-- If a selected date has no record, show an empty form for creation.
-- Only weight is required in V1.
-- Week starts on Monday and ends on Sunday.
-- Current week comparison is partial current week vs previous full week.
-- Percentage metric changes must be displayed in percentage points.
-- The system may indicate whether a metric increased, decreased, or stayed stable, but must not classify changes as good or bad in V1.
+- Single user, mobile-first, a body metrics tracker rather than a generic fitness app; no multi-user support or complex auth.
+- One measurement per date. Selecting a date with a record loads it for editing; a date without one shows an empty form for creation. Only weight is required.
+- Weeks run Monday to Sunday. The current-week comparison is the partial current week vs the previous full week.
+- Percentage metric changes are shown in percentage points. A change may be labeled as increased, decreased or stable, never as good or bad, and the app gives no recommendations or health interpretation.
+- Charts exist only on the Tendências screen (ADR 0030): one line chart at a time, with no ideal bands or targets.
+- Out of V1: Google Sheets integration, offline-first behavior.
 
-## Ambiguity Handling
+## Tests
 
-If ambiguity blocks implementation, document the question before proceeding.
+- Every behavior change ships with automated tests; a task that can't have them yet documents why and is validated by hand.
+- Test files live under root `tests/` (never in `src/`); tiers and how to run them are in [tests/AGENTS.md](tests/AGENTS.md).
+- CI (`.github/workflows/ci.yml`) runs typecheck, lint, `test:unit` and `test:e2e` on every PR and push to `main`.
 
-If ambiguity does not block implementation, choose the simplest option that satisfies the current specs and document the assumption.
+## Tooling
 
-## Expected Workflow
+- Node is pinned in `.nvmrc` and enforced by `engine-strict=true` with the `engines` range in `package.json`: run `nvm use` before any `npm install` or npm script, or installs fail with `EBADENGINE`.
+- Agents don't start long-running dev servers or watchers (`npm run dev`, `dev:api`, `dev:web`, `wrangler dev`, `vite` in watch mode) unless the user asks; the owner runs them. Finite commands (typecheck, lint, tests, builds, local migrations, one-off CLI checks) are fine.
+- `.claude/hooks/guard-bash.mjs` and `guard-write.mjs` (PreToolUse, registered in `.claude/settings.json`) hard-enforce rules from this file and the nested ones: draft-only releases, no Bash writes to `.env.local`/`.env.production`, a confirmation for any local `d1 execute` beyond one `SELECT` or any delete of `.wrangler` state, no edits in the `main` checkout, no moving a worktree. They exist because `ask` permission rules never prompt in bypass mode, while a hook's `ask` always does. A denial names the rule it enforces; follow it instead of rephrasing the command around the guard. Symptom of a broken guard: the command just runs. Why it slips: a hook that crashes or matches nothing fails open, silently. After changing a guard, pipe a payload into it (`echo '{"tool_name":"Bash","tool_input":{"command":"..."}}' | node .claude/hooks/guard-bash.mjs`) for each case it should deny, ask and pass, and check the printed `permissionDecision` (no output means pass). The hooks run from the directory the session started in, so a session started in the `main` checkout uses `main`'s copy.
 
-1. Read the relevant specs.
-2. Identify the requirement/task being implemented.
-3. Make the smallest useful change.
-4. Add or update automated tests that cover the behavior.
-5. Run the relevant automated checks.
-6. Validate against acceptance criteria.
-7. Update docs if behavior changed.
+## Worktrees and `.agents/`
 
-## Node Version
-
-This repo pins Node via `.nvmrc` (currently `24.16.0`) and enforces it with
-`engine-strict=true` plus a `package.json` `engines` range. Run `nvm use` (or
-otherwise use Node 24) before any `npm install` / npm script, or installs fail
-with `EBADENGINE`.
-
-## Local Development Servers
-
-Do not start long-running development servers or watchers unless the user explicitly asks for them.
-
-Agents must not run commands such as:
-
-- `npm run dev`
-- `npm run dev:api`
-- `npm run dev:web`
-- `wrangler dev`
-- `vite --watch` or similar watcher/server commands
-
-The project owner handles local dev servers manually.
-
-Agents may still run finite validation commands such as typecheck, lint, tests, builds, migrations, and one-off CLI checks when they are relevant to the task.
-
-## Worktree Configuration
-
-All agents and sub-agents must configure git worktrees under `.agent-state/worktrees/` to keep temporary worktrees organized and hidden from search and file navigation.
-
-When using git worktree operations (including tools like Gitlens Start Work or Gitlens Start Review):
-
-- Specify the worktree path as `.agent-state/worktrees/<descriptive-name>` relative to the repository root
-- This keeps the workspace clean and prevents cluttering the editor's file explorer and search results
-- The `.agent-state` folder is already excluded in `.vscode/settings.json`
-
-## Commit Message Rules
-
-Use Conventional Commits.
-
-Preferred prefixes:
-
-- `feat:` for runtime product behavior.
-- `fix:` for bug fixes.
-- `docs:` for documentation, specs, task checklists, planning files, and agent instructions.
-- `test:` for test-only changes.
-- `chore:` for tooling, dependency, formatting, or repository maintenance.
-- `refactor:` for code restructuring with no behavior change.
-
-Use `docs:` for documentation-only changes under `docs/`, `specs/`, and `AGENTS.md`, including spec changes and task status updates. Use `chore:` when the change also updates tooling, dependencies, or package scripts.
-
-When completing work that actually changed project files, include one suggested commit message at the end of the final response.
-While iterating on the same uncommitted work, update that single suggestion so it reflects the full accumulated change set. Do not replace it with a different message that only describes the latest iteration.
-Suggest a new separate commit message only after a commit has been made, or when the user explicitly starts separate work that should be committed independently.
-Do not include a commit message suggestion for planning, explanation, review, or advice-only responses with no file changes.
-The suggestion must follow these commit message rules.
-
-## Testing Expectations
-
-- Place automated test files under the root `tests/` directory, not inside `src/`.
-- Unit-test domain logic such as derived calculations, validation, weekly grouping, weekly averages, and weekly comparison.
-- Test repository and API behavior where persistence, authentication, routing, or serialization rules are implemented.
-- Add E2E coverage for complete user-facing flows once the frontend route exists.
-- Keep tests focused on V1 behavior and acceptance criteria.
-- If a task cannot reasonably have automated coverage yet, document the reason and perform a manual validation.
-
-## Automation Expectations
-
-- V1 should include workflow files for automated checks on pull requests targeting `main`.
-- V1 should include workflow files for automated checks on direct pushes to `main`.
-- V1 should include deployment automation once the Cloudflare deployment strategy is chosen.
-- Workflow automation must run the relevant automated checks before deployment.
-- Required deployment secrets must be documented and must not be committed.
+- Tracked files change in a worktree on a feature branch, never in the `main` checkout. Create one with `git worktree add -b <branch-name> .agents/worktrees/<branch-name> origin/main`, then `nvm use && npm install` inside it. A session working in a worktree gives its absolute path to every subagent it delegates to.
+- Name the branch after the work (`serve-the-web-app-from-the-api-worker`), with no `issue-<n>` prefix, and keep the directory name equal to the branch name at creation.
+- A worktree's path is fixed for its whole life: when the work outgrows the name, rename the branch (`git branch -m`) and leave the directory; `guard-bash.mjs` denies `git worktree move` and `mv` under `.agents/worktrees/`. Symptom: Orca loses the session and its chat, since it tracks each worktree by path. Why it slips: git, the build and the tests all work normally from the new path. Verify: `git worktree list` still shows the path the session was opened at.
+- `eslint.config.mjs` `ignores` keeps `.agents/**`. Symptom: `npm run lint` in the `main` checkout reports errors in files that aren't on `main`, or crawls through a worktree's `dist/`. Why it slips: flat config doesn't read `.gitignore` and its ignores are root-anchored, while a worktree's own lint never sees its siblings. Verify: `npx eslint --print-config .agents/worktrees/x/a.ts` prints `undefined`.
+- `.agents/` is gitignored scratch space (worktrees, drafts, handoffs), not project state. Don't read or factor in its contents unless a task points at a specific file; decisions live in `docs/technical/decisions/`.

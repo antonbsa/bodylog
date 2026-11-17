@@ -1,0 +1,58 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "deny": [
+      "Bash(git restore *)",
+      "Bash(git clean*)",
+      "Bash(*d1 execute*--remote*)",
+      "Bash(*d1 migrations apply*--remote*)",
+      "Bash(npm run db:query:remote*)",
+      "Bash(npm run db:migrate:remote*)",
+      "Edit(//**/.env.local)",
+      "Edit(//**/.env.production)",
+      "Bash(rm *.env.*)",
+      "Bash(mv *.env.*)",
+      "Bash(git push*--force*)",
+      "Bash(git push* -f*)",
+      "Bash(git reset --hard*)",
+      "Bash(git branch -D*)",
+      "Bash(git checkout -- *)",
+      "Bash(gh release edit*--draft=false*)",
+      "Bash(*wrangler dev*--remote*)"
+    ],
+    "ask": ["Bash(git push *)"],
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(npm run db:query:local -- \"SELECT*)",
+      "Bash(npx wrangler d1 execute DB --config apps/api/wrangler.toml --local --command \"SELECT*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-bash.mjs"]
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-write.mjs"]
+          }
+        ]
+      }
+    ]
+  }
+}

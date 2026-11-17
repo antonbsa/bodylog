@@ -1,4 +1,4 @@
 interface:
   display_name: "Handoff"
-  short_description: "Create .agent-state/HANDOFF.md for continuing work in a fresh session."
-  default_prompt: "Use $handoff to create or rewrite .agent-state/HANDOFF.md with the current task status, changed files, validation, risks, and the next exact action."
+  short_description: "Create .agents/HANDOFF.md for continuing work in a fresh session."
+  default_prompt: "Use $handoff to create or rewrite .agents/HANDOFF.md with the current task status, changed files, validation, risks, and the next exact action."
