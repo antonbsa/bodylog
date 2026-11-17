@@ -1,7 +1,7 @@
 ---
 status: Accepted
 area: web
-supersedes: ["0022"]
+amends: ["0022"]
 ---
 
 # 0030 — Allow Charts in Trends

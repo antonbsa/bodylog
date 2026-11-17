@@ -1,7 +1,7 @@
 ---
 status: Accepted
 area: web
-supersedes: ["0022"]
+amends: ["0022"]
 ---
 
 # 0034 — Support Light, Dark and System Themes

@@ -1,15 +1,15 @@
 ---
-status: Superseded
+status: Accepted
 area: web
 amends: ["0012"]
-superseded-by: ["0030", "0033", "0034"]
+amended-by: ["0030", "0033", "0034"]
 ---
 
 # 0022 — Decide V1 UI Direction
 
 ## Status
 
-Superseded by `0030-allow-charts-in-trends.md`, `0033-use-bottom-navigation.md` and `0034-support-light-dark-and-system-themes.md`
+Accepted, amended by `0030-allow-charts-in-trends.md`, `0033-use-bottom-navigation.md` and `0034-support-light-dark-and-system-themes.md`
 
 ## Context
 

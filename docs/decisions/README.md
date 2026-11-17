@@ -54,12 +54,12 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 ### Web
 
 - [0018 — Include Basic PWA in V1](0018-include-basic-pwa-v1.md) · Accepted
-- [0022 — Decide V1 UI Direction](0022-decide-v1-ui-direction.md) · Superseded · superseded by 0030, 0033, 0034 · amends 0012
+- [0022 — Decide V1 UI Direction](0022-decide-v1-ui-direction.md) · Accepted · amends 0012 · amended by 0030, 0033, 0034
 - [0026 — Use Radix UI Components](0026-use-radix-ui-components.md) · Accepted
-- [0030 — Allow Charts in Trends](0030-allow-charts-in-trends.md) · Accepted · supersedes 0022
+- [0030 — Allow Charts in Trends](0030-allow-charts-in-trends.md) · Accepted · amends 0022
 - [0031 — Use Neutral Variation Color](0031-use-neutral-variation-color.md) · Accepted · amends 0012
-- [0033 — Use Bottom Navigation](0033-use-bottom-navigation.md) · Accepted · supersedes 0022
-- [0034 — Support Light, Dark and System Themes](0034-support-light-dark-and-system-themes.md) · Accepted · supersedes 0022
+- [0033 — Use Bottom Navigation](0033-use-bottom-navigation.md) · Accepted · amends 0022
+- [0034 — Support Light, Dark and System Themes](0034-support-light-dark-and-system-themes.md) · Accepted · amends 0022
 - [0037 — Use TanStack Query for Server State](0037-use-tanstack-query-for-server-state.md) · Accepted
 - [0038 — Use react-day-picker for the Registration Calendar](0038-use-react-day-picker-for-registration-calendar.md) · Accepted
 - [0039 — Compute Weekly Variation in the UI](0039-compute-weekly-variation-in-the-ui.md) · Accepted
