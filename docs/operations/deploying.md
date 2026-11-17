@@ -4,7 +4,7 @@ Production is one Cloudflare Worker, `bodylog`, serving the built web app and th
 
 ## Automatic Deploys
 
-`.github/workflows/deploy.yml` runs on every push to `main` (and by manual dispatch). It calls the `Code quality` and `Automated tests` workflows, and only after both pass runs `npm run deploy` with the `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` repository secrets. Only one deploy runs at a time (`concurrency: deploy-production`).
+`.github/workflows/deploy.yml` runs on every push to `main` (and by manual dispatch). It calls the `Code quality` and `Automated tests` workflows, which run standalone only on pull requests, so each commit on `main` is checked once; only after both pass it runs `npm run deploy` with the `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` repository secrets. Only one deploy runs at a time (`concurrency: deploy-production`).
 
 The workflow does not apply D1 migrations: apply them by hand before merging a change that needs them (see below).
 

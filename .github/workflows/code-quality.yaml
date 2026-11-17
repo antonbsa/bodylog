@@ -4,19 +4,15 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
-  # The deploy workflow calls this so it gates on the same checks as PRs.
+  # Pushes to main run this only through Deploy, so each commit is checked once and gates its deploy.
   workflow_call:
 
 permissions:
   contents: read
 
 # A newer push to the same PR cancels the superseded run; other events key on the sha and finish untouched.
-# github.workflow is the caller's name under workflow_call, so Deploy's copy never shares a group with the standalone run.
 concurrency:
-  group: code-quality-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  group: code-quality-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
