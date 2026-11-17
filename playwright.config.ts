@@ -11,6 +11,8 @@ export default defineConfig({
   fullyParallel: true,
   // One CI retry absorbs runner-speed flakes; the report still lists them as flaky.
   retries: process.env.CI ? 1 : 0,
+  // Private-repo runners have 2 vCPU, where Playwright's default (half the cores) runs a single worker.
+  workers: process.env.CI ? 2 : undefined,
   // CI uploads the HTML report as an artifact when E2E fails.
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   webServer: {
