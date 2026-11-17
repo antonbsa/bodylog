@@ -9,9 +9,9 @@ Review the current task and identify which information should become durable pro
 
 This is not a session summary. Do not preserve temporary implementation noise. Promote only stable, reusable, project-relevant information.
 
-Write the persistence review output to `.agent-state/PERSISTENCE_REVIEW.md` every time this skill is used.
+Write the persistence review output to `.agents/PERSISTENCE_REVIEW.md` every time this skill is used.
 
-If `.agent-state/` does not exist, create it. If `.agent-state/PERSISTENCE_REVIEW.md` already exists, rewrite the complete file with the latest persistence review output.
+If `.agents/` does not exist, create it. If `.agents/PERSISTENCE_REVIEW.md` already exists, rewrite the complete file with the latest persistence review output.
 
 ## Inputs to inspect
 
@@ -19,7 +19,7 @@ Use any available source that is relevant:
 
 - current user request
 - current conversation context
-- `.agent-state/HANDOFF.md` or `HANDOFF.md`, if present
+- `.agents/HANDOFF.md` or `HANDOFF.md`, if present
 - `git status`
 - `git diff --stat`
 - `git diff`
@@ -114,7 +114,7 @@ Use for temporary or low-value information:
 
 ## Output format
 
-Write `.agent-state/PERSISTENCE_REVIEW.md` with:
+Write `.agents/PERSISTENCE_REVIEW.md` with:
 
 ```md
 # Persistence Review

@@ -15,6 +15,6 @@ playwright-report/
 coverage/
 
 # AI
-.agent-state/
+.agents/
 .claude/worktrees/
 .codex/worktrees/

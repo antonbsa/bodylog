@@ -5,16 +5,16 @@ description: Create or update a concise session handoff document so a fresh AI c
 
 # Session Handoff Skill
 
-Create or update `.agent-state/HANDOFF.md` in the project root.
+Create or update `.agents/HANDOFF.md` in the project root.
 
-If `.agent-state/` does not exist, create it. If `.agent-state/HANDOFF.md` already exists, rewrite the complete file with the latest handoff output.
+If `.agents/` does not exist, create it. If `.agents/HANDOFF.md` already exists, rewrite the complete file with the latest handoff output.
 
 ## Steps
 
 1. Check for existing handoff/progress files:
 
 - `HANDOFF.md`
-- `.agent-state/HANDOFF.md`
+- `.agents/HANDOFF.md`
 - `RESUME.md`
 - `PROGRESS.md`
 - `.ai-sync/HANDOFF.md`
@@ -78,7 +78,7 @@ If `.agent-state/` does not exist, create it. If `.agent-state/HANDOFF.md` alrea
 
 ## Resume Prompt
 
-Read `.agent-state/HANDOFF.md`, verify the current git state, then continue from the "Next Exact Action" section. Do not repeat failed attempts. Before editing, summarize your understanding in 5 bullets.
+Read `.agents/HANDOFF.md`, verify the current git state, then continue from the "Next Exact Action" section. Do not repeat failed attempts. Before editing, summarize your understanding in 5 bullets.
 ```
 
 4. Keep the handoff factual. Do not include vague encouragement or speculative plans unless labeled as assumptions.
