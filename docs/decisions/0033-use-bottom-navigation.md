@@ -1,7 +1,7 @@
 ---
 status: Accepted
 area: web
-supersedes: ["0022"]
+amends: ["0022"]
 ---
 
 # 0033 — Use Bottom Navigation
