@@ -32,4 +32,21 @@ export default [
       "prettier/prettier": ["error", prettierConfig],
     },
   },
+  {
+    files: ["tests/e2e/**/*.spec.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@playwright/test",
+              message:
+                "Import from ./fixtures, which answers unmocked /api calls.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]

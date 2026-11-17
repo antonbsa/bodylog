@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Route } from "@playwright/test"
+import { expect, test, type Page, type Route } from "./fixtures"
 
 const TODAY = "2026-06-12"
 

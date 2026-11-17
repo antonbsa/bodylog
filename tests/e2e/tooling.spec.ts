@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises"
 
-import { expect, test, type Page } from "@playwright/test"
+import { expect, test, type Page } from "./fixtures"
 
 async function mockSession(page: Page, authenticated: boolean) {
   await page.route("**/api/auth/session", async (route) => {
