@@ -10,25 +10,15 @@ on:
       - "specs/**"
       - ".claude/**"
       - ".gitignore"
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "specs/**"
-      - ".claude/**"
-      - ".gitignore"
-  # The deploy workflow calls this so it gates on the same tests as PRs.
+  # Pushes to main run this only through Deploy, so each commit is checked once and gates its deploy.
   workflow_call:
 
 permissions:
   contents: read
 
 # A newer push to the same PR cancels the superseded run; other events key on the sha and finish untouched.
-# github.workflow is the caller's name under workflow_call, so Deploy's copy never shares a group with the standalone run.
 concurrency:
-  group: tests-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  group: tests-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:

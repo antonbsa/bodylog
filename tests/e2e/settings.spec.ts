@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Route } from "@playwright/test"
+import { expect, test, type Page, type Route } from "./fixtures"
 
 const CSV_HEADER =
   "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal"

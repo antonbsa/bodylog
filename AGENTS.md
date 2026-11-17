@@ -21,7 +21,7 @@ Issue → ADR if a decision changes → implementation → review → PR → rel
 3. **Implement** only the selected issue, with its tests. When the issue leaves the approach open, show the owner a plan first. An ambiguity that blocks the work is a question for the owner; one that doesn't is resolved with the simplest option the specs allow and reported as an assumption.
 4. **Review** the diff against the issue's acceptance criteria and these instructions; UI issues are validated with a screenshot compared against the prototype.
 5. **PR.** The parent issue's Workflow says whether its sub-issues share one branch and PR (ADR 0036's default) or get one each. Report validation notes and modified files to the owner; post them on GitHub only when the owner asks, since comments are public and unreviewed.
-6. **Release.** Production deploys are the owner's call: `deploy.yml` deploys after CI passes on `main`, and `gh release create` runs only with `--draft`, since publishing a release becomes the production deploy (#39).
+6. **Release.** Production deploys are the owner's call: `deploy.yml` deploys every push to `main` once its checks pass, and `gh release create` runs only with `--draft`, since publishing a release becomes the production deploy (#39).
 
 ## Language
 
@@ -80,7 +80,7 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 
 - Every behavior change ships with automated tests; a task that can't have them yet documents why and is validated by hand.
 - Test files live under root `tests/` (never in `src/`); tiers and how to run them are in [tests/AGENTS.md](tests/AGENTS.md).
-- CI (`.github/workflows/ci.yml`) runs typecheck, lint, `test:unit` and `test:e2e` on every PR and push to `main`.
+- CI runs lint, format, typecheck, build (`code-quality.yaml`), `test:unit` and `test:e2e` (`tests.yaml`) on every PR; on `main` they run only inside `deploy.yml`, which deploys once they pass.
 
 ## Tooling
 
