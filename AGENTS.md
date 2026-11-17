@@ -1,13 +1,14 @@
 # Project Guidance
 
-BodyLog is a personal, single-user, mobile-first tracker for daily bioimpedance records and weekly progress, replacing a spreadsheet. V1 favors delivery over product completeness.
+BodyLog is a personal, single-user, mobile-first tracker for daily bioimpedance records and weekly progress, replacing a spreadsheet. It favors delivery over product completeness.
 
 ## Project Map
 
 - Monorepo: `apps/api` (Hono on Cloudflare Workers + D1, also serving the built web app), `apps/web` (React/Vite PWA with Radix Themes), `infra` (D1 migrations, local-db scripts, shared error classes), `tests/{api,web,e2e}`, plus root `domain/` and `types/` shared by both apps.
 - Package-specific rules live in nested files, loaded when you work there: [apps/api/AGENTS.md](apps/api/AGENTS.md), [apps/web/AGENTS.md](apps/web/AGENTS.md), [infra/AGENTS.md](infra/AGENTS.md), [tests/AGENTS.md](tests/AGENTS.md).
-- Product: [overview](docs/product/overview.md), [requirements](docs/product/requirements.md), [scope](docs/product/scope.md), [user flows](docs/product/user-flows.md); [future ideas](docs/product/future-ideas.md) are context only, never work to implement unasked. UI work also reads [ui-direction](docs/product/ui-direction.md) and the visual reference [mobile-redesign.html](docs/product/prototype/mobile-redesign.html).
-- Technical: [architecture](docs/technical/architecture.md), [HTTP API](docs/technical/api.md), [database](docs/technical/database.md), [deployment](docs/technical/deployment.md). Decisions: `docs/technical/decisions/` (ADRs). Version-level specs and acceptance criteria: `specs/v1/`.
+- Docs are indexed by reader moment in [docs/README.md](docs/README.md); terms are in [GLOSSARY.md](GLOSSARY.md).
+- Product: [product](docs/product.md) (goal, flows, requirements, scope); [future ideas](docs/product/future-ideas.md) are context only, never work to implement unasked. UI work also reads [ui-direction](docs/product/ui-direction.md) and the visual reference [mobile-redesign.html](docs/product/prototype/mobile-redesign.html).
+- Technical: [architecture](docs/architecture/overview.md), [HTTP API](docs/reference/api-contract.md), [database](docs/reference/database.md), [deploying](docs/operations/deploying.md). Decisions: [docs/decisions/](docs/decisions/README.md) (ADRs). Version-level specs and acceptance criteria: `specs/v1/`.
 - Where guidance goes: needed on most edits → this file; scoped to a directory → that directory's `AGENTS.md` (plus a `CLAUDE.md` containing `@AGENTS.md`); a decision → ADR; stable product or technical knowledge → `docs/`; version-level scope → `specs/`.
 - Agent instructions follow the code: a change that moves, renames or removes a package, directory, script or convention updates the instruction that names it in the same change. Symptom: an `AGENTS.md` sends the agent to a path or command that no longer exists. Why it slips: tests and lint don't read prose, and nested files load only when someone works in that directory. Verify with `grep -rn "<old name>" AGENTS.md apps/*/AGENTS.md infra/AGENTS.md tests/AGENTS.md .claude`.
 
@@ -16,7 +17,7 @@ BodyLog is a personal, single-user, mobile-first tracker for daily bioimpedance 
 Issue → ADR if a decision changes → implementation → review → PR → release.
 
 1. **Issue.** Executable work is tracked only as GitHub issues (ADR 0036): one parent issue per initiative with native sub-issues, each holding Context, Scope, Out of scope, Acceptance criteria, Validation and Open points (`.github/ISSUE_TEMPLATE/`). Read the selected issue and its parent with `gh issue view <n>` before coding. New work is drafted as issue text and shown to the owner; create the issue only after the owner approves it. `specs/*/tasks/` files are history: leave them as they are and note superseded tasks in the issues.
-2. **Decision.** When the work changes an accepted decision, add or update an ADR under `docs/technical/decisions/` before broad coding, and update the current-state docs (requirements, architecture, API, database) it affects in the same change.
+2. **Decision.** When the work changes an accepted decision, add or update an ADR under `docs/decisions/` (frontmatter rules in its README, then `npm run docs:index`) before broad coding. Any change to behavior, scope, the API or the data model updates the current-state docs it affects (product, architecture, API contract, database) in the same change; a refactor with no behavior change needs none.
 3. **Implement** only the selected issue, with its tests. When the issue leaves the approach open, show the owner a plan first. An ambiguity that blocks the work is a question for the owner; one that doesn't is resolved with the simplest option the specs allow and reported as an assumption.
 4. **Review** the diff against the issue's acceptance criteria and these instructions; UI issues are validated with a screenshot compared against the prototype.
 5. **PR.** The parent issue's Workflow says whether its sub-issues share one branch and PR (ADR 0036's default) or get one each. Report validation notes and modified files to the owner; post them on GitHub only when the owner asks, since comments are public and unreviewed.
@@ -49,11 +50,13 @@ A comment carries only what the code can't say: the why (business rule, third-pa
 
 Don't hard-wrap prose: one paragraph, one line. Fenced code, tables and list continuations keep their own formatting.
 
+Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and every `AGENTS.md` are checked by `npm run check-docs` (CI's Docs Link Check job). Run it after moving, renaming or retitling a doc or heading: GitHub renders a broken anchor as a plain link, so nothing else fails.
+
 ## Env Vars
 
 - `.env.development` at the repo root is committed with placeholder secrets; `wrangler dev` reads it through `--env-file`, and Vite reads root env files (`envDir: "../.."`).
 - `.env.local` and `.env.production` (gitignored) hold real values that exist nowhere else. Never delete, move or overwrite them, directly or through `git clean`/`rm -rf`/"reset to clean"; `.claude/settings.json` and the guard hooks (Tooling) block the obvious paths. If a task seems to need one changed, stop and ask.
-- Production secrets (`APP_PASSWORD`, `SESSION_SECRET`) are Cloudflare secrets set with `npx wrangler secret put <NAME> --env production` from `apps/api`; document a new one in [deployment](docs/technical/deployment.md) and never commit its value.
+- Production secrets (`APP_PASSWORD`, `SESSION_SECRET`) are Cloudflare secrets set with `npx wrangler secret put <NAME> --env production` from `apps/api`; document a new one in [secrets](docs/operations/secrets.md) and never commit its value.
 
 ## Engineering
 
@@ -61,7 +64,7 @@ Don't hard-wrap prose: one paragraph, one line. Fenced code, tables and list con
 - Small is fine, throwaway isn't: the simplest version should be one you'll extend, not one you'll replace.
 - Before writing your own code, use what the project's dependencies already offer, then a well-maintained library; a new dependency needs a stated reason.
 - For a design with no precedent in the codebase, follow how established products solve it.
-- V1 stack (ADRs 0013–0017, 0040): TypeScript everywhere, React + Vite, Hono on Cloudflare Workers, D1, deployed to Cloudflare only (no Vercel compatibility); auth is one password from secrets; V2 plans serverless Postgres, which is why SQL stays behind repositories.
+- Stack (ADRs 0013–0017, 0040): TypeScript everywhere, React + Vite, Hono on Cloudflare Workers, D1, deployed to Cloudflare only (no Vercel compatibility); auth is one password from secrets; a later move to serverless Postgres is planned, which is why SQL stays behind repositories.
 - Shared code: request/response shapes are declared once in root `types/`, and rules both apps run (measurement limits, notes normalization, derived values) live in root `domain/`. Each app imports only its own `src/` plus these roots. Symptom: `apps/web` imports from `apps/api/src` (or the reverse). Why it slips: the import typechecks and bundles, so CI stays green. Verify with `grep -rn "api/src" apps/web/src` and `grep -rn "web/src" apps/api/src`, both returning nothing.
 
 ## Product Rules
@@ -71,7 +74,7 @@ Don't hard-wrap prose: one paragraph, one line. Fenced code, tables and list con
 - Weeks run Monday to Sunday. The current-week comparison is the partial current week vs the previous full week.
 - Percentage metric changes are shown in percentage points. A change may be labeled as increased, decreased or stable, never as good or bad, and the app gives no recommendations or health interpretation.
 - Charts exist only on the Tendências screen (ADR 0030): one line chart at a time, with no ideal bands or targets.
-- Out of V1: Google Sheets integration, offline-first behavior.
+- Out of scope: Google Sheets integration, offline-first behavior.
 
 ## Tests
 
@@ -92,4 +95,4 @@ Don't hard-wrap prose: one paragraph, one line. Fenced code, tables and list con
 - Name the branch after the work (`serve-the-web-app-from-the-api-worker`), with no `issue-<n>` prefix, and keep the directory name equal to the branch name at creation.
 - A worktree's path is fixed for its whole life: when the work outgrows the name, rename the branch (`git branch -m`) and leave the directory; `guard-bash.mjs` denies `git worktree move` and `mv` under `.agents/worktrees/`. Symptom: Orca loses the session and its chat, since it tracks each worktree by path. Why it slips: git, the build and the tests all work normally from the new path. Verify: `git worktree list` still shows the path the session was opened at.
 - `eslint.config.mjs` `ignores` keeps `.agents/**`. Symptom: `npm run lint` in the `main` checkout reports errors in files that aren't on `main`, or crawls through a worktree's `dist/`. Why it slips: flat config doesn't read `.gitignore` and its ignores are root-anchored, while a worktree's own lint never sees its siblings. Verify: `npx eslint --print-config .agents/worktrees/x/a.ts` prints `undefined`.
-- `.agents/` is gitignored scratch space (worktrees, drafts, handoffs), not project state. Don't read or factor in its contents unless a task points at a specific file; decisions live in `docs/technical/decisions/`.
+- `.agents/` is gitignored scratch space (worktrees, drafts, handoffs), not project state. Don't read or factor in its contents unless a task points at a specific file; decisions live in `docs/decisions/`.

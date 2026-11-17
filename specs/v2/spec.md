@@ -25,13 +25,11 @@ V2 excludes:
 
 ## Source Documents
 
-- Product overview: `docs/product/overview.md`
-- Requirements: `docs/product/requirements.md`
-- Scope: `docs/product/scope.md`
-- Architecture: `docs/technical/architecture.md`
-- API contract: `docs/technical/api.md`
-- Database model: `docs/technical/database.md`
-- Technical decisions: `docs/technical/decisions/`
+- Product (overview, requirements, scope, user flows): `docs/product.md`
+- Architecture: `docs/architecture/overview.md`
+- API contract: `docs/reference/api-contract.md`
+- Database model: `docs/reference/database.md`
+- Technical decisions: `docs/decisions/`
 - Future ideas: `docs/product/future-ideas.md`
 
 ## Success Criteria

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Current-state description of the mobile UI. The approved interactive prototype is the visual reference: `docs/product/prototype/mobile-redesign.html` (open it in a browser; it has a "Protótipo" panel to jump between screens and states and to switch theme). This document records what the prototype does and the rules behind it; it does not repeat every pixel value. The reasoning behind the decisions lives in the ADRs linked below, and the history of the redesign in `docs/product/mobile-redesign-brief.md`.
+Current-state description of the mobile UI. The approved interactive prototype is the visual reference: `docs/product/prototype/mobile-redesign.html` (open it in a browser; it has a "Protótipo" panel to jump between screens and states and to switch theme). This document records what the prototype does and the rules behind it; it does not repeat every pixel value. The reasoning behind the decisions lives in the ADRs linked below, and the history of the redesign in `docs/history.md`.
 
 Mobile is the target and must be fully functional as an installed iPhone PWA. Desktop only needs to stay consistent with mobile. Registration is the product: it must be fast, practical and accessible above everything else.
 
