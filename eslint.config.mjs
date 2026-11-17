@@ -17,11 +17,11 @@ export default [
   {
     ignores: [
       ".agents/**",
-      "apps/web/dist/**",
+      "**/dist/**",
       "coverage/**",
       "node_modules/**",
-      "playwright-report/**",
-      "test-results/**",
+      "**/playwright-report/**",
+      "**/test-results/**",
       ".wrangler/**",
       "apps/api/.wrangler/**",
     ],
