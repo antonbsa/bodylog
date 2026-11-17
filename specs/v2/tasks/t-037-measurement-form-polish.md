@@ -99,8 +99,8 @@ All decisions below were confirmed by the owner.
   3. **Format** — a decimal separator is inserted 2 positions from the right,
      and thousands separators are added every 3 digits on the integer part for
      display (`pt-BR` formatting: comma decimal, dot thousands).
-  Apply this to the form's numeric/decimal fields; deleting removes the
-  rightmost digit and re-runs pad + format. Non-digit keystrokes are ignored.
+     Apply this to the form's numeric/decimal fields; deleting removes the
+     rightmost digit and re-runs pad + format. Non-digit keystrokes are ignored.
 - **Persisted form-state location:** an in-memory app-level store (lifted above
   the modal, e.g. a context/store that outlives the dialog) rather than
   `localStorage`, since body metrics are sensitive

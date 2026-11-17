@@ -49,19 +49,19 @@ All checks passed locally:
 
 ### Programmatic production checks (2026-06-16)
 
-| Check | Result |
-|---|---|
-| `GET https://bodylog.antonbsa.dev/` | HTTP 200 — frontend loads |
-| Frontend HTML | manifest, icons, and JS bundle present |
-| JS bundle `VITE_API_BASE_URL` | `https://api.bodylog.antonbsa.dev` — correct |
-| `GET https://api.bodylog.antonbsa.dev/api/measurements` (no auth) | HTTP 401 — unauthenticated rejected |
-| CORS header on API response | `access-control-allow-origin: https://bodylog.antonbsa.dev` — correct |
-| `access-control-allow-credentials` | `true` — session cookies allowed |
-| `GET https://bodylog.antonbsa.dev/manifest.webmanifest` | HTTP 200 — PWA manifest reachable |
-| D1 binding in `wrangler.toml` | `binding = "DB"`, `database_name = "body_metrics_tracker"`, `database_id = "6666c800-569f-4971-b19c-fa8b807a98e1"` |
-| CI before deployment | Deploy triggered by successful CI run (workflow_run gate) |
-| Deployment automation | CI + Deploy both `completed / success` on 2026-06-16T17:30:02Z |
-| Secrets in repo | Not found — `APP_PASSWORD`, `SESSION_SECRET` documented by name only |
+| Check                                                             | Result                                                                                                             |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `GET https://bodylog.antonbsa.dev/`                               | HTTP 200 — frontend loads                                                                                          |
+| Frontend HTML                                                     | manifest, icons, and JS bundle present                                                                             |
+| JS bundle `VITE_API_BASE_URL`                                     | `https://api.bodylog.antonbsa.dev` — correct                                                                       |
+| `GET https://api.bodylog.antonbsa.dev/api/measurements` (no auth) | HTTP 401 — unauthenticated rejected                                                                                |
+| CORS header on API response                                       | `access-control-allow-origin: https://bodylog.antonbsa.dev` — correct                                              |
+| `access-control-allow-credentials`                                | `true` — session cookies allowed                                                                                   |
+| `GET https://bodylog.antonbsa.dev/manifest.webmanifest`           | HTTP 200 — PWA manifest reachable                                                                                  |
+| D1 binding in `wrangler.toml`                                     | `binding = "DB"`, `database_name = "body_metrics_tracker"`, `database_id = "6666c800-569f-4971-b19c-fa8b807a98e1"` |
+| CI before deployment                                              | Deploy triggered by successful CI run (workflow_run gate)                                                          |
+| Deployment automation                                             | CI + Deploy both `completed / success` on 2026-06-16T17:30:02Z                                                     |
+| Secrets in repo                                                   | Not found — `APP_PASSWORD`, `SESSION_SECRET` documented by name only                                               |
 
 ### Production URLs
 

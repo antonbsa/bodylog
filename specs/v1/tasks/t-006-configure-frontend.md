@@ -20,11 +20,17 @@ This task creates only the initial renderable frontend shell. Authenticated flow
 - Validate typecheck, tests, E2E tooling, and frontend build.
 
 ## Why
+
 This task advances BodyLog V1 during the Project Base phase.
+
 ## Scope
+
 Complete the implementation work described by the task title and acceptance criteria. Keep changes focused on V1 behavior and the related project documentation.
+
 ## Out of Scope
+
 Do not add multi-user behavior, advanced analytics, Google Sheets integration, offline-first behavior, or Vercel compatibility for this task.
+
 ## Validation
 
 Automated checks:
@@ -66,14 +72,12 @@ The first E2E run failed because the local Playwright Chromium binary was missin
 - `tests/e2e/tooling.spec.ts`
 - `specs/v1/tasks/t-006-configure-frontend.md`
 
-
 ## Acceptance Criteria
 
 - [x] React + Vite working.
 - [x] TypeScript working.
 - [x] Build working.
 - [x] Initial page renders.
-
 
 ## Definition of Done
 

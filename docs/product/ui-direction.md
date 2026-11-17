@@ -127,20 +127,20 @@ A neutral chip with an arrow icon, a word and the magnitude: "Subiu 0,4 kg", "Ca
 
 Colors are CSS custom properties on `:root`. Light is the base; the dark values apply under `prefers-color-scheme: dark` unless light is forced, and when dark is chosen explicitly (`data-theme`). Ajustes offers System, Light and Dark.
 
-| Token | Light | Dark |
-|---|---|---|
-| `--bg` | `#f4f4f1` | `#111111` |
-| `--surface` (cards) | `#ffffff` | `#1c1c1c` |
+| Token                         | Light     | Dark      |
+| ----------------------------- | --------- | --------- |
+| `--bg`                        | `#f4f4f1` | `#111111` |
+| `--surface` (cards)           | `#ffffff` | `#1c1c1c` |
 | `--surface-2` (chips, inputs) | `#f1f1ee` | `#272727` |
-| `--fg` | `#161615` | `#f0f0f0` |
-| `--fg-2` (secondary text) | `#5c5c57` | `#a6a6a6` |
-| `--fg-3` (hints) | `#6b6b66` | `#949494` |
-| `--line` | `#e6e6e1` | `#2e2e2e` |
-| `--bar` (tab bar, footer) | `#ffffff` | `#161616` |
-| `--danger` | `#b42318` | `#f2938b` |
-| `--accent` | `#0969da` | `#58a6ff` |
-| `--accent-fg` (on accent) | `#ffffff` | `#0b1a2e` |
-| `--accent-tint` | `#ddf4ff` | `#172a42` |
+| `--fg`                        | `#161615` | `#f0f0f0` |
+| `--fg-2` (secondary text)     | `#5c5c57` | `#a6a6a6` |
+| `--fg-3` (hints)              | `#6b6b66` | `#949494` |
+| `--line`                      | `#e6e6e1` | `#2e2e2e` |
+| `--bar` (tab bar, footer)     | `#ffffff` | `#161616` |
+| `--danger`                    | `#b42318` | `#f2938b` |
+| `--accent`                    | `#0969da` | `#58a6ff` |
+| `--accent-fg` (on accent)     | `#ffffff` | `#0b1a2e` |
+| `--accent-tint`               | `#ddf4ff` | `#172a42` |
 
 Dark uses neutral grays (no blue tint) and cards have no border or shadow, separated by surface tone. Light cards are white with a very soft shadow and about 16px radius. The prototype also defines segmented-control and chart-dot tokens; take them from the prototype's `:root` blocks.
 

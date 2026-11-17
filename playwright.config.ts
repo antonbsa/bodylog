@@ -9,7 +9,8 @@ const webBaseUrl = `http://localhost:${webPort}`
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
-  reporter: "list",
+  // CI uploads the HTML report as an artifact when E2E fails.
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   webServer: {
     command: `BODYLOG_WEB_PORT=${webPort} npm --workspace @bodylog/web run dev`,
     reuseExistingServer: true,

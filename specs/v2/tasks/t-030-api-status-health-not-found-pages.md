@@ -46,6 +46,7 @@ reworking the API entry point and frontend shell twice.
   ```
 
   This is a pure liveness response and does not check D1.
+
 - Remove `GET /api/health` and `GET /api/health/d1` without adding replacement
   `/health` routes. Confirm the old health paths fall through as not found and
   the `/api/*` auth and CORS middleware still behave for the remaining data

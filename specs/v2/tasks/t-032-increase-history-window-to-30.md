@@ -68,7 +68,7 @@ Modified files:
 - [x] History shows 30 items before "Carregar mais" appears.
 - [x] "Load more" continues to work beyond the first 30 items.
 - [ ] All listed automated checks pass. (`test:web` is unavailable in this
-  branch.)
+      branch.)
 
 ## Definition of Done
 

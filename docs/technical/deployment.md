@@ -122,7 +122,7 @@ CLOUDFLARE_ACCOUNT_ID
 
 No deployment variables are needed.
 
-The deploy workflow runs after CI passes and runs `npm run deploy`, which builds the web app and deploys the Worker with `wrangler deploy --env production`, uploading `apps/web/dist` as its static assets.
+The deploy workflow runs on pushes to `main`, calls the `Code quality` and `Automated tests` workflows, and only after both pass runs `npm run deploy`, which builds the web app and deploys the Worker with `wrangler deploy --env production`, uploading `apps/web/dist` as its static assets.
 
 ## Wrangler Configuration
 

@@ -47,6 +47,7 @@ Use read-only commands: `gh issue view`, `gh api` GETs, `git status`, `git branc
 
 Report only findings that affect readiness; omit passing checks.
 
+<!-- prettier-ignore -->
 ```md
 **Task**
 #<n> Title (parent #<p>; next in order / named by user)

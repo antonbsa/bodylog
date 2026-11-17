@@ -19,11 +19,17 @@ This task only covers manifest and icon setup. It must not add a service worker,
 - Validate the existing build, typecheck, lint, unit/API test, and E2E commands.
 
 ## Why
+
 This task advances BodyLog V1 during the Project Base phase.
+
 ## Scope
+
 Complete the implementation work described by the task title and acceptance criteria. Keep changes focused on V1 behavior and the related project documentation.
+
 ## Out of Scope
+
 Do not add multi-user behavior, advanced analytics, Google Sheets integration, offline-first behavior, or Vercel compatibility for this task.
+
 ## Validation
 
 Automated checks:
@@ -61,14 +67,12 @@ Browser validation:
 - `specs/v1/tasks/t-007-configure-basic-pwa.md`
 - `tests/e2e/tooling.spec.ts`
 
-
 ## Acceptance Criteria
 
 - [x] Manifest created.
 - [x] Minimum icons configured.
 - [x] App installable on smartphone.
 - [x] Full offline-first behavior not implemented.
-
 
 ## Definition of Done
 

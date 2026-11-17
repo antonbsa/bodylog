@@ -89,7 +89,7 @@ Manual validation:
 
 - An intentionally triggered invalid login via `npx tsx -e '...'` returned
   HTTP 401 with `{"action":"Verifique a senha configurada e tente
-  novamente.","message":"Senha inválida.","name":"UnauthorizedError","statusCode":401}`.
+novamente.","message":"Senha inválida.","name":"UnauthorizedError","statusCode":401}`.
 - The frontend API layer now parses structured API errors into `ApiError`, and
   the login, measurement form, dashboard, history, export, and import surfaces
   display the structured `message` / `action` text.

@@ -175,7 +175,7 @@ npx wrangler secret put APP_PASSWORD --env production
 npx wrangler secret put SESSION_SECRET --env production
 ```
 
-GitHub deployment automation runs after CI passes on `main` and runs `npm run deploy`. Required GitHub configuration:
+GitHub deployment automation runs on pushes to `main` after the `Code quality` and `Automated tests` workflows pass, and runs `npm run deploy`. Required GitHub configuration:
 
 ```txt
 Secrets:

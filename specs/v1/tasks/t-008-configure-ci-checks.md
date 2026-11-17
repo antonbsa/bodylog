@@ -5,15 +5,23 @@
 Done
 
 ## Description
+
 Add GitHub Actions CI for the V1 npm workspace.
 
 ## Why
+
 This task advances BodyLog V1 during the Project Base phase.
+
 ## Scope
+
 Complete the implementation work described by the task title and acceptance criteria. Keep changes focused on V1 behavior and the related project documentation.
+
 ## Out of Scope
+
 Do not add multi-user behavior, advanced analytics, Google Sheets integration, offline-first behavior, or Vercel compatibility for this task.
+
 ## Validation
+
 Run the relevant automated checks for the changed area. If automated coverage is not practical yet, record the manual validation performed in this task.
 
 Automated checks:
@@ -66,7 +74,6 @@ Local validation notes:
 - [x] Workflow runs unit/API tests.
 - [x] Workflow runs E2E tests once E2E tooling exists.
 - [x] Required workflow secrets, if any, are documented.
-
 
 ## Definition of Done
 
