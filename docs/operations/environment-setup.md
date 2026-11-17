@@ -56,7 +56,7 @@ CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
 ```
 
-The token needs the account permissions **Workers Scripts: Edit** and **D1: Edit**: the workflows list Worker secrets, apply D1 migrations, read the Time Travel bookmark and deploy both Workers.
+The token needs the account permissions **Workers Scripts: Edit** and **D1: Edit**: the workflows list Worker secrets, apply D1 migrations, read the Time Travel bookmark, export production D1 for the backup and deploy both Workers.
 
 ## Setting Up Preview
 
@@ -67,3 +67,13 @@ npx wrangler d1 create bodylog-preview
 ```
 
 Put the printed `database_id` in `[[env.preview.d1_databases]]` in `apps/api/wrangler.toml`, replacing the placeholder, and commit it. Then set the preview secrets ([Secrets](secrets.md#preview)), which also creates the `bodylog-preview` Worker. The first deploy applies every migration to the empty database.
+
+## Backup Storage
+
+Production D1 is exported every day to a private Backblaze B2 bucket outside Cloudflare ([backup and restore](backup-and-restore.md)). Besides the Cloudflare secrets above and the B2 key secrets in [Secrets](secrets.md#backup-secrets), the backup workflow reads three repository variables:
+
+```txt
+B2_BUCKET     the bucket name
+B2_ENDPOINT   the bucket's S3 endpoint with https://, e.g. https://s3.us-west-004.backblazeb2.com
+B2_REGION     the region part of the endpoint, e.g. us-west-004
+```
