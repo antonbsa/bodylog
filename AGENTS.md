@@ -1,6 +1,6 @@
 # Project Guidance
 
-BodyLog is a personal, single-user, mobile-first tracker for daily bioimpedance records and weekly progress, replacing a spreadsheet. V1 favors delivery over product completeness.
+BodyLog is a personal, single-user, mobile-first tracker for daily bioimpedance records and weekly progress, replacing a spreadsheet. It favors delivery over product completeness.
 
 ## Project Map
 
@@ -64,7 +64,7 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 - Small is fine, throwaway isn't: the simplest version should be one you'll extend, not one you'll replace.
 - Before writing your own code, use what the project's dependencies already offer, then a well-maintained library; a new dependency needs a stated reason.
 - For a design with no precedent in the codebase, follow how established products solve it.
-- V1 stack (ADRs 0013–0017, 0040): TypeScript everywhere, React + Vite, Hono on Cloudflare Workers, D1, deployed to Cloudflare only (no Vercel compatibility); auth is one password from secrets; V2 plans serverless Postgres, which is why SQL stays behind repositories.
+- Stack (ADRs 0013–0017, 0040): TypeScript everywhere, React + Vite, Hono on Cloudflare Workers, D1, deployed to Cloudflare only (no Vercel compatibility); auth is one password from secrets; a later move to serverless Postgres is planned, which is why SQL stays behind repositories.
 - Shared code: request/response shapes are declared once in root `types/`, and rules both apps run (measurement limits, notes normalization, derived values) live in root `domain/`. Each app imports only its own `src/` plus these roots. Symptom: `apps/web` imports from `apps/api/src` (or the reverse). Why it slips: the import typechecks and bundles, so CI stays green. Verify with `grep -rn "api/src" apps/web/src` and `grep -rn "web/src" apps/api/src`, both returning nothing.
 
 ## Product Rules
@@ -74,7 +74,7 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 - Weeks run Monday to Sunday. The current-week comparison is the partial current week vs the previous full week.
 - Percentage metric changes are shown in percentage points. A change may be labeled as increased, decreased or stable, never as good or bad, and the app gives no recommendations or health interpretation.
 - Charts exist only on the Tendências screen (ADR 0030): one line chart at a time, with no ideal bands or targets.
-- Out of V1: Google Sheets integration, offline-first behavior.
+- Out of scope: Google Sheets integration, offline-first behavior.
 
 ## Tests
 

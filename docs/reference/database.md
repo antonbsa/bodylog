@@ -4,7 +4,7 @@
 
 A measurement represents the body metrics recorded for one date.
 
-V1 allows at most one measurement per date.
+There is at most one measurement per date.
 
 ## Fields
 
@@ -27,7 +27,7 @@ Hard validation limits that block saving: weight 20–300 kg, body fat and muscl
 
 ## Derived Values
 
-Derived values should be calculated by the application and do not need to be stored in V1.
+Derived values should be calculated by the application and are not stored.
 
 ### BMI
 
@@ -78,7 +78,7 @@ If a week has 4 weight values and 2 body fat values:
 
 ## Weekly Comparison Rules
 
-The V1 compares:
+The comparison is:
 
 ```txt
 partial current week vs previous full week
@@ -96,7 +96,7 @@ Example:
 
 ## Future Postgres Portability
 
-V1 uses Cloudflare D1. Because V2 plans a migration to serverless Postgres, the application should avoid direct database access scattered across HTTP handlers.
+The app uses Cloudflare D1. Because a later migration to serverless Postgres is planned, the application should avoid direct database access scattered across HTTP handlers.
 
 Recommendation:
 

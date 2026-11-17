@@ -4,7 +4,7 @@ How BodyLog works end to end and why. What it does for the user is in [Product](
 
 ## In Short
 
-The V1 architecture is a small Cloudflare-based web application.
+BodyLog is a small Cloudflare-based web application.
 
 ```txt
 React/Vite PWA
@@ -114,15 +114,7 @@ apps/api/src/
 
 ## Database
 
-### V1 Database
-
-- Cloudflare D1
-
-### Future V2 Database
-
-- Serverless Postgres
-
-The V1 must avoid spreading database-specific logic across handlers. SQL and persistence details should be isolated behind repositories.
+Cloudflare D1 today, with a planned later migration to serverless Postgres. The app avoids spreading database-specific logic across handlers. SQL and persistence details should be isolated behind repositories.
 
 ## Suggested Layers
 
@@ -164,18 +156,18 @@ Handle persistence:
 
 ## Authentication
 
-V1 uses simple single-user authentication.
+The app uses simple single-user authentication.
 
 - The password is stored as a Cloudflare secret/environment variable.
 - The backend validates login requests.
 - A secure session cookie should be used.
 - All data routes require authentication.
 
-This is acceptable for personal V1 usage but not a scalable authentication model.
+This is acceptable for personal usage but not a scalable authentication model.
 
 ## Deployment
 
-The full V1 deploy target is Cloudflare.
+The whole app deploys to Cloudflare.
 
 - One Worker serves the API under `/api/*` and the built web app through Workers Static Assets, on one origin (`0040-serve-the-web-app-from-the-api-worker.md`).
 - `apps/api/wrangler.toml` is the only Wrangler config; production is `[env.production]`. The runbook is [Deploying](../operations/deploying.md).
@@ -196,7 +188,7 @@ The architecture does not need to support:
 
 ### D1 to Postgres Migration
 
-D1 is suitable for V1 on Cloudflare, but V2 plans a migration to serverless Postgres.
+D1 suits the app on Cloudflare, but a migration to serverless Postgres is planned.
 
 Mitigation:
 
@@ -217,17 +209,17 @@ Mitigation:
 
 ### Authentication Simplicity
 
-Simple password auth is enough for personal V1 usage but should not be treated as production-grade multi-user security.
+Simple password auth is enough for personal usage but should not be treated as production-grade multi-user security.
 
 ## Cross-Cutting Concerns
 
-Standing guidance for implementation, reviews and future ADRs across versions; a concrete decision made from one of these becomes an ADR under [decisions](../decisions/README.md).
+Standing guidance for implementation, reviews and future ADRs; a concrete decision made from one of these becomes an ADR under [decisions](../decisions/README.md).
 
 ### Dependency Boundaries
 
-BodyLog V1 intentionally uses React, Vite, Hono, Cloudflare Workers, and Cloudflare D1.
+BodyLog intentionally uses React, Vite, Hono, Cloudflare Workers, and Cloudflare D1.
 
-The project should not abstract every selected tool just to remain theoretically portable. V1 priority is delivery with a small, understandable implementation.
+The project should not abstract every selected tool just to remain theoretically portable. The priority is delivery with a small, understandable implementation.
 
 However, product and domain behavior should not be tightly coupled to infrastructure details when a future migration is already plausible.
 
@@ -242,7 +234,7 @@ Guidelines:
 
 ### Security and Privacy
 
-BodyLog stores personal body metrics. Even though V1 is single-user, security and privacy should be considered from the beginning.
+BodyLog stores personal body metrics. Even though the app is single-user, security and privacy should be considered from the beginning.
 
 Guidelines:
 
@@ -252,8 +244,8 @@ Guidelines:
 - Avoid logging passwords, session tokens, CSV contents, or measurement values.
 - Treat CSV import/export as sensitive data movement.
 - Do not commit real personal data, exported CSV backups, secrets, or production database files.
-- Avoid health interpretation, diagnosis, recommendations, or motivational value judgments in V1.
-- Do not design V1 code in a way that assumes future multi-user authorization is already solved.
+- Avoid health interpretation, diagnosis, recommendations, or motivational value judgments.
+- Do not design code in a way that assumes future multi-user authorization is already solved.
 
 ### Data Correctness
 
@@ -278,7 +270,7 @@ The user should be able to keep and move their data without depending on the app
 
 Guidelines:
 
-- Preserve CSV export as the primary V1 backup path.
+- Preserve CSV export as the primary backup path.
 - Keep the documented CSV format stable unless a migration note is added.
 - Validate CSV import clearly and avoid silent data loss.
 - Upsert imported records by date.
@@ -287,14 +279,14 @@ Guidelines:
 
 ### Scope Discipline
 
-V1 is a personal body metrics tracker, not a generic fitness platform.
+BodyLog is a personal body metrics tracker, not a generic fitness platform.
 
 Guidelines:
 
 - Prefer small, explicit implementation over broad frameworks or speculative architecture.
-- Do not add multi-user support, account registration, OAuth, charts outside the Tendências screen (`0030-allow-charts-in-trends.md`), offline-first behavior, Google Sheets integration, recommendations, or health interpretation in V1 unless scope changes explicitly.
-- Do not add user-configurable goals in V1; variations use one neutral color for every metric (`0031-use-neutral-variation-color.md`).
-- Keep future ideas in [future ideas](../product/future-ideas.md) or future version specs, not in executable V1 tasks.
+- Do not add multi-user support, account registration, OAuth, charts outside the Tendências screen (`0030-allow-charts-in-trends.md`), offline-first behavior, Google Sheets integration, recommendations, or health interpretation unless scope changes explicitly.
+- Do not add user-configurable goals; variations use one neutral color for every metric (`0031-use-neutral-variation-color.md`).
+- Keep future ideas in [future ideas](../product/future-ideas.md), not in executable work.
 - Let automated tests scale with the risk of the behavior being implemented.
 
 ### Mobile Usability
@@ -304,7 +296,7 @@ The primary usage context is fast daily logging from a smartphone.
 Guidelines:
 
 - Keep forms short and easy to complete.
-- Make weight the only required body metric in V1.
+- Make weight the only required body metric.
 - Load an existing record when its date is selected.
 - Make missing optional values clear without blocking the workflow.
 - Favor readable cards and tables; charts are limited to the Tendências screen (`0030-allow-charts-in-trends.md`).
@@ -318,8 +310,8 @@ The app should remain easy to deploy and maintain as a personal project.
 
 Guidelines:
 
-- Keep deployment Cloudflare-only for V1.
+- Keep deployment Cloudflare-only.
 - Run automated checks before deployment.
 - Document required secrets without committing their values.
 - Keep deployment and environment assumptions current in technical docs.
-- Avoid operational complexity that does not directly support V1 delivery.
+- Avoid operational complexity that does not directly support delivery.

@@ -1,54 +1,40 @@
 # Future Ideas
 
-This file stores useful ideas that are explicitly outside the current V1 scope unless selected later.
+Useful ideas outside the current scope. They are context, not planned work, until an issue selects one.
 
-## V1.1 Candidates
-
-### Daily Observations
-
-Adopted: optional notes on measurements are part of the mobile redesign (`0032-add-waist-sleep-disposition-and-notes-fields.md`).
-
-### Optional Measurement Time
+## Optional Measurement Time
 
 Add an optional time field to measurements.
 
 The field should not be required. It may help identify outliers later.
 
-### Measurement Form Date Picker
-
-Replace the V1 text date field with a dedicated date picker component that preserves the `DD/MM/YYYY` display format and keeps API/database values as ISO dates.
-
-### Better CSV Mapping
+## Better CSV Mapping
 
 Support alternative CSV headers from the existing spreadsheet export.
 
-## V2 Candidates
-
-### Google Sheets Automatic Backup
+## Google Sheets Automatic Backup
 
 Automatically back up records to Google Sheets.
 
-This should not block V1 because CSV export is enough for the first version.
+CSV export covers backups today.
 
-### Offline-first Logging
+## Offline-first Logging
 
 Allow measurements to be recorded without an active connection and synced later.
 
-This is valuable because the daily logging flow should be fast and resilient, but it adds complexity and is not required for V1.
+This is valuable because the daily logging flow should be fast and resilient, but it adds complexity.
 
-Selected for V2 as `specs/v2/tasks/t-039-offline-first-logging.md`.
-
-### Desktop-friendly Dashboard
+## Desktop-friendly Dashboard
 
 Improve desktop layout for deeper analysis.
 
-The V1 desktop experience only needs to be usable. Future versions can include more complete dashboards.
+Today the desktop experience only needs to stay consistent with mobile.
 
-### Charts
+## Charts
 
-Adopted in part: a single line chart per metric in the Tendências screen is part of the mobile redesign (`0030-allow-charts-in-trends.md`). Charts elsewhere and advanced chart features stay future ideas.
+Charts outside the Tendências screen and advanced chart features; today Tendências shows one line chart at a time (`0030-allow-charts-in-trends.md`).
 
-### Moving Averages
+## Moving Averages
 
 Add moving average views such as:
 
@@ -56,11 +42,11 @@ Add moving average views such as:
 - 14-day moving average;
 - 30-day moving average.
 
-### Monthly Comparison
+## Monthly Comparison
 
 Add month-over-month summaries and averages.
 
-### Measurement Status Tags
+## Measurement Status Tags
 
 Add tags such as:
 
@@ -71,7 +57,7 @@ Add tags such as:
 - poor sleep;
 - atypical hydration.
 
-### Goal Phases
+## Goal Phases
 
 Allow the user to mark periods as:
 
@@ -83,43 +69,37 @@ Allow the user to mark periods as:
 
 This would help interpret variations later.
 
-### Configurable Metric Goals
+## Configurable Metric Goals
 
 Allow the user to configure whether weight increase, decrease, or maintenance should be visually treated as the desired direction.
 
-V1 assumes weight increase is visually positive because explicit goals are not configured yet.
+Today every variation uses one neutral tone, since no goals are configured (`0031-use-neutral-variation-color.md`).
 
-### Internationalization
+## Internationalization
 
-Add i18n after V1.
+Add i18n; interface labels and copy are `pt-BR` only today.
 
-V1 interface labels and copy are `pt-BR` only.
-
-### Separate Authenticated Pages
-
-Adopted: the mobile redesign splits the single V1 dashboard into separate screens behind a bottom tab bar (`0033-use-bottom-navigation.md`). Original idea: split the single V1 dashboard into separate authenticated views when history, import/export, settings, or deeper analysis need more space.
-
-### Automatic Interpretation
+## Automatic Interpretation
 
 Add optional interpretation of trends only after enough context exists.
 
-This should not be added in V1 because basic direction and color cues are enough for the initial workflow.
+Today the app shows only neutral direction cues and no interpretation.
 
-### Serverless Postgres Migration
+## Serverless Postgres Migration
 
 Migrate from Cloudflare D1 to serverless Postgres.
 
-The V1 should keep persistence behind a repository/service layer to reduce future migration cost.
+Persistence stays behind a repository layer to keep this migration cheap.
 
-### More Robust Authentication
+## More Robust Authentication
 
 Replace simple password authentication with a more robust model if the app becomes public-facing or multi-user.
 
-### Notifications
+## Notifications
 
 Add reminders for daily measurement logging.
 
-### Data Quality Indicators
+## Data Quality Indicators
 
 Show warnings when weekly averages are based on too few measurements.
 

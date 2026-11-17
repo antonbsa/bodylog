@@ -8,7 +8,7 @@ What a BodyLog environment is made of on Cloudflare and how it is configured. Th
 - One D1 database bound to that Worker as `DB`.
 - Worker secrets for the app password and the session secret.
 
-V1 is meant to run within the Cloudflare free plan for personal use, so the implementation avoids unnecessary queries, frequent full scans on large tables, repeated dashboard calls, polling and heavy processing inside the Worker.
+BodyLog is meant to run within the Cloudflare free plan for personal use, so the implementation avoids unnecessary queries, frequent full scans on large tables, repeated dashboard calls, polling and heavy processing inside the Worker.
 
 ## Environments
 

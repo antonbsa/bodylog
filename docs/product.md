@@ -14,7 +14,7 @@ The initial and only target user is the project owner. The app does not support 
 
 ## Goal
 
-Build a personal, mobile-first interface for daily body metrics logging and weekly progress tracking that reduces logging friction and makes weekly evolution easier to understand than the spreadsheet. V1 lets the user:
+Build a personal, mobile-first interface for daily body metrics logging and weekly progress tracking that reduces logging friction and makes weekly evolution easier to understand than the spreadsheet. The app lets the user:
 
 - register daily body measurements;
 - edit and delete measurements;
@@ -28,13 +28,13 @@ Build a personal, mobile-first interface for daily body metrics logging and week
 ### Constraints
 
 - The app is mobile-first.
-- It stays simple enough to complete and maintain as a personal project; V1 prioritizes delivery over completeness.
+- It stays simple enough to complete and maintain as a personal project, favoring delivery over completeness.
 - It is useful as a portfolio project.
 - TypeScript across frontend and backend, deployed fully on Cloudflare.
 
 ### Success Criteria
 
-V1 is successful when:
+The app succeeds when:
 
 - the user can log a daily measurement faster than using the spreadsheet;
 - the user can review weekly progress without manually calculating averages;
@@ -277,7 +277,6 @@ The system must allow the user to import historical measurements from a CSV file
 - [ ] The system upserts records by date.
 - [ ] The system returns an import summary.
 - [ ] Invalid rows are reported clearly.
-- [ ] Import is treated as the last V1 feature.
 
 ---
 
@@ -305,13 +304,13 @@ The system must be installable as a basic PWA.
 - [ ] The app has a manifest.
 - [ ] The app has basic icons.
 - [ ] The app can be installed on a smartphone.
-- [ ] Full offline-first support is not required in V1.
+- [ ] Offline-first support is not required.
 
 ---
 
 ### FR-013 — UI Language and Presentation
 
-The system must present the V1 interface using the documented UI direction.
+The system must present the interface using the documented UI direction.
 
 #### Acceptance Criteria
 
@@ -327,7 +326,7 @@ The system must present the V1 interface using the documented UI direction.
 
 ### NFR-001 — Mobile-first
 
-The V1 interface must prioritize smartphone usage.
+The interface must prioritize smartphone usage.
 
 ### NFR-002 — Simplicity
 
@@ -339,11 +338,11 @@ Frontend and backend must use TypeScript.
 
 ### NFR-004 — Cloudflare Deployment
 
-V1 must be deployed fully on Cloudflare.
+The app must be deployed fully on Cloudflare.
 
 ### NFR-005 — Personal Use
 
-V1 is designed for a single user and does not need to support multiple accounts.
+The app is designed for a single user and does not need to support multiple accounts.
 
 ### NFR-006 — Data Portability
 
@@ -351,9 +350,9 @@ The user must be able to export data in a portable CSV format.
 
 ### NFR-007 — Future Migration Awareness
 
-The data access layer should be isolated enough to support a future migration from Cloudflare D1 to serverless Postgres in V2.
+The data access layer should be isolated enough to support a future migration from Cloudflare D1 to serverless Postgres.
 
-## V1 Scope
+## Scope
 
 ### Product
 
@@ -393,7 +392,7 @@ The data access layer should be isolated enough to support a future migration fr
 
 ## Non-Goals
 
-V1 does not provide:
+The app does not provide:
 
 - multi-user support, account registration, OAuth/social login or role-based access control;
 - Google Sheets integration or automatic sync;
@@ -404,10 +403,10 @@ V1 does not provide:
 - desktop-optimized dashboards;
 - a native mobile app;
 - notifications or reminders;
-- serverless Postgres, planned for V2.
+- serverless Postgres, a planned later migration.
 
-Candidates for later versions, such as optional measurement time, offline-first logging, Google Sheets backup, moving averages or goal phases, are in [future ideas](product/future-ideas.md).
+Ideas outside this scope, such as optional measurement time, offline-first logging, Google Sheets backup, moving averages or goal phases, are in [future ideas](product/future-ideas.md).
 
 ## Scope Rule
 
-If a feature does not help the user log measurements, view weekly progress, import history, export backup, or protect personal data in V1, it is not implemented in V1.
+If a feature does not help the user log measurements, view weekly progress, import history, export backup, or protect personal data, it is not implemented.

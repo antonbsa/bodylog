@@ -1,12 +1,10 @@
 # Project History
 
-What each phase of BodyLog set out to do and what it delivered. Current behavior is in [Product](product.md) and [UI direction](product/ui-direction.md); the reasoning behind each change is in the [decisions](decisions/README.md).
+How BodyLog got to its current shape. Current behavior is in [Product](product.md) and [UI direction](product/ui-direction.md); the reasoning behind each change is in the [decisions](decisions/README.md).
 
-## V1: Replacing the Spreadsheet
+## Replacing the Spreadsheet
 
-Started in May 2026 with a lightweight spec-driven workflow (`0001-use-lightweight-sdd.md`): product docs under `docs/`, a version-level spec under [`specs/v1/`](../specs/v1/spec.md), and executable work as markdown task files (T-001 to T-028 under `specs/v1/tasks/`, `0021-use-markdown-tasks-under-specs.md`). It delivered the measurement form, the history list, the weekly dashboard with the partial-week comparison, CSV import and export, single-password auth, a basic PWA and deployment to Cloudflare Pages plus a separate API Worker (`0019-use-cloudflare-pages-and-separate-worker.md`).
-
-A V2 task list followed in June 2026 (T-029 to T-039 under `specs/v2/tasks/`); the redesign below superseded T-036 and T-038 and absorbed what still applied from T-037.
+Started in May 2026 with a lightweight spec-driven workflow (`0001-use-lightweight-sdd.md`), with executable work as markdown task files (`0021-use-markdown-tasks-under-specs.md`). The first release delivered the measurement form, the history list, the weekly dashboard with the partial-week comparison, CSV import and export, single-password auth, a basic PWA and deployment to Cloudflare Pages plus a separate API Worker (`0019-use-cloudflare-pages-and-separate-worker.md`).
 
 ## Mobile Redesign
 
