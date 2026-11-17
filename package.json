@@ -35,7 +35,8 @@
     "typecheck:web": "npm --workspace @bodylog/web run typecheck",
     "typecheck:tests": "tsc -p tests/tsconfig.json --noEmit",
     "typecheck:e2e": "tsc -p tests/e2e/tsconfig.json --noEmit",
-    "typecheck:scripts": "tsc -p infra/scripts/tsconfig.json --noEmit"
+    "typecheck:scripts": "tsc -p infra/scripts/tsconfig.json --noEmit",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250525.0",
@@ -44,6 +45,8 @@
     "@types/node": "^25.9.3",
     "concurrently": "^10.0.3",
     "eslint": "^8.57.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.1",
     "prettier": "^3.8.3",
     "tsx": "^4.22.4",
     "typescript": "^5.8.3",
