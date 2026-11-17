@@ -27,7 +27,7 @@ function program(tokens) {
   return tokens.slice(i)
 }
 
-// Release: publishing a GitHub release becomes the production deploy (#39), so agents only ever create drafts.
+// Release: publishing a GitHub release is the production deploy (ADR 0041), so agents only ever create drafts.
 const RELEASE_DENY =
   'Publishing a GitHub release deploys production and stays a human action (AGENTS.md "Workflow"). Create it with `--draft`.'
 if (

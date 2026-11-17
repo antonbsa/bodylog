@@ -14,7 +14,7 @@ Pick the page that matches what you're doing.
 
 ## Operate
 
-- **[Deploying](operations/deploying.md)**: how a merge reaches production, deploying by hand, or applying a migration.
+- **[Deploying](operations/deploying.md)**: how a merge reaches preview and a release reaches production, cutting a release, undoing a migration, or deploying by hand.
 - **[Environment setup](operations/environment-setup.md)**: what a Cloudflare environment is made of: Worker, D1, Wrangler config, non-secret vars, CI credentials.
 - **[Secrets](operations/secrets.md)**: setting or rotating `APP_PASSWORD` and `SESSION_SECRET`, and where local placeholders live.
 

@@ -1,0 +1,21 @@
+# Categories for GitHub-generated release notes, matched top to bottom (ADR 0041).
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+    authors:
+      - dependabot
+  categories:
+    - title: Features
+      labels:
+        - enhancement
+    - title: Fixes
+      labels:
+        - bug
+    - title: Docs
+      labels:
+        - documentation
+    # Without the catch-all, unlabeled PRs are dropped from the notes instead of listed.
+    - title: Other changes
+      labels:
+        - "*"

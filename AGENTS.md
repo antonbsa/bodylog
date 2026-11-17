@@ -21,7 +21,7 @@ Issue → ADR if a decision changes → implementation → review → PR → rel
 3. **Implement** only the selected issue, with its tests. When the issue leaves the approach open, show the owner a plan first. An ambiguity that blocks the work is a question for the owner; one that doesn't is resolved with the simplest option the specs allow and reported as an assumption.
 4. **Review** the diff against the issue's acceptance criteria and these instructions; UI issues are validated with a screenshot compared against the prototype.
 5. **PR.** The parent issue's Workflow says whether its sub-issues share one branch and PR (ADR 0036's default) or get one each. Report validation notes and modified files to the owner; post them on GitHub only when the owner asks, since comments are public and unreviewed.
-6. **Release.** Production deploys are the owner's call: `deploy.yml` deploys every push to `main` once its checks pass, and `gh release create` runs only with `--draft`, since publishing a release becomes the production deploy (#39).
+6. **Release.** A merge to `main` deploys only preview (`deploy-preview.yaml`); production deploys when a GitHub release is published (`deploy-release.yaml`, ADR 0041), which is the owner's call, so `gh release create` runs only with `--draft`. Cutting a release is in [deploying](docs/operations/deploying.md).
 
 ## Language
 
@@ -56,7 +56,7 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 
 - `.env.development` at the repo root is committed with placeholder secrets; `wrangler dev` reads it through `--env-file`, and Vite reads root env files (`envDir: "../.."`).
 - `.env.local` and `.env.production` (gitignored) hold real values that exist nowhere else. Never delete, move or overwrite them, directly or through `git clean`/`rm -rf`/"reset to clean"; `.claude/settings.json` and the guard hooks (Tooling) block the obvious paths. If a task seems to need one changed, stop and ask.
-- Production secrets (`APP_PASSWORD`, `SESSION_SECRET`) are Cloudflare secrets set with `npx wrangler secret put <NAME> --env production` from `apps/api`; document a new one in [secrets](docs/operations/secrets.md) and never commit its value.
+- Worker secrets (`APP_PASSWORD`, `SESSION_SECRET`) are Cloudflare secrets set per environment with `npx wrangler secret put <NAME> --env <preview|production>` from `apps/api`; document a new one in [secrets](docs/operations/secrets.md), add it to `REQUIRED_SECRETS` in `infra/scripts/deploy/check-secrets.mjs`, and never commit its value. Symptom: a deploy succeeds and the Worker fails at runtime on the missing secret. Why it slips: wrangler deploys a Worker whether or not its secrets exist, and only the check script fails the deploy. Verify: `grep -n REQUIRED_SECRETS infra/scripts/deploy/check-secrets.mjs` lists every secret in `AppBindings` (`apps/api/src/types.ts`).
 
 ## Engineering
 
@@ -80,7 +80,7 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 
 - Every behavior change ships with automated tests; a task that can't have them yet documents why and is validated by hand.
 - Test files live under root `tests/` (never in `src/`); tiers and how to run them are in [tests/AGENTS.md](tests/AGENTS.md).
-- CI runs lint, format, typecheck, build (`code-quality.yaml`), `test:unit` and `test:e2e` (`tests.yaml`) on every PR; on `main` they run only inside `deploy.yml`, which deploys once they pass.
+- CI runs lint, format, typecheck, build (`code-quality.yaml`), `test:unit` and `test:e2e` (`tests.yaml`) on every PR; on `main` they run inside `deploy-preview.yaml` (direct pushes only, since a merged PR already ran them) and `deploy-release.yaml`, gating each deploy.
 
 ## Tooling
 

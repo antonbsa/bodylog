@@ -12,11 +12,11 @@ BodyLog is meant to run within the Cloudflare free plan for personal use, so the
 
 ## Environments
 
-| Environment | Worker        | D1 database       | Where                                     |
-| ----------- | ------------- | ----------------- | ----------------------------------------- |
-| Local       | `bodylog-dev` | `bodylog-dev`     | `wrangler dev` on `http://localhost:8787` |
-| Production  | `bodylog`     | `bodylog-prod`    | `https://bodylog.antonbsa.dev`            |
-| Preview     | (planned)     | `bodylog-preview` | not deployed yet (#39)                    |
+| Environment | Worker            | D1 database       | Where                                                              |
+| ----------- | ----------------- | ----------------- | ------------------------------------------------------------------ |
+| Local       | `bodylog-dev`     | `bodylog-dev`     | `wrangler dev` on `http://localhost:8787`                          |
+| Preview     | `bodylog-preview` | `bodylog-preview` | its `workers.dev` URL, deployed on every merge to `main`           |
+| Production  | `bodylog`         | `bodylog-prod`    | `https://bodylog.antonbsa.dev`, deployed on each published release |
 
 Locally, the Vite dev server on `http://localhost:5173` proxies `/api` requests to the Worker, so the browser still sees one origin. Running it is covered in [Run locally](../guides/run-locally.md).
 
@@ -26,6 +26,7 @@ Locally, the Vite dev server on `http://localhost:5173` proxies `/api` requests 
 
 - The top level is local dev only: worker `bodylog-dev`, non-secret vars, and the `bodylog-dev` D1 binding with a placeholder `database_id`, so an accidental `--remote` without `--env production` cannot reach production data. Local API development loads the root `.env.development` file through `--env-file`.
 - `[env.production]` re-declares everything production needs, because named environments do not inherit vars or bindings: worker `bodylog`, vars, observability, the `bodylog-prod` D1 database and `[env.production.assets]`.
+- `[env.preview]` mirrors it for worker `bodylog-preview` and its own `bodylog-preview` D1 database, so preview never reads production data; a change to production's vars, assets or bindings is repeated there.
 - Assets stay out of the top level because `wrangler dev` fails when `apps/web/dist` is missing.
 
 `[env.production.assets]` uses `not_found_handling = "single-page-application"` so client routes such as `/historico` get `index.html`, and `run_worker_first = ["/api/*"]` so every API request, including unknown ones, reaches the Worker and gets a JSON response. `apps/web/public/_headers` is copied into `dist/` and applied by Workers Static Assets, which keeps `Cache-Control: no-cache` on `/` and `/index.html`.
@@ -48,11 +49,21 @@ Neither is a secret, so neither goes through `wrangler secret put`.
 
 ## GitHub Repository Secrets
 
-The deploy workflow needs two repository secrets and no variables:
+Both deploy workflows (`deploy-preview.yaml`, `deploy-release.yaml`) need two repository secrets and no variables:
 
 ```txt
 CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
 ```
 
-The token must be able to deploy Workers scripts on the account.
+The token needs the account permissions **Workers Scripts: Edit** and **D1: Edit**: the workflows list Worker secrets, apply D1 migrations, read the Time Travel bookmark and deploy both Workers.
+
+## Setting Up Preview
+
+From `apps/api`, once:
+
+```sh
+npx wrangler d1 create bodylog-preview
+```
+
+Put the printed `database_id` in `[[env.preview.d1_databases]]` in `apps/api/wrangler.toml`, replacing the placeholder, and commit it. Then set the preview secrets ([Secrets](secrets.md#preview)), which also creates the `bodylog-preview` Worker. The first deploy applies every migration to the empty database.

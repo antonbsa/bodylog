@@ -6,6 +6,7 @@ Conventions for the test tiers under root `tests/`.
 
 - `tests/api` (Vitest, `npm run test:unit`): domain logic (derived values, validation, week grouping, averages, comparison), repositories, and routes called in-process through `app.request(path, init, env)` with a hand-written fake D1 and a signed session cookie. No server or port.
 - `tests/web` (Vitest, same command): pure functions from `apps/web/src/utils/`. No DOM.
+- `tests/infra` (Vitest, same command): Node scripts under `infra/scripts/`, run as child processes with a fake `npx` first on `PATH`, so no test reaches Cloudflare.
 - `tests/e2e` (Playwright, `npm run test:e2e`): complete user flows in Chromium against the Vite dev server on port 5174, with every `/api/*` call mocked through `page.route`; specs import `test` from `tests/e2e/fixtures.ts`, which answers any unmocked `/api/*` call with a 500, so a missing mock shows up as the app's error state. It exercises the UI, never the real API or D1, so a flow that depends on API behavior also needs a `tests/api` test.
 
 ## Iterate with filters

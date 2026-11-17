@@ -5,7 +5,7 @@ Conventions for `infra/` (D1 migrations, local-db scripts, the shared `errors.ts
 ## Migrations
 
 - Migrations are hand-written SQL in `infra/migrations/`, named `<NNNN>_<snake_case_name>.sql` with the next four-digit number. Every wrangler environment reads them through `migrations_dir` in `apps/api/wrangler.toml`.
-- Apply locally with `npm run db:migrate:local` (or `npm run db:setup:local`, which also seeds an empty table). Remote apply (`npm run db:migrate:remote`) is production and stays with the owner.
+- Apply locally with `npm run db:migrate:local` (or `npm run db:setup:local`, which also seeds an empty table). Remote databases get migrations only from the deploy workflows: preview on every merge to `main`, production when a release is published (ADR 0041). A migration therefore runs against preview's data before production's, without a manual step.
 - Symptom: a renamed or edited migration never runs on a database that already applied it, or `db:migrate:local` fails with `duplicate column name`. Why it slips: wrangler tracks applied migrations by filename in the `d1_migrations` table, not by content, and `tests/api/migrations.test.ts` replays the files on a fresh in-memory SQLite. Verify: a schema change is always a new file, never an edit to an applied one; extend `migrations.test.ts` for it and run `npm run db:migrate:local`, which applies only the new file.
 - A schema change also updates [docs/reference/database.md](../docs/reference/database.md) and the repository in `apps/api/src/db/repositories/` in the same change.
 

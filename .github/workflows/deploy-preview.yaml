@@ -1,0 +1,82 @@
+name: Deploy preview
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # A merged PR already passed Code quality and Automated tests on its pull_request run; only a direct push is checked here.
+  # Asks GitHub instead of parsing the commit message, which carries no PR number after a rebase merge.
+  check-pr-origin:
+    name: Check push origin
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      via_pr: ${{ steps.check.outputs.via_pr }}
+    steps:
+      - name: Look up merged PRs for this commit
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          count=$(gh api "repos/$REPO/commits/$SHA/pulls" --jq 'map(select(.merged_at != null)) | length')
+          if [ "$count" -gt 0 ]; then
+            echo "via_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "via_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  code-quality:
+    needs: [check-pr-origin]
+    if: needs.check-pr-origin.outputs.via_pr != 'true'
+    uses: ./.github/workflows/code-quality.yaml
+
+  tests:
+    needs: [check-pr-origin]
+    if: needs.check-pr-origin.outputs.via_pr != 'true'
+    uses: ./.github/workflows/tests.yaml
+
+  deploy:
+    name: Deploy to Cloudflare (preview)
+    needs: [check-pr-origin, code-quality, tests]
+    # Skipped checks (a merged PR) must not skip the deploy, while a failed or cancelled one still blocks it.
+    if: ${{ !failure() && !cancelled() }}
+    # Deploys queue instead of overlapping, and one is never cancelled mid-migration.
+    concurrency:
+      group: deploy-preview
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check preview secrets
+        run: npm run check-secrets:preview
+
+      # Applies only the migrations not yet recorded in the database, so it is safe on every deploy.
+      - name: Apply D1 migrations
+        working-directory: apps/api
+        run: npx wrangler d1 migrations apply DB --env preview --remote
+
+      - name: Build and deploy
+        run: npm run deploy:preview

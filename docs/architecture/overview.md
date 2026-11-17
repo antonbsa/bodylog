@@ -170,7 +170,7 @@ This is acceptable for personal usage but not a scalable authentication model.
 The whole app deploys to Cloudflare.
 
 - One Worker serves the API under `/api/*` and the built web app through Workers Static Assets, on one origin (`0040-serve-the-web-app-from-the-api-worker.md`).
-- `apps/api/wrangler.toml` is the only Wrangler config; production is `[env.production]`. The runbook is [Deploying](../operations/deploying.md).
+- `apps/api/wrangler.toml` is the only Wrangler config; the deployed environments are `[env.preview]` (every merge to `main`) and `[env.production]` (each published release, `0041-release-gated-production-deploys-with-a-preview-environment.md`). The runbook is [Deploying](../operations/deploying.md).
 
 ## Non-Goals
 

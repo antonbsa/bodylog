@@ -9,6 +9,7 @@
       "Bash(git clean*)",
       "Bash(*d1 execute*--remote*)",
       "Bash(*d1 migrations apply*--remote*)",
+      "Bash(*d1 time-travel restore*)",
       "Bash(npm run db:query:remote*)",
       "Bash(npm run db:migrate:remote*)",
       "Edit(//**/.env.local)",
