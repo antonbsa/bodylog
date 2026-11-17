@@ -28,11 +28,17 @@ to use `date` as the V1 upsert key.
 - Add focused browser coverage for the dashboard export action.
 
 ## Why
+
 This task advances BodyLog V1 during the CSV Export phase.
+
 ## Scope
+
 Complete the implementation work described by the task title and acceptance criteria. Keep changes focused on V1 behavior and the related project documentation.
+
 ## Out of Scope
+
 Do not add multi-user behavior, advanced analytics, Google Sheets integration, offline-first behavior, or Vercel compatibility for this task.
+
 ## Validation
 
 Automated checks:
@@ -78,7 +84,6 @@ Validation notes:
 - `tests/api/measurement-api.test.ts`
 - `tests/e2e/dashboard.spec.ts`
 
-
 ## Acceptance Criteria
 
 - [x] Export endpoint returns CSV.
@@ -86,7 +91,6 @@ Validation notes:
 - [x] CSV uses documented headers.
 - [x] UI has export action.
 - [x] Automated tests cover exported headers and row values.
-
 
 ## Definition of Done
 

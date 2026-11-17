@@ -20,11 +20,17 @@ week and previous full week comparison.
   metadata, and variation output.
 
 ## Why
+
 This task advances BodyLog V1 during the Weekly Dashboard phase.
+
 ## Scope
+
 Complete the implementation work described by the task title and acceptance criteria. Keep changes focused on V1 behavior and the related project documentation.
+
 ## Out of Scope
+
 Do not add multi-user behavior, advanced analytics, Google Sheets integration, offline-first behavior, or Vercel compatibility for this task.
+
 ## Validation
 
 Automated checks:
@@ -57,7 +63,6 @@ Validation notes:
 - `specs/v1/tasks/t-019-implement-weekly-dashboard-api.md`
 - `tests/api/weekly-dashboard-api.test.ts`
 
-
 ## Acceptance Criteria
 
 - [x] Returns current week summary.
@@ -67,7 +72,6 @@ Validation notes:
 - [x] Indicates partial current week.
 - [x] Provides enough week date and count data for the UI to derive registration reliability.
 - [x] API or service tests cover dashboard summary and variation output.
-
 
 ## Definition of Done
 

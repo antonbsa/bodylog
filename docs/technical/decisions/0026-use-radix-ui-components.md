@@ -32,4 +32,3 @@ Decided in the visual foundation task of the mobile redesign (sub-issue #25).
 - The Radix `Theme` follows the resolved theme (`appearance` is `light` or `dark`, including live OS changes in system mode), and its gray and accent scales are pointed at the tokens in `apps/web/src/styles.css`, so old components do not clash with the new ones.
 - New foundation components (layout shell, tab bar, page title, placeholders) use plain CSS with the tokens and do not use Radix Themes.
 - Routing uses `react-router` (declarative mode) and icons use Phosphor (`@phosphor-icons/react`).
-

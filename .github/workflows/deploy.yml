@@ -1,14 +1,8 @@
 name: Deploy
 
-# Triggers only after CI completes successfully on main, which guarantees
-# validations already passed before any deployment step runs.
-# workflow_dispatch allows a manual deploy when needed (no CI gate in that path).
+# workflow_dispatch allows a manual deploy when needed; it runs the same checks first.
 on:
-  workflow_run:
-    workflows:
-      - CI
-    types:
-      - completed
+  push:
     branches:
       - main
   workflow_dispatch:
@@ -21,17 +15,15 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  code-quality:
+    uses: ./.github/workflows/code-quality.yaml
+
+  tests:
+    uses: ./.github/workflows/tests.yaml
+
   deploy:
     name: Deploy to Cloudflare
-    # For workflow_run: only proceed when CI passed on a main push.
-    # For workflow_dispatch: always allow (manual operator decision).
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.event == 'push' &&
-        github.event.workflow_run.head_branch == 'main'
-      )
+    needs: [code-quality, tests]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

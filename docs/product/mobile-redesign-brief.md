@@ -69,6 +69,7 @@ Source of truth for the mobile redesign agreed on 2026-11-11, on branch `feat/mo
    - Header with seven day dots (S T Q Q S S D) showing the days actually recorded (filled = recorded, hollow = missing, dimmed = future), plus "4/7", and the comparison week with its count ("vs 3–9 nov · 6/7").
    - Rows for peso, gordura %, músculo %, cintura, sono and disposição: metric, weekly average, neutral variation chip against the previous full week.
    - Metabolism and derived values (BMI, fat kg, muscle kg) are not on Início; they appear in edit mode and in Tendências.
+
 - The registration target is now 7 days per week (was 5). The Baixa/Média/Alta reliability label is removed.
 
 ## Histórico

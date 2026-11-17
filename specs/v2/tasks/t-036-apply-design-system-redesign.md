@@ -100,8 +100,8 @@ files remain canonical; use the CSS custom properties, never hard-coded hex.
   bottom-sheet 24 (`--radius-2xl`), pills 999 (`--radius-pill`).
 - **Layout & motion:** single column, mobile-first, ~390px content width; weight
   tile spans 2 columns with fat + muscle side-by-side beneath; touch targets
-  >=44px; minimal motion; **no layout shift** (overlays never reflow, error
-  space pre-reserved).
+  > =44px; minimal motion; **no layout shift** (overlays never reflow, error
+  > space pre-reserved).
 - **Iconography:** the design system specifies Lucide/Feather outline icons, but
   this project keeps using **Phosphor Icons** (V1's existing icon library) — no
   icon-library migration. Where a design-system mockup shows a Lucide/Feather
@@ -161,7 +161,7 @@ only.
 - **No behavior changes.** Behavioral work belongs to the surrounding tasks.
   Reserved for T-037 / T-038: the new form interaction (next-input / submit,
   character fill, badge loading animation, persisted state), and replacing
-  Callouts with toast notifications. T-036 may restyle the *current*
+  Callouts with toast notifications. T-036 may restyle the _current_
   presentation of these areas, but must not change how they behave.
 - Do not change the API contract or data shapes.
 - Do not migrate the icon library away from Phosphor Icons.

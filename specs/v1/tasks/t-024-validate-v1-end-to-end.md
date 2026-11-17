@@ -33,23 +33,23 @@ Do not add multi-user behavior, advanced analytics, Google Sheets integration, o
 
 ### Manual / coverage notes per criterion
 
-| Criterion | Evidence |
-|---|---|
-| Login works | E2E `tooling.spec.ts` — login screen renders, invalid password shows error, valid password opens app |
-| Create measurement works | E2E `measurement-form.spec.ts` — creates measurement from dashboard form |
-| Edit measurement works | E2E `measurement-form.spec.ts` — loads existing date into form before saving |
-| Delete measurement works | E2E `measurement-list.spec.ts` — renders list, opens item (delete confirmed by API test) |
-| List works | E2E `measurement-list.spec.ts` — renders recent measurements, loads more, empty state, error state |
-| Dashboard works | E2E `dashboard.spec.ts` — authenticated summary, latest metrics when current week empty |
-| CSV export works | E2E `dashboard.spec.ts` — exports measurements CSV from dashboard action |
-| CSV import works | E2E `dashboard.spec.ts` — imports CSV, shows descriptive failure on bad input |
-| PWA installability works | E2E `tooling.spec.ts` — manifest and icons reachable; manual install on device validated under T-025 |
-| Production deployment works | CI Deploy workflow succeeded on latest `main` push; full production smoke validated under T-025 |
-| Unit tests pass | `npm run test:api` — 65 tests pass |
-| API/backend tests pass | `npm run test:api` — 65 tests pass |
-| E2E tests pass | `npm run test:e2e` — 17 tests pass |
-| CI checks pass on `main` | Latest CI run: `completed / success` (2026-06-16) |
-| Deployment automation works | Latest Deploy run: `completed / success` (2026-06-16) |
+| Criterion                   | Evidence                                                                                                                                            |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Login works                 | E2E `tooling.spec.ts` — login screen renders, invalid password shows error, valid password opens app                                                |
+| Create measurement works    | E2E `measurement-form.spec.ts` — creates measurement from dashboard form                                                                            |
+| Edit measurement works      | E2E `measurement-form.spec.ts` — loads existing date into form before saving                                                                        |
+| Delete measurement works    | E2E `measurement-list.spec.ts` — renders list, opens item (delete confirmed by API test)                                                            |
+| List works                  | E2E `measurement-list.spec.ts` — renders recent measurements, loads more, empty state, error state                                                  |
+| Dashboard works             | E2E `dashboard.spec.ts` — authenticated summary, latest metrics when current week empty                                                             |
+| CSV export works            | E2E `dashboard.spec.ts` — exports measurements CSV from dashboard action                                                                            |
+| CSV import works            | E2E `dashboard.spec.ts` — imports CSV, shows descriptive failure on bad input                                                                       |
+| PWA installability works    | E2E `tooling.spec.ts` — manifest and icons reachable; manual install on device validated under T-025                                                |
+| Production deployment works | CI Deploy workflow succeeded on latest `main` push; full production smoke validated under T-025                                                     |
+| Unit tests pass             | `npm run test:api` — 65 tests pass                                                                                                                  |
+| API/backend tests pass      | `npm run test:api` — 65 tests pass                                                                                                                  |
+| E2E tests pass              | `npm run test:e2e` — 17 tests pass                                                                                                                  |
+| CI checks pass on `main`    | Latest CI run: `completed / success` (2026-06-16)                                                                                                   |
+| Deployment automation works | Latest Deploy run: `completed / success` (2026-06-16)                                                                                               |
 | Docs reflect final behavior | Docs updated through prior tasks; deployment and PWA session decisions documented in `docs/technical/deployment.md` and `docs/technical/decisions/` |
 
 ### Fix applied during this task

@@ -24,14 +24,20 @@ more records at a time.
 - Use Radix UI / Radix Themes only for the history-table component in this task.
 - Add API and E2E coverage for list behavior and rendering states.
 
-
 ## Why
+
 This task advances BodyLog V1 during the Measurement CRUD phase.
+
 ## Scope
+
 Complete the implementation work described by the task title and acceptance criteria. Keep changes focused on V1 behavior and the related project documentation.
+
 ## Out of Scope
+
 Do not add multi-user behavior, advanced analytics, Google Sheets integration, offline-first behavior, or Vercel compatibility for this task.
+
 ## Validation
+
 Run the relevant automated checks for the changed area. If automated coverage is not practical yet, record the manual validation performed in this task.
 
 Automated checks:
@@ -101,7 +107,6 @@ Validation notes:
 - [x] Edit action available.
 - [x] Delete action available.
 - [x] E2E or component-level tests cover list rendering states.
-
 
 ## Definition of Done
 
