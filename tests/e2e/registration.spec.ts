@@ -208,6 +208,21 @@ function formatDayMonth(isoDate: string): string {
 const field = (page: Page, label: string) =>
   page.getByLabel(label, { exact: true })
 
+/**
+ * Empties a masked field one Backspace per digit. Select-all is avoided because
+ * the field's deferred focus handler can collapse the selection before the delete.
+ */
+async function clearField(page: Page, label: string) {
+  const input = field(page, label)
+  const digitCount = (await input.inputValue()).replace(/\D/g, "").length
+
+  for (let i = 0; i < digitCount; i++) {
+    await input.press("Backspace")
+  }
+
+  await expect(input).toHaveValue("")
+}
+
 async function paste(page: Page, label: string, text: string) {
   await field(page, label).evaluate((input, value) => {
     const data = new DataTransfer()
@@ -375,8 +390,7 @@ test("loads a past date for editing with calculated values and previous hints", 
   ).toBe(true)
 
   // Calculated values follow the typed weight and blank out when it is invalid.
-  await field(page, "Peso").press("Control+a")
-  await field(page, "Peso").press("Backspace")
+  await clearField(page, "Peso")
   await field(page, "Peso").pressSequentially("75")
   await expect(field(page, "Peso")).toHaveValue("7,5")
   await expect(calculated).not.toContainText("22,2")
@@ -389,13 +403,10 @@ test("saving an edit clears emptied fields with null", async ({ page }) => {
   await page.goto(`/registro?data=${EXISTING_DATE}`)
   await expect(field(page, "Peso")).toHaveValue("72,0")
 
-  await field(page, "Peso").press("Control+a")
-  await field(page, "Peso").press("Backspace")
+  await clearField(page, "Peso")
   await field(page, "Peso").pressSequentially("731")
-  await field(page, "Cintura").press("Control+a")
-  await field(page, "Cintura").press("Backspace")
-  await field(page, "Sono").press("Control+a")
-  await field(page, "Sono").press("Backspace")
+  await clearField(page, "Cintura")
+  await clearField(page, "Sono")
   await page.getByRole("radio", { name: "4" }).click()
   await page.getByLabel("Notas").fill("   ")
   await page.getByRole("button", { name: "Atualizar" }).click()
@@ -500,10 +511,8 @@ test("validation shows reserved-slot errors and focuses the first invalid field"
   await expect(page.getByText("Use um valor entre 20 e 300 kg.")).toBeVisible()
   await field(page, "Peso").press("Backspace")
   await expect(page.getByText("Use um valor entre 20 e 300 kg.")).toHaveCount(0)
-  await field(page, "Gordura").press("Control+a")
-  await field(page, "Gordura").press("Backspace")
-  await waist.press("Control+a")
-  await waist.press("Backspace")
+  await clearField(page, "Gordura")
+  await clearField(page, "Cintura")
   await page.getByRole("button", { name: "Salvar" }).click()
 
   await expect(page).toHaveURL("/")
