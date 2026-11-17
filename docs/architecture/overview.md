@@ -1,0 +1,325 @@
+# Architecture Overview
+
+How BodyLog works end to end and why. What it does for the user is in [Product](../product.md); the HTTP surface and the tables are in [API contract](../reference/api-contract.md) and [Database](../reference/database.md); the reasoning behind each choice is in the [decisions](../decisions/README.md).
+
+## In Short
+
+The V1 architecture is a small Cloudflare-based web application.
+
+```txt
+React/Vite PWA
+      ↓
+Hono API on Cloudflare Workers
+      ↓
+Cloudflare D1
+```
+
+The application is designed for one user, mobile-first usage, and simple weekly analysis of body metrics.
+
+## Repository Structure
+
+The repository uses npm workspaces.
+
+```txt
+apps/
+  api/      Hono Worker API
+  web/      React/Vite frontend
+tests/
+  api/      API and backend behavior tests
+  web/      web unit tests
+  e2e/      Playwright E2E tests
+infra/
+  migrations/ Cloudflare D1 migrations
+  scripts/    local infrastructure and docs tooling
+  errors.ts   shared structured error definitions
+types/      shared API/web TypeScript shapes
+domain/     shared pure measurement rules (limits, notes, derived values)
+```
+
+The root package owns shared scripts for installation, typechecking, tests, D1 commands, and deployment entry points.
+
+## Frontend
+
+### Stack
+
+- React
+- Vite
+- TypeScript
+- react-router (declarative mode)
+- Phosphor icons
+- Radix Themes for behavior and not-yet-redone components (`0026-use-radix-ui-components.md`)
+- PWA basics
+
+### Responsibilities
+
+- Render the authenticated app.
+- Route between the Início, Histórico, Tendências and Ajustes screens behind a bottom tab bar, plus a registration route without the bar.
+- Show the weekly summary on Início and the measurement history on Histórico as weekly cards, paged by week (`GET /api/history/weeks`).
+- Apply the light, dark or system theme before first paint, from the preference stored in the browser.
+- Call API endpoints.
+- Handle CSV import/export UI.
+- Keep the UX mobile-first.
+
+### UI Structure
+
+Routes, handled client-side by `react-router`:
+
+```txt
+/                  Início (tab)
+/historico         Histórico (tab)
+/tendencias        Tendências (tab)
+/ajustes           Ajustes (tab; theme, CSV export/import, logout)
+/registro?data=YYYY-MM-DD   registration, outside the tab layout, no bar
+```
+
+The tab screens share a full-height flex layout: a scrolling content area above a bottom tab bar that sits in the layout flow (not fixed), with a central button that opens `/registro` for today (`0033-use-bottom-navigation.md`, [UI direction](../product/ui-direction.md)). Unauthenticated visits show the login screen without the bar, and unknown paths show the not-found screen. The registration route is a full-screen form outside the tab layout: a sticky header with the date bar, a form that scrolls with the document (so iOS scrolls focused fields natively) and a fixed footer that is hidden while the iOS keyboard is open (detected from the visual viewport height). Numeric fields use a right-to-left digit mask, and validation limits, notes normalization and derived values come from `domain/measurement.ts` at the repo root, so the web form and the API share them. Tab switches and opening or closing `/registro` replace the history entry (decided in `apps/web/src/hooks/useTabNavigate.ts`) because the iOS edge swipe follows history; Cancelar returns to the origin path kept in location state. Server data goes through TanStack Query (one client in `main.tsx`, keys in `apps/web/src/api/queryKeys.ts`), so screens show cached data while refetching and Registro prefetches the adjacent days; see `0037-use-tanstack-query-for-server-state.md`.
+
+Deep links rely on the Worker's static assets serving `index.html` for unknown non-API paths (`not_found_handling = "single-page-application"` in `apps/api/wrangler.toml`).
+
+Colors are CSS custom properties in `apps/web/src/styles/tokens.css`. The theme preference (`system`, `light` or `dark`) is stored in `localStorage` and applied as `data-theme` on `<html>` by an inline script in `apps/web/index.html`, with `apps/web/src/theme.ts` as the module that reads and writes it. `system` leaves `data-theme` unset so the `prefers-color-scheme` media query decides. Geist and Geist Mono are self-hosted from `apps/web/public/fonts`.
+
+## Backend
+
+### Stack
+
+- Hono
+- TypeScript
+- Cloudflare Workers
+
+### Responsibilities
+
+- Authentication endpoints.
+- Measurement CRUD endpoints.
+- Weekly dashboard endpoint.
+- CSV import/export endpoints.
+- Validation.
+- Derived metric calculations.
+- Data access through repository/service layers.
+
+### Source Layout
+
+```txt
+apps/api/src/
+  index.ts              wrangler main; re-exports the app
+  app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
+  config.ts             env-derived settings (password, session secret, height, time zone)
+  types.ts              API-only bindings and input types
+  features/<name>/      routes.ts plus that feature's services (auth, measurements, dashboard, history, trends, csv)
+  db/repositories/      D1 access, one file per table
+  http/                 cross-feature HTTP helpers (request validation, session guard)
+  domain/               API domain objects (Measurement, week range, week summary)
+```
+
+`app.ts` mounts `/api/auth/*` and `/api/health` as public routes. Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
+
+## Database
+
+### V1 Database
+
+- Cloudflare D1
+
+### Future V2 Database
+
+- Serverless Postgres
+
+The V1 must avoid spreading database-specific logic across handlers. SQL and persistence details should be isolated behind repositories.
+
+## Suggested Layers
+
+```txt
+api routes
+  ↓
+use cases / services
+  ↓
+repositories
+  ↓
+D1
+```
+
+### Routes
+
+Handle HTTP concerns:
+
+- request parsing;
+- response formatting;
+- auth guard;
+- status codes.
+
+### Services / Use Cases
+
+Handle product behavior:
+
+- create or update measurement by date;
+- calculate weekly summaries;
+- import CSV;
+- export CSV.
+
+### Repositories
+
+Handle persistence:
+
+- SQL queries;
+- D1 bindings;
+- database row mapping.
+
+## Authentication
+
+V1 uses simple single-user authentication.
+
+- The password is stored as a Cloudflare secret/environment variable.
+- The backend validates login requests.
+- A secure session cookie should be used.
+- All data routes require authentication.
+
+This is acceptable for personal V1 usage but not a scalable authentication model.
+
+## Deployment
+
+The full V1 deploy target is Cloudflare.
+
+- One Worker serves the API under `/api/*` and the built web app through Workers Static Assets, on one origin (`0040-serve-the-web-app-from-the-api-worker.md`).
+- `apps/api/wrangler.toml` is the only Wrangler config; production is `[env.production]`. The runbook is [Deploying](../operations/deploying.md).
+
+## Non-Goals
+
+The architecture does not need to support:
+
+- Vercel deployment;
+- multi-user scale;
+- complex authorization;
+- offline-first behavior;
+- native mobile deployment;
+- desktop-optimized dashboards;
+- advanced analytics pipelines.
+
+## Key Risks
+
+### D1 to Postgres Migration
+
+D1 is suitable for V1 on Cloudflare, but V2 plans a migration to serverless Postgres.
+
+Mitigation:
+
+- isolate data access;
+- keep domain types independent from D1-specific types;
+- version migrations;
+- avoid D1-specific behavior outside repositories.
+
+### CSV Import Compatibility
+
+The current spreadsheet export format may not match the canonical CSV format.
+
+Mitigation:
+
+- start with a canonical CSV format;
+- validate rows clearly;
+- add mapping only after seeing real CSV exports.
+
+### Authentication Simplicity
+
+Simple password auth is enough for personal V1 usage but should not be treated as production-grade multi-user security.
+
+## Cross-Cutting Concerns
+
+Standing guidance for implementation, reviews and future ADRs across versions; a concrete decision made from one of these becomes an ADR under [decisions](../decisions/README.md).
+
+### Dependency Boundaries
+
+BodyLog V1 intentionally uses React, Vite, Hono, Cloudflare Workers, and Cloudflare D1.
+
+The project should not abstract every selected tool just to remain theoretically portable. V1 priority is delivery with a small, understandable implementation.
+
+However, product and domain behavior should not be tightly coupled to infrastructure details when a future migration is already plausible.
+
+Guidelines:
+
+- Keep HTTP concerns in routes and middleware.
+- Keep product behavior in services or use cases.
+- Keep SQL, D1 bindings, and row mapping inside repositories.
+- Keep domain types independent from D1-specific types.
+- Isolate authentication/session mechanics behind small helpers instead of spreading cookie and secret handling across routes.
+- Introduce provider-style abstractions only when there is a concrete boundary to protect, such as persistence, sessions, or deployment-specific integrations.
+
+### Security and Privacy
+
+BodyLog stores personal body metrics. Even though V1 is single-user, security and privacy should be considered from the beginning.
+
+Guidelines:
+
+- Store passwords, session secrets, and deployment credentials only in environment variables or Cloudflare secrets.
+- Protect all data routes with authentication.
+- Use secure session handling appropriate for Cloudflare Workers.
+- Avoid logging passwords, session tokens, CSV contents, or measurement values.
+- Treat CSV import/export as sensitive data movement.
+- Do not commit real personal data, exported CSV backups, secrets, or production database files.
+- Avoid health interpretation, diagnosis, recommendations, or motivational value judgments in V1.
+- Do not design V1 code in a way that assumes future multi-user authorization is already solved.
+
+### Data Correctness
+
+The app replaces a spreadsheet workflow, so trust depends on correct calculations and predictable data handling.
+
+Guidelines:
+
+- Store at most one measurement per date.
+- Treat `YYYY-MM-DD` dates consistently across API, database, and CSV.
+- Display and accept dates in the UI as `DD/MM/YYYY` for `pt-BR`.
+- Keep week calculations aligned with Monday-start weeks.
+- Compare partial current week against the previous full week.
+- Display percentage metric changes in percentage points.
+- Treat a weekly change as stable when it rounds to zero at the displayed precision, decided in the UI.
+- Ignore missing optional values when calculating averages for that metric.
+- Keep derived calculations covered by focused automated tests.
+- Document assumptions when date, rounding, tolerance, or import behavior is ambiguous but not blocking.
+
+### Data Ownership and Recovery
+
+The user should be able to keep and move their data without depending on the application forever.
+
+Guidelines:
+
+- Preserve CSV export as the primary V1 backup path.
+- Keep the documented CSV format stable unless a migration note is added.
+- Validate CSV import clearly and avoid silent data loss.
+- Upsert imported records by date.
+- Version database migrations.
+- Keep future D1-to-Postgres migration awareness in repository and migration design.
+
+### Scope Discipline
+
+V1 is a personal body metrics tracker, not a generic fitness platform.
+
+Guidelines:
+
+- Prefer small, explicit implementation over broad frameworks or speculative architecture.
+- Do not add multi-user support, account registration, OAuth, charts outside the Tendências screen (`0030-allow-charts-in-trends.md`), offline-first behavior, Google Sheets integration, recommendations, or health interpretation in V1 unless scope changes explicitly.
+- Do not add user-configurable goals in V1; variations use one neutral color for every metric (`0031-use-neutral-variation-color.md`).
+- Keep future ideas in [future ideas](../product/future-ideas.md) or future version specs, not in executable V1 tasks.
+- Let automated tests scale with the risk of the behavior being implemented.
+
+### Mobile Usability
+
+The primary usage context is fast daily logging from a smartphone.
+
+Guidelines:
+
+- Keep forms short and easy to complete.
+- Make weight the only required body metric in V1.
+- Load an existing record when its date is selected.
+- Make missing optional values clear without blocking the workflow.
+- Favor readable cards and tables; charts are limited to the Tendências screen (`0030-allow-charts-in-trends.md`).
+- Use separate screens behind a bottom tab bar as the authenticated app surface (`0033-use-bottom-navigation.md`).
+- Open measurement creation/editing in a full-screen registration route.
+- Validate mobile usability before considering desktop-specific polish.
+
+### Operational Safety
+
+The app should remain easy to deploy and maintain as a personal project.
+
+Guidelines:
+
+- Keep deployment Cloudflare-only for V1.
+- Run automated checks before deployment.
+- Document required secrets without committing their values.
+- Keep deployment and environment assumptions current in technical docs.
+- Avoid operational complexity that does not directly support V1 delivery.

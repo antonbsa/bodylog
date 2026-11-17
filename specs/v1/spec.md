@@ -29,16 +29,13 @@ V1 excludes:
 
 ## Source Documents
 
-- Product overview: `docs/product/overview.md`
-- Requirements: `docs/product/requirements.md`
-- Scope: `docs/product/scope.md`
-- User flows: `docs/product/user-flows.md`
+- Product (overview, requirements, scope, user flows): `docs/product.md`
 - UI direction: `docs/product/ui-direction.md`
-- Architecture: `docs/technical/architecture.md`
-- API contract: `docs/technical/api.md`
-- Database model: `docs/technical/database.md`
-- Cross-cutting concerns: `docs/technical/cross-cutting-concerns.md`
-- Technical decisions: `docs/technical/decisions/`
+- Architecture: `docs/architecture/overview.md`
+- API contract: `docs/reference/api-contract.md`
+- Database model: `docs/reference/database.md`
+- Cross-cutting concerns: `docs/architecture/overview.md#cross-cutting-concerns`
+- Technical decisions: `docs/decisions/`
 
 ## Success Criteria
 

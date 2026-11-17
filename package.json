@@ -19,6 +19,8 @@
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write .",
+    "check-docs": "node infra/scripts/check-docs.mjs",
+    "docs:index": "node infra/scripts/docs-indexes.mjs",
     "deploy": "npm run build && npm --workspace @bodylog/api run deploy",
     "db:migrate:local": "wrangler d1 migrations apply DB --config apps/api/wrangler.toml --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --config apps/api/wrangler.toml --env production --remote",
@@ -51,6 +53,7 @@
     "tsx": "^4.22.4",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4",
-    "wrangler": "^4.15.2"
+    "wrangler": "^4.15.2",
+    "yaml": "^2.9.1"
   }
 }
