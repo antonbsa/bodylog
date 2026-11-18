@@ -47,11 +47,10 @@ USER_TIME_ZONE = "America/Sao_Paulo"
 [env.preview.observability]
 enabled = true
 
-# TODO(owner): replace with the id printed by `npx wrangler d1 create bodylog-preview`.
 [[env.preview.d1_databases]]
 binding = "DB"
 database_name = "bodylog-preview"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "6dad0696ed2343ee7ebbc98e75f677fe"
 migrations_dir = "../../infra/migrations"
 
 [env.preview.assets]
