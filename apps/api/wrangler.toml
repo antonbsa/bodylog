@@ -50,7 +50,7 @@ enabled = true
 [[env.preview.d1_databases]]
 binding = "DB"
 database_name = "bodylog-preview"
-database_id = "6dad0696ed2343ee7ebbc98e75f677fe"
+database_id = "f1b4910d-f6b3-488f-897c-66b15cc8cc7e"
 migrations_dir = "../../infra/migrations"
 
 [env.preview.assets]
