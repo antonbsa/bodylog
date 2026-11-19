@@ -71,6 +71,7 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0028 — Use Same-Site Custom Domains for PWA Session](0028-use-same-site-custom-domains-for-pwa-session.md) · Superseded · superseded by 0040
 - [0040 — Serve the Web App from the API Worker](0040-serve-the-web-app-from-the-api-worker.md) · Accepted · supersedes 0019, 0028
 - [0041 — Release-gated Production Deploys with a Preview Environment](0041-release-gated-production-deploys-with-a-preview-environment.md) · Accepted
+- [0042 — Scheduled Encrypted D1 Exports to Backblaze B2](0042-scheduled-encrypted-d1-exports-to-backblaze-b2.md) · Accepted
 
 ### Process
 

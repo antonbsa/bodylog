@@ -31,4 +31,4 @@ Backend conventions for the Hono Worker on Cloudflare Workers + D1. The Worker a
   ```
 
 - Anything that mutates data or schema (`INSERT`, `UPDATE`, `DELETE`, `DROP`, "seed a test row") needs explicit confirmation every time, even locally: say what it changes and where first. `guard-bash.mjs` asks for every `d1 execute` that isn't a single `SELECT`.
-- Remote D1 (`--remote` against preview or production, `npm run db:query:remote`, `npm run db:migrate:remote`, `d1 time-travel restore`) is deployed data and is denied in `.claude/settings.json`; it is never run from an agent session.
+- Remote D1 (`--remote` against preview or production, `d1 time-travel`, `npm run db:query:remote`, `npm run db:migrate:remote`) is deployed data and is denied in `.claude/settings.json`; it is never run from an agent session.

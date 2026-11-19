@@ -42,3 +42,9 @@ The deploy workflows read `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` fro
 ## Adding a Secret
 
 Document a new secret on this page with what it is for and how to set it, and never commit its value.
+
+## Backup Secrets
+
+The daily D1 backup ([backup and restore](backup-and-restore.md)) reads two more GitHub Actions secrets, `B2_KEY_ID` and `B2_APPLICATION_KEY`: a Backblaze B2 application key limited to the backup bucket. Its non-secret settings are repository variables ([Environment setup](environment-setup.md#backup-storage)).
+
+The `age` private key that decrypts the dumps is not a GitHub or Cloudflare secret: it lives only in the owner's password manager, and only its public key is committed, in `infra/backups/age-recipient.txt`. Losing the private key makes every dump unreadable; rotating it means committing the new public key, and dumps made before the change still need the old private key until the bucket's 30-day retention drops them.
