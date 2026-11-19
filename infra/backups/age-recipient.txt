@@ -1,1 +1,1 @@
-# Replace this comment with the age1... public key printed by age-keygen (docs/operations/backup-and-restore.md).
+age1jy8ssaqjserlxkuucfdk8e6vzequtmjs3h4umhkj7gzerm9ljp0s4dqvns
