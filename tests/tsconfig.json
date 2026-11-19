@@ -6,6 +6,7 @@
   "include": [
     "api/**/*.ts",
     "web/**/*.ts",
+    "infra/**/*.ts",
     "../apps/api/src/**/*.ts",
     "../apps/web/src/utils/**/*.ts"
   ]

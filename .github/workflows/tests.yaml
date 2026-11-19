@@ -10,7 +10,7 @@ on:
       - "specs/**"
       - ".claude/**"
       - ".gitignore"
-  # Pushes to main run this only through Deploy, so each commit is checked once and gates its deploy.
+  # On main this runs only inside Deploy preview (direct pushes) and Deploy release, where it gates the deploy.
   workflow_call:
 
 permissions:

@@ -70,6 +70,7 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0019 — Use Cloudflare Pages and Separate Worker](0019-use-cloudflare-pages-and-separate-worker.md) · Superseded · superseded by 0040
 - [0028 — Use Same-Site Custom Domains for PWA Session](0028-use-same-site-custom-domains-for-pwa-session.md) · Superseded · superseded by 0040
 - [0040 — Serve the Web App from the API Worker](0040-serve-the-web-app-from-the-api-worker.md) · Accepted · supersedes 0019, 0028
+- [0041 — Release-gated Production Deploys with a Preview Environment](0041-release-gated-production-deploys-with-a-preview-environment.md) · Accepted
 
 ### Process
 
