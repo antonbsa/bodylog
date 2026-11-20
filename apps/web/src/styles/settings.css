@@ -90,10 +90,12 @@
   max-height: 85vh;
 }
 
+/* Same edge placement for the scrollbar as the detail sheet list. */
 .import-preview-body {
   flex: 1;
   min-height: 0;
-  margin-top: 8px;
+  margin: 8px calc(-1 * var(--dialog-content-padding)) 0 0;
+  padding-right: var(--dialog-content-padding);
   overflow-y: auto;
 }
 
@@ -220,11 +222,12 @@
   font-size: 14px;
 }
 
+/* Stretches into the sheet's side padding so the scrollbar runs along the edge, beside the values rather than over them. */
 .import-sheet-list {
   flex: 1;
   min-height: 0;
-  margin: 0 0 12px;
-  padding: 0;
+  margin: 0 -16px 12px 0;
+  padding: 0 16px 0 0;
   overflow-y: auto;
   list-style: none;
   font-variant-numeric: tabular-nums;
