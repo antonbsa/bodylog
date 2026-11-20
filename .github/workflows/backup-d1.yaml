@@ -52,8 +52,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      # The backup needs only wrangler: a full `npm ci` spends ~1 min extracting every workspace package to disk.
+      # Pinned to the lockfile's version so backups run the same wrangler as deploys.
+      - name: Install wrangler
+        run: npm install --global --no-audit --no-fund "wrangler@$(node -p "require('./package-lock.json').packages['node_modules/wrangler'].version")"
 
       - name: Install age
         run: sudo apt-get update && sudo apt-get install -y age
@@ -64,16 +66,16 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: npx wrangler d1 export DB --remote --env production --skip-confirmation --output "$RUNNER_TEMP/dump.sql"
+        run: wrangler d1 export DB --remote --env production --skip-confirmation --output "$RUNNER_TEMP/dump.sql"
 
       # A dump that doesn't import, or imports empty, is worse than none: fail before uploading it.
       # The import uses the top-level (local-only) binding and a throwaway persist dir, never a remote database.
       - name: Verify the dump imports into a local D1
         working-directory: apps/api
         run: |
-          npx wrangler d1 execute DB --local --persist-to "$RUNNER_TEMP/verify" --file "$RUNNER_TEMP/dump.sql"
+          wrangler d1 execute DB --local --persist-to "$RUNNER_TEMP/verify" --file "$RUNNER_TEMP/dump.sql"
           for table in measurements d1_migrations; do
-            count=$(npx wrangler d1 execute DB --local --persist-to "$RUNNER_TEMP/verify" --json --command "SELECT COUNT(*) AS n FROM $table" | jq '.[0].results[0].n')
+            count=$(wrangler d1 execute DB --local --persist-to "$RUNNER_TEMP/verify" --json --command "SELECT COUNT(*) AS n FROM $table" | jq '.[0].results[0].n')
             echo "$table: $count rows"
             if [ "$count" -eq 0 ]; then
               echo "::error::$table is empty after importing the dump"
