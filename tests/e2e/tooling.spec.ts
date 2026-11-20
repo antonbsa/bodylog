@@ -150,26 +150,18 @@ test("login screen shows invalid password errors", async ({ page }) => {
   )
 })
 
-test("dev login button sends the local password without typing it", async ({
+test("the built login screen leaves out the dev-only Entrar sem senha button", async ({
   page,
 }) => {
   await mockSession(page, false)
-  await page.route("**/api/auth/login", async (route) => {
-    // The e2e server is `vite serve`, so the button carries APP_PASSWORD from `.env.development`.
-    expect(route.request().postDataJSON()).toEqual({ password: "masterpass" })
-
-    await route.fulfill({
-      body: JSON.stringify({ ok: true }),
-      contentType: "application/json",
-      status: 200,
-    })
-  })
-
   await page.goto("/")
-  await expect(page.getByLabel("Senha")).toHaveAttribute("required")
-  await page.getByRole("button", { name: "Entrar sem senha" }).click()
 
-  await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: "Entrar", exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("button", { name: "Entrar sem senha" }),
+  ).toHaveCount(0)
 })
 
 test("login screen opens the app after a valid password", async ({ page }) => {
