@@ -139,15 +139,6 @@ Canonical CSV headers:
 date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
 ```
 
-CSV export uses this full canonical format and omits the internal `id` field.
-CSV import also accepts files without the four new columns (the earlier format) and without the audit timestamps. CSV import should upsert records by `date`; `created_at` and `updated_at` may be
-used as backup metadata when present but should not be required for spreadsheet
-import compatibility.
+CSV export uses this full canonical format and omits the internal `id` field. CSV import identifies columns by header name (the canonical names and the spreadsheet aliases), requires only `date` and `weight_kg`, and upserts records by `date`; the format and the overwrite rules are in the [API contract](api-contract.md#csv-import).
 
-CSV import validates `date` as a real `YYYY-MM-DD` calendar date, not only as a
-string shape. Impossible dates such as `2026-02-30` are rejected.
-
-Numeric values may use dot decimals. Decimal-comma values are accepted only when
-quoted as CSV cells, such as `"71,5"`.
-
-Alternative headers from the current spreadsheet can be mapped later if needed.
+Imported values are validated against the same limits as the form; dates must be real calendar dates, such as `2026-02-28` or `28/02/2026`, never `2026-02-30`.

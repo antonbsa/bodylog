@@ -29,7 +29,7 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0003 — Defer Desktop-optimized Dashboard](0003-defer-desktop-optimized-dashboard.md) · Accepted
 - [0004 — Exclude Google Sheets Integration from V1](0004-exclude-google-sheets-integration-v1.md) · Accepted
 - [0005 — Include CSV Export in V1](0005-include-csv-export-v1.md) · Accepted
-- [0006 — Include CSV Import in V1](0006-include-csv-import-v1.md) · Accepted
+- [0006 — Include CSV Import in V1](0006-include-csv-import-v1.md) · Accepted · amended by 0043
 - [0007 — Enforce One Record per Date](0007-enforce-one-record-per-date.md) · Accepted
 - [0008 — Use Date Form Create-or-edit Behavior](0008-use-date-form-create-or-edit.md) · Accepted
 - [0009 — Require Only Weight in V1](0009-require-only-weight-v1.md) · Accepted
@@ -39,6 +39,7 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0029 — Include Offline-first Logging in V2](0029-include-offline-first-logging-v2.md) · Accepted
 - [0032 — Add Waist, Sleep, Disposition and Notes Fields](0032-add-waist-sleep-disposition-and-notes-fields.md) · Accepted
 - [0035 — Use Seven-day Weekly Target](0035-use-seven-day-weekly-target.md) · Accepted
+- [0043 — Import CSV by Column Name with a Validated Preview](0043-import-csv-by-column-name-with-validated-preview.md) · Accepted · amends 0006
 
 ### Platform
 
