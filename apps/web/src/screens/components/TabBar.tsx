@@ -1,5 +1,9 @@
 import { useLayoutEffect, useRef } from "react"
-import { ChartLineUp, GearSix, House, List, Plus } from "@phosphor-icons/react"
+import { ChartLineUp } from "@phosphor-icons/react/dist/csr/ChartLineUp"
+import { GearSix } from "@phosphor-icons/react/dist/csr/GearSix"
+import { House } from "@phosphor-icons/react/dist/csr/House"
+import { List } from "@phosphor-icons/react/dist/csr/List"
+import { Plus } from "@phosphor-icons/react/dist/csr/Plus"
 import { NavLink, useLocation } from "react-router"
 
 import { useTabNavigate } from "../../hooks/useTabNavigate"

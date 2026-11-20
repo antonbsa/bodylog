@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react"
-import { X } from "@phosphor-icons/react"
+import { X } from "@phosphor-icons/react/dist/csr/X"
 
 import { ToastContext, type ToastApi } from "../hooks/useToast"
 

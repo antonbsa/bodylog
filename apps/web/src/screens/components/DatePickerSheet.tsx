@@ -1,8 +1,9 @@
 import { useState } from "react"
-import { CaretLeft, CaretRight } from "@phosphor-icons/react"
+import { CaretLeft } from "@phosphor-icons/react/dist/csr/CaretLeft"
+import { CaretRight } from "@phosphor-icons/react/dist/csr/CaretRight"
 import { Dialog } from "@radix-ui/themes"
 import { DayPicker, labelDayButton } from "react-day-picker"
-import { ptBR } from "react-day-picker/locale"
+import { ptBR } from "react-day-picker/locale/pt-BR"
 
 import { useRecordedDays } from "../../hooks/useRecordedDays"
 import {

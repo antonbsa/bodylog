@@ -1,4 +1,6 @@
-import { ArrowDown, ArrowUp, Equals } from "@phosphor-icons/react"
+import { ArrowDown } from "@phosphor-icons/react/dist/csr/ArrowDown"
+import { ArrowUp } from "@phosphor-icons/react/dist/csr/ArrowUp"
+import { Equals } from "@phosphor-icons/react/dist/csr/Equals"
 
 import {
   WEEKLY_METRICS,

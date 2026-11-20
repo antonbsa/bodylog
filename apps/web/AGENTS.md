@@ -20,3 +20,7 @@ Frontend conventions for the React/Vite PWA (react-router, TanStack Query, Radix
 
 - The project tokens own the visuals and Radix Themes keeps behavior (ADR 0026, update section): new components use plain CSS with the tokens. Use Radix Themes only where it brings accessible behavior (`Dialog`, `AlertDialog`, `TextField`), styled through the tokens.
 - The `<Theme>` in `main.tsx` follows the resolved theme and points Radix's gray and accent scales at the tokens in `styles.css`. Symptom: a Radix component looks right in one theme and clashes in the other. Why it slips: you usually check only the OS theme you're on. Verify the screen in Ajustes with both light and dark selected.
+
+## Barrel imports
+
+- Import each Phosphor icon from `@phosphor-icons/react/dist/csr/<Icon>` and the day-picker locale from `react-day-picker/locale/pt-BR`; `no-restricted-imports` in `eslint.config.mjs` enforces both. Symptom: the first `npm run dev:lan` load on a phone sits on a blank page for ~15 s. Why it slips: Vite's dev optimizer pre-bundles everything a barrel re-exports (6.4 MB for Phosphor, 1.5 MB for the locales), while desktop loads it from localhost in under a second and the production build tree-shakes it. Verify: `npm run lint` passes, and after a dev load `ls apps/web/node_modules/.vite/deps/ | grep -E "^(@phosphor-icons_react|react-day-picker_locale)\.js$"` prints nothing.

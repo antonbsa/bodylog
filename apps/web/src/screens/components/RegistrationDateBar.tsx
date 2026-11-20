@@ -1,4 +1,5 @@
-import { CaretLeft, CaretRight } from "@phosphor-icons/react"
+import { CaretLeft } from "@phosphor-icons/react/dist/csr/CaretLeft"
+import { CaretRight } from "@phosphor-icons/react/dist/csr/CaretRight"
 
 import { shiftIsoDate } from "../../utils/date-format"
 import { DatePickerSheet } from "./DatePickerSheet"
