@@ -34,7 +34,8 @@
   border-top: 1px solid var(--line);
 }
 
-.set-format + .set-row {
+.set-split + .set-row,
+.set-row + .set-split {
   border-top: 1px solid var(--line);
 }
 
@@ -42,28 +43,44 @@
   color: var(--danger);
 }
 
-.set-hint {
-  margin: 0 0 12px;
-  color: var(--fg-2);
-  font-size: 14px;
-  line-height: 1.4;
+/* Import row: the button keeps the row's tap area and the info button opens the format help. */
+.set-split {
+  display: flex;
+  align-items: center;
 }
 
-.set-format {
-  padding-bottom: 12px;
+.set-split .set-row {
+  flex: 1;
+}
+
+.set-info {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--fg-2);
+  cursor: pointer;
+}
+
+.csv-format p {
+  margin: 0 0 12px;
   color: var(--fg-2);
   font-size: 14px;
   line-height: 1.45;
 }
 
-.set-format summary {
-  min-height: 32px;
+.csv-format p:first-of-type {
   color: var(--fg);
-  cursor: pointer;
+  font-size: 15px;
 }
 
-.set-format p {
-  margin: 8px 0 0;
+.csv-format strong {
+  font-weight: 600;
 }
 
 /* Import preview dialog: header and actions stay put while the body scrolls. */
@@ -111,66 +128,123 @@
   font-size: 12px;
 }
 
-.import-details {
-  margin: 0 0 12px;
-  font-size: 14px;
-}
-
-.import-details summary {
-  display: flex;
-  justify-content: space-between;
-  min-height: 32px;
-  cursor: pointer;
-}
-
-.import-details summary span {
-  color: var(--fg-2);
-}
-
-.import-details ul,
-.import-errors {
-  margin: 4px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
 .import-heading {
-  margin: 0 0 4px;
+  margin: 4px 0 8px;
   font-size: 15px;
   font-weight: 600;
 }
 
-.import-errors li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 8px;
-  padding: 8px 0;
-  border-top: 1px solid var(--line);
-  font-size: 14px;
+/* Inset grouped list: each group is one tappable row with a trailing chevron that opens the full list in a sheet. */
+.import-list {
+  margin: 0 0 12px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--surface-2);
+  list-style: none;
 }
 
-.import-errors code {
-  font-family: var(--font-mono);
+.import-list li + li {
+  border-top: 1px solid var(--line);
+}
+
+.import-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 12px 10px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.import-row:active {
+  background: var(--line);
+}
+
+.import-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.import-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.import-row-text strong {
+  font-weight: 600;
+}
+
+.import-row-message {
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.import-row-count {
+  flex-shrink: 0;
+  color: var(--fg-2);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.import-row-caret {
+  flex-shrink: 0;
   color: var(--fg-2);
 }
 
-.import-error-group summary {
+/* Detail sheet: the only scroll for long lists, with the title and close button kept in view. */
+.rt-DialogContent.import-sheet {
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+.import-sheet-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.import-sheet-subtitle {
+  margin: 2px 0 12px;
+  color: var(--fg-2);
+  font-size: 14px;
+}
+
+.import-sheet-list {
+  flex: 1;
+  min-height: 0;
+  margin: 0 0 12px;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.import-sheet-list li {
+  display: flex;
+  justify-content: space-between;
   gap: 12px;
-  align-items: flex-start;
-  padding: 8px 0;
+  padding: 10px 0;
+  font-size: 15px;
+}
+
+.import-sheet-list li + li {
   border-top: 1px solid var(--line);
 }
 
-.import-error-group summary .import-error-message {
-  display: flex;
-  flex-direction: column;
-  color: var(--danger);
-}
-
-.import-error-message strong {
-  color: var(--fg);
-}
-
-.import-error-group summary > span:last-child {
-  flex-shrink: 0;
+.import-sheet-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--fg-2);
+  text-align: right;
 }

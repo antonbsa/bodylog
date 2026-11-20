@@ -11,6 +11,7 @@ import {
 } from "../api/measurements"
 import type { CsvImportPreview } from "../../../../types/measurements"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
+import { CsvFormatDialog } from "./components/CsvFormatDialog"
 import { ImportPreviewDialog } from "./components/ImportPreviewDialog"
 import { useToast } from "../hooks/useToast"
 import {
@@ -154,34 +155,17 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
         >
           {isExporting ? "Exportando..." : "Exportar CSV"}
         </button>
-        <button
-          className="set-row"
-          disabled={isPreviewing || isImporting}
-          onClick={() => importFileInputRef.current?.click()}
-          type="button"
-        >
-          {isPreviewing ? "Analisando..." : "Importar CSV"}
-        </button>
-        <p className="set-hint">
-          Colunas obrigatórias: Data e Peso. Datas em DD/MM/AAAA ou AAAA-MM-DD.
-        </p>
-        <details className="set-format">
-          <summary>Ver formato</summary>
-          <p>
-            Colunas reconhecidas pelo nome do cabeçalho: Data, Peso, Gordura,
-            Músculo, Metabolismo basal, Cintura, Sono, Disposição e Notas. Os
-            nomes do arquivo exportado pelo app também funcionam.
-          </p>
-          <p>
-            Números com ponto ou vírgula decimal, sem unidades (72,5 e não 72,5
-            kg). O ponto de milhar só vale no metabolismo basal (1.696). O
-            separador pode ser vírgula ou ponto e vírgula.
-          </p>
-          <p>
-            Colunas desconhecidas, como IMC, são ignoradas. Colunas ausentes
-            mantêm o valor já salvo; célula vazia limpa o valor.
-          </p>
-        </details>
+        <div className="set-split">
+          <button
+            className="set-row"
+            disabled={isPreviewing || isImporting}
+            onClick={() => importFileInputRef.current?.click()}
+            type="button"
+          >
+            {isPreviewing ? "Analisando..." : "Importar CSV"}
+          </button>
+          <CsvFormatDialog />
+        </div>
         <input
           ref={importFileInputRef}
           accept=".csv,text/csv"

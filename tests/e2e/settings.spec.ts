@@ -222,20 +222,25 @@ async function mockPreview(page: Page, preview: unknown = PREVIEW) {
 const dialog = (page: Page) =>
   page.getByRole("dialog", { name: "Importar CSV" })
 
-test("Ajustes describes the import format before a file is chosen", async ({
+test("the info button beside Importar CSV explains the file format", async ({
   page,
 }) => {
   await mockApi(page)
   await page.goto("/ajustes")
 
+  const help = page.getByRole("dialog", { name: "Formato do CSV" })
+
+  await expect(page.getByText("Colunas obrigatórias")).toBeHidden()
+  await page.getByRole("button", { name: "Formato do CSV" }).click()
+  await expect(help).toContainText(
+    "Colunas obrigatórias: Data e Peso. Datas em DD/MM/AAAA ou AAAA-MM-DD.",
+  )
+  await expect(help).toContainText("Colunas desconhecidas, como IMC")
+  await help.getByRole("button", { name: "Fechar" }).click()
+  await expect(help).toHaveCount(0)
   await expect(
-    page.getByText(
-      "Colunas obrigatórias: Data e Peso. Datas em DD/MM/AAAA ou AAAA-MM-DD.",
-    ),
-  ).toBeVisible()
-  await expect(page.getByText("Colunas desconhecidas, como IMC")).toBeHidden()
-  await page.getByText("Ver formato").click()
-  await expect(page.getByText("Colunas desconhecidas, como IMC")).toBeVisible()
+    page.getByRole("button", { name: "Formato do CSV" }),
+  ).toBeFocused()
 })
 
 test("choosing a file shows the preview and writes nothing until confirmed", async ({
@@ -256,13 +261,14 @@ test("choosing a file shows the preview and writes nothing until confirmed", asy
 
   await expect(dialog(page)).toContainText("Período: 25/06/2026 a 28/06/2026")
   await expect(dialog(page)).toContainText("Colunas ignoradas: IMC")
-  await expect(dialog(page)).toContainText("SonoNúmero inválido.1 linha")
-  await expect(page.getByText("Linha 5", { exact: true })).toBeHidden()
-  await dialog(page).getByText("1 linha").click()
-  await expect(page.getByText("Linha 5", { exact: true })).toBeVisible()
-  await expect(page.getByText("28/06/2026", { exact: true })).toBeHidden()
-  await dialog(page).getByText("Ver 1 data").click()
-  await expect(page.getByText("28/06/2026", { exact: true })).toBeVisible()
+  await expect(
+    dialog(page).getByRole("button", { name: "Sono Número inválido. 1 linha" }),
+  ).toBeVisible()
+  await expect(
+    dialog(page).getByRole("button", {
+      name: "Datas que serão atualizadas 1 data",
+    }),
+  ).toBeVisible()
   expect(imports).toBe(0)
 
   await dialog(page)
@@ -274,6 +280,44 @@ test("choosing a file shows the preview and writes nothing until confirmed", asy
   )
   await expect(dialog(page)).toHaveCount(0)
   expect(imports).toBe(1)
+})
+
+test("each preview group opens its full list in a sheet", async ({ page }) => {
+  await mockApi(page)
+  await mockPreview(page, {
+    ...PREVIEW,
+    counts: { created: 2, invalid: 40, noMeasurement: 0, updated: 0 },
+    invalidRows: Array.from({ length: 40 }, (_, index) => ({
+      column: "Data",
+      message: "Data inválida. Use DD/MM/AAAA ou AAAA-MM-DD.",
+      row: index + 2,
+      value: `${index + 1}/05`,
+    })),
+    updatedDates: [],
+  })
+  await page.goto("/ajustes")
+  await importCsv(page)
+
+  const group = dialog(page).getByRole("button", {
+    name: /^Data .* 40 linhas$/,
+  })
+
+  await expect(dialog(page).getByText("Linha 2", { exact: true })).toHaveCount(
+    0,
+  )
+  await group.click()
+
+  const sheet = page.getByRole("dialog", { name: "Data" })
+
+  await expect(sheet).toContainText(
+    "Data inválida. Use DD/MM/AAAA ou AAAA-MM-DD.",
+  )
+  await expect(sheet.getByRole("listitem")).toHaveCount(40)
+  await expect(sheet.getByRole("listitem").last()).toHaveText("Linha 4140/05")
+  await sheet.getByRole("button", { name: "Fechar" }).click()
+  await expect(sheet).toHaveCount(0)
+  await expect(dialog(page)).toBeVisible()
+  await expect(group).toBeFocused()
 })
 
 test("cancelling the preview leaves the data unchanged", async ({ page }) => {

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+import { CaretRight } from "@phosphor-icons/react"
 import { Dialog, Flex } from "@radix-ui/themes"
 
 import { Button } from "../../components/Button"
@@ -14,6 +16,12 @@ type ImportPreviewDialogProps = {
   onCancel: () => void
   onConfirm: (skipInvalid: boolean) => void
   preview: CsvImportPreview | null
+}
+
+type Detail = {
+  items: Array<{ key: string; label: string; value?: string }>
+  subtitle: string
+  title: string
 }
 
 /** What the import would do, shown before anything is written. */
@@ -56,22 +64,6 @@ export function ImportPreviewDialog({
               <Count label="inválidas" value={preview.counts.invalid} />
             </dl>
 
-            {preview.updatedDates.length > 0 && (
-              <details className="import-details">
-                <summary>
-                  Datas que serão atualizadas
-                  <span>
-                    Ver {plural(preview.updatedDates.length, "data", "datas")}
-                  </span>
-                </summary>
-                <ul>
-                  {preview.updatedDates.map((date) => (
-                    <li key={date}>{formatDisplayDateFromIso(date)}</li>
-                  ))}
-                </ul>
-              </details>
-            )}
-
             {preview.ignoredColumns.length > 0 && (
               <p className="import-note">
                 Colunas ignoradas: {preview.ignoredColumns.join(", ")}
@@ -79,33 +71,54 @@ export function ImportPreviewDialog({
             )}
 
             {preview.invalidRows.length > 0 && (
-              <section aria-label="Linhas inválidas">
-                <h3 className="import-heading">Linhas inválidas</h3>
-                {groupImportErrors(preview.invalidRows).map((group) => (
-                  <details
-                    className="import-details import-error-group"
-                    key={`${group.column}-${group.message}`}
-                  >
-                    <summary>
-                      <span className="import-error-message">
+              <section aria-labelledby="import-invalid-heading">
+                <h3 className="import-heading" id="import-invalid-heading">
+                  Linhas inválidas
+                </h3>
+                <ul className="import-list">
+                  {groupImportErrors(preview.invalidRows).map((group) => (
+                    <li key={`${group.column}-${group.message}`}>
+                      <DetailRow
+                        count={plural(group.errors.length, "linha", "linhas")}
+                        detail={{
+                          items: group.errors.map((error, index) => ({
+                            key: `${error.row}-${index}`,
+                            label: `Linha ${error.row}`,
+                            value: error.value,
+                          })),
+                          subtitle: group.message,
+                          title: group.column || "Arquivo",
+                        }}
+                      >
                         {group.column && <strong>{group.column}</strong>}
-                        {group.message}
-                      </span>
-                      <span>
-                        {plural(group.errors.length, "linha", "linhas")}
-                      </span>
-                    </summary>
-                    <ul className="import-errors">
-                      {group.errors.map((error, index) => (
-                        <li key={`${error.row}-${index}`}>
-                          <strong>Linha {error.row}</strong>
-                          {error.value && <code>{error.value}</code>}
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                ))}
+                        <span className="import-row-message">
+                          {group.message}
+                        </span>
+                      </DetailRow>
+                    </li>
+                  ))}
+                </ul>
               </section>
+            )}
+
+            {preview.updatedDates.length > 0 && (
+              <ul className="import-list">
+                <li>
+                  <DetailRow
+                    count={plural(preview.updatedDates.length, "data", "datas")}
+                    detail={{
+                      items: preview.updatedDates.map((date) => ({
+                        key: date,
+                        label: formatDisplayDateFromIso(date),
+                      })),
+                      subtitle: "Estas datas já têm medida salva.",
+                      title: "Datas que serão atualizadas",
+                    }}
+                  >
+                    <strong>Datas que serão atualizadas</strong>
+                  </DetailRow>
+                </li>
+              </ul>
             )}
           </div>
         )}
@@ -142,5 +155,54 @@ function Count({ label, value }: { label: string; value: number }) {
       <dd>{value}</dd>
       <dt>{label}</dt>
     </div>
+  )
+}
+
+/** A full-width row that opens the complete list in a sheet, so the preview keeps one row per group however long the list is. */
+function DetailRow({
+  children,
+  count,
+  detail,
+}: {
+  children: ReactNode
+  count: string
+  detail: Detail
+}) {
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger>
+        <button className="import-row" type="button">
+          <span className="import-row-text">{children}</span>
+          <span className="import-row-count">{count}</span>
+          <CaretRight
+            aria-hidden
+            className="import-row-caret"
+            size={16}
+            weight="bold"
+          />
+        </button>
+      </Dialog.Trigger>
+      <Dialog.Content aria-describedby={undefined} className="import-sheet">
+        <Dialog.Title className="import-sheet-title">
+          {detail.title}
+        </Dialog.Title>
+        <p className="import-sheet-subtitle">{detail.subtitle}</p>
+        <ul className="import-sheet-list">
+          {detail.items.map((item) => (
+            <li key={item.key}>
+              <span>{item.label}</span>
+              {item.value !== undefined && (
+                <span className="import-sheet-value">{item.value}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+        <Dialog.Close>
+          <Button fullWidth type="button" variant="secondary">
+            Fechar
+          </Button>
+        </Dialog.Close>
+      </Dialog.Content>
+    </Dialog.Root>
   )
 }

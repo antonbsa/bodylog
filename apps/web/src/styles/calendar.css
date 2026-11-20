@@ -1,5 +1,6 @@
-/* Bottom-sheet calendar (react-day-picker in a Radix Dialog), colors from tokens only. */
-.rt-DialogContent.date-sheet {
+/* Bottom sheets (the calendar and the import detail list) in a Radix Dialog, colors from tokens only. */
+.rt-DialogContent.date-sheet,
+.rt-DialogContent.import-sheet {
   position: fixed;
   left: 50%;
   bottom: 0;
@@ -22,7 +23,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rt-DialogContent.date-sheet {
+  .rt-DialogContent.date-sheet,
+  .rt-DialogContent.import-sheet {
     animation: none;
   }
 }
