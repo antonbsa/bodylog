@@ -1,9 +1,16 @@
 import type {
   CsvImportPreview,
   CsvImportResult,
+  CsvImportRowError,
 } from "../../../../types/measurements"
 
-function plural(count: number, one: string, many: string): string {
+export type ImportErrorGroup = {
+  column: string
+  errors: CsvImportRowError[]
+  message: string
+}
+
+export function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`
 }
 
@@ -28,4 +35,28 @@ export function getImportAction(
   return preview.counts.invalid > 0
     ? { label: "Pular inválidas e importar", skipInvalid: true }
     : { label: "Confirmar", skipInvalid: false }
+}
+
+/** Groups row errors by column and message, in the order each group first appears in the file. */
+export function groupImportErrors(
+  errors: CsvImportRowError[],
+): ImportErrorGroup[] {
+  const groups = new Map<string, ImportErrorGroup>()
+
+  for (const error of errors) {
+    const key = JSON.stringify([error.column, error.message])
+    const group = groups.get(key)
+
+    if (group) {
+      group.errors.push(error)
+    } else {
+      groups.set(key, {
+        column: error.column,
+        errors: [error],
+        message: error.message,
+      })
+    }
+  }
+
+  return [...groups.values()]
 }

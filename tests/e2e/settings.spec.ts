@@ -256,8 +256,10 @@ test("choosing a file shows the preview and writes nothing until confirmed", asy
 
   await expect(dialog(page)).toContainText("Período: 25/06/2026 a 28/06/2026")
   await expect(dialog(page)).toContainText("Colunas ignoradas: IMC")
-  await expect(dialog(page)).toContainText("Linha 5 · Sono")
-  await expect(dialog(page)).toContainText("Número inválido.")
+  await expect(dialog(page)).toContainText("SonoNúmero inválido.1 linha")
+  await expect(page.getByText("Linha 5", { exact: true })).toBeHidden()
+  await dialog(page).getByText("1 linha").click()
+  await expect(page.getByText("Linha 5", { exact: true })).toBeVisible()
   await expect(page.getByText("28/06/2026", { exact: true })).toBeHidden()
   await dialog(page).getByText("Ver 1 data").click()
   await expect(page.getByText("28/06/2026", { exact: true })).toBeVisible()

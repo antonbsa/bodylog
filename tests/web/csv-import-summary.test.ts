@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   formatImportResultMessage,
   getImportAction,
+  groupImportErrors,
 } from "../../apps/web/src/utils/csv-import-summary"
 import type { CsvImportPreview } from "../../types/measurements"
 
@@ -59,5 +60,28 @@ describe("getImportAction", () => {
         counts: { ...preview.counts, invalid: 3, noMeasurement: 1 },
       }),
     ).toBeNull()
+  })
+})
+
+describe("groupImportErrors", () => {
+  it("groups by column and message in file order, keeping every row", () => {
+    const groups = groupImportErrors([
+      { column: "Data", message: "Data inválida.", row: 2, value: "13/05" },
+      { column: "Sono", message: "Número inválido.", row: 2, value: "6-7" },
+      { column: "Data", message: "Data inválida.", row: 3, value: "14/05" },
+      { column: "Cintura", message: "Número inválido.", row: 4, value: "x" },
+    ])
+
+    expect(
+      groups.map((group) => [
+        group.column,
+        group.message,
+        group.errors.map((error) => error.row),
+      ]),
+    ).toEqual([
+      ["Data", "Data inválida.", [2, 3]],
+      ["Sono", "Número inválido.", [2]],
+      ["Cintura", "Número inválido.", [4]],
+    ])
   })
 })

@@ -3,7 +3,11 @@ import { Dialog, Flex } from "@radix-ui/themes"
 import { Button } from "../../components/Button"
 import type { CsvImportPreview } from "../../../../../types/measurements"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
-import { getImportAction } from "../../utils/csv-import-summary"
+import {
+  getImportAction,
+  groupImportErrors,
+  plural,
+} from "../../utils/csv-import-summary"
 
 type ImportPreviewDialogProps = {
   isImporting: boolean
@@ -57,8 +61,7 @@ export function ImportPreviewDialog({
                 <summary>
                   Datas que serão atualizadas
                   <span>
-                    Ver {preview.updatedDates.length}{" "}
-                    {preview.updatedDates.length === 1 ? "data" : "datas"}
+                    Ver {plural(preview.updatedDates.length, "data", "datas")}
                   </span>
                 </summary>
                 <ul>
@@ -78,18 +81,30 @@ export function ImportPreviewDialog({
             {preview.invalidRows.length > 0 && (
               <section aria-label="Linhas inválidas">
                 <h3 className="import-heading">Linhas inválidas</h3>
-                <ul className="import-errors">
-                  {preview.invalidRows.map((error, index) => (
-                    <li key={`${error.row}-${error.column}-${index}`}>
-                      <strong>
-                        Linha {error.row}
-                        {error.column && ` · ${error.column}`}
-                      </strong>
-                      {error.value && <code>{error.value}</code>}
-                      <span>{error.message}</span>
-                    </li>
-                  ))}
-                </ul>
+                {groupImportErrors(preview.invalidRows).map((group) => (
+                  <details
+                    className="import-details import-error-group"
+                    key={`${group.column}-${group.message}`}
+                  >
+                    <summary>
+                      <span className="import-error-message">
+                        {group.column && <strong>{group.column}</strong>}
+                        {group.message}
+                      </span>
+                      <span>
+                        {plural(group.errors.length, "linha", "linhas")}
+                      </span>
+                    </summary>
+                    <ul className="import-errors">
+                      {group.errors.map((error, index) => (
+                        <li key={`${error.row}-${index}`}>
+                          <strong>Linha {error.row}</strong>
+                          {error.value && <code>{error.value}</code>}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                ))}
               </section>
             )}
           </div>

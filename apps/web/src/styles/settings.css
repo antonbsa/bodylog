@@ -154,7 +154,23 @@
   color: var(--fg-2);
 }
 
-.import-errors span {
-  flex-basis: 100%;
+.import-error-group summary {
+  gap: 12px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.import-error-group summary .import-error-message {
+  display: flex;
+  flex-direction: column;
   color: var(--danger);
+}
+
+.import-error-message strong {
+  color: var(--fg);
+}
+
+.import-error-group summary > span:last-child {
+  flex-shrink: 0;
 }
