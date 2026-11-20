@@ -7,8 +7,12 @@ import { invalidateMeasurementData } from "../api/queryKeys"
 import {
   exportMeasurementsCsv,
   importMeasurementsCsv,
+  previewMeasurementsCsv,
 } from "../api/measurements"
+import type { CsvImportPreview } from "../../../../types/measurements"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
+import { CsvFormatDialog } from "./components/CsvFormatDialog"
+import { ImportPreviewDialog } from "./components/ImportPreviewDialog"
 import { useToast } from "../hooks/useToast"
 import {
   getThemePreference,
@@ -16,10 +20,7 @@ import {
   subscribeToTheme,
   type ThemePreference,
 } from "../theme"
-import {
-  formatImportPartialMessage,
-  formatImportSuccessMessage,
-} from "../utils/csv-import-summary"
+import { formatImportResultMessage } from "../utils/csv-import-summary"
 
 const THEME_OPTIONS: Array<{ label: string; value: ThemePreference }> = [
   { label: "Sistema", value: "system" },
@@ -39,7 +40,12 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
     getThemePreference,
   )
   const [isExporting, setIsExporting] = useState(false)
+  const [isPreviewing, setIsPreviewing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [pendingImport, setPendingImport] = useState<{
+    file: File
+    preview: CsvImportPreview
+  } | null>(null)
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const importFileInputRef = useRef<HTMLInputElement | null>(null)
@@ -62,30 +68,39 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
       .finally(() => setIsExporting(false))
   }
 
-  function handleImportCsv(file: File | undefined) {
+  function handleChooseImportFile(file: File | undefined) {
+    if (importFileInputRef.current) {
+      importFileInputRef.current.value = ""
+    }
+
     if (!file) {
+      return
+    }
+
+    setIsPreviewing(true)
+
+    previewMeasurementsCsv(file)
+      .then((preview) => setPendingImport({ file, preview }))
+      .catch((error: unknown) => toast.showError(formatApiErrorMessage(error)))
+      .finally(() => setIsPreviewing(false))
+  }
+
+  function handleConfirmImport(skipInvalid: boolean) {
+    if (!pendingImport) {
       return
     }
 
     setIsImporting(true)
 
-    importMeasurementsCsv(file)
-      .then((summary) => {
-        invalidateMeasurementData(queryClient)
-
-        if (summary.errors.length > 0) {
-          toast.showError(formatImportPartialMessage(summary))
-        } else {
-          toast.showSuccess(formatImportSuccessMessage(summary))
-        }
+    importMeasurementsCsv(pendingImport.file, { skipInvalid })
+      .then(async (result) => {
+        await invalidateMeasurementData(queryClient)
+        toast.showSuccess(formatImportResultMessage(result))
       })
       .catch((error: unknown) => toast.showError(formatApiErrorMessage(error)))
       .finally(() => {
         setIsImporting(false)
-
-        if (importFileInputRef.current) {
-          importFileInputRef.current.value = ""
-        }
+        setPendingImport(null)
       })
   }
 
@@ -140,19 +155,22 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
         >
           {isExporting ? "Exportando..." : "Exportar CSV"}
         </button>
-        <button
-          className="set-row"
-          disabled={isImporting}
-          onClick={() => importFileInputRef.current?.click()}
-          type="button"
-        >
-          {isImporting ? "Importando..." : "Importar CSV"}
-        </button>
+        <div className="set-split">
+          <button
+            className="set-row"
+            disabled={isPreviewing || isImporting}
+            onClick={() => importFileInputRef.current?.click()}
+            type="button"
+          >
+            {isPreviewing ? "Analisando..." : "Importar CSV"}
+          </button>
+          <CsvFormatDialog />
+        </div>
         <input
           ref={importFileInputRef}
           accept=".csv,text/csv"
           hidden
-          onChange={(event) => handleImportCsv(event.target.files?.[0])}
+          onChange={(event) => handleChooseImportFile(event.target.files?.[0])}
           type="file"
         />
         <button
@@ -163,6 +181,13 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           Sair
         </button>
       </div>
+
+      <ImportPreviewDialog
+        isImporting={isImporting}
+        onCancel={() => setPendingImport(null)}
+        onConfirm={handleConfirmImport}
+        preview={pendingImport?.preview ?? null}
+      />
 
       <ConfirmationDialog
         confirmLabel="Sair"

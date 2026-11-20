@@ -271,12 +271,14 @@ The system must allow the user to import historical measurements from a CSV file
 
 #### Acceptance Criteria
 
-- The user can upload a CSV file.
-- The system validates headers.
-- The system validates rows.
-- The system upserts records by date.
-- The system returns an import summary.
-- Invalid rows are reported clearly.
+- The user can upload a CSV file whose columns are identified by header name (canonical, pt-BR or spreadsheet names; unknown columns are ignored and listed), with `,` or `;` delimiters and UTF-8 or Windows-1252 encoding.
+- Settings describes the supported format before a file is chosen.
+- Only date and weight are required; dates are `YYYY-MM-DD` or `DD/MM/YYYY`, and numbers accept a dot or comma decimal.
+- The system validates the file and each row, and shows a preview before writing: period, counts of new, updated, no-measurement and invalid rows, the dates that will be updated, the ignored columns and every invalid row with its reason.
+- Nothing is written until the user confirms; cancelling leaves the data unchanged.
+- With invalid rows, the user chooses between importing only the valid rows and cancelling.
+- The system upserts records by date, replacing only the fields whose column is in the file, and writes all valid rows or none.
+- The system reports how many measurements were imported (new and updated) and how many invalid rows were skipped.
 
 ---
 

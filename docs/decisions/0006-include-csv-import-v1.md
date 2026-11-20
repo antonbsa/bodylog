@@ -1,6 +1,7 @@
 ---
 status: Accepted
 area: product
+amended-by: ["0043"]
 ---
 
 # 0006 — Include CSV Import in V1

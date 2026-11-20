@@ -1,7 +1,8 @@
 import { createFallbackApiError, throwApiError } from "../../../../infra/errors"
 import { api } from "./client"
 import type {
-  CsvImportSummary,
+  CsvImportPreview,
+  CsvImportResult,
   Measurement,
   MeasurementInput,
   MeasurementLookup,
@@ -116,17 +117,20 @@ export async function exportMeasurementsCsv(): Promise<Blob> {
   return response.blob()
 }
 
-export async function importMeasurementsCsv(
+async function postCsv<T>(
+  path: string,
   file: File,
-): Promise<CsvImportSummary> {
+  skipInvalid: boolean,
+): Promise<T> {
   const formData = new FormData()
 
   formData.append("file", file)
 
-  const response = await api("/api/import/csv", {
-    body: formData,
-    method: "POST",
-  })
+  if (skipInvalid) {
+    formData.append("skipInvalid", "true")
+  }
+
+  const response = await api(path, { body: formData, method: "POST" })
 
   if (!response.ok) {
     await throwApiError(response, {
@@ -135,9 +139,7 @@ export async function importMeasurementsCsv(
     })
   }
 
-  const payload = (await response
-    .json()
-    .catch(() => null)) as CsvImportSummary | null
+  const payload = (await response.json().catch(() => null)) as T | null
 
   if (!payload) {
     throw createFallbackApiError({
@@ -147,4 +149,16 @@ export async function importMeasurementsCsv(
   }
 
   return payload
+}
+
+/** Validates the file on the server without writing anything. */
+export function previewMeasurementsCsv(file: File): Promise<CsvImportPreview> {
+  return postCsv("/api/import/csv/preview", file, false)
+}
+
+export function importMeasurementsCsv(
+  file: File,
+  options: { skipInvalid: boolean },
+): Promise<CsvImportResult> {
+  return postCsv("/api/import/csv", file, options.skipInvalid)
 }

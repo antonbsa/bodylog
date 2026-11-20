@@ -79,20 +79,22 @@ export function createNotFoundError(code: NotFoundErrorCode): NotFoundError {
   return new NotFoundError(NOT_FOUND_ERROR_DETAILS[code])
 }
 
-export function createCsvImportValidationError(summary: {
-  errors: Array<{
-    message: string
-    row: number
-  }>
-}): ValidationError {
-  const firstError = summary.errors[0]
-  const firstErrorMessage = firstError?.message.replace(/\.+$/, "")
+export function createCsvFileError(
+  message: string,
+  action = "Revise o arquivo CSV e tente novamente.",
+): ValidationError {
+  return new ValidationError({ action, message })
+}
 
+export function createCsvInvalidRowsError(
+  invalidRows: number,
+): ValidationError {
   return new ValidationError({
-    action: firstErrorMessage
-      ? `Corrija a linha ${firstError.row}: ${firstErrorMessage}.`
-      : "Revise o arquivo CSV e tente novamente.",
-    message: "Nenhum registro foi importado.",
+    action: "Corrija o arquivo ou pule as linhas inválidas na importação.",
+    message:
+      invalidRows === 1
+        ? "O arquivo tem 1 linha inválida. Nenhuma medida foi importada."
+        : `O arquivo tem ${invalidRows} linhas inválidas. Nenhuma medida foi importada.`,
   })
 }
 

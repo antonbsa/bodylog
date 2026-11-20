@@ -205,60 +205,186 @@ test("an export failure stays until dismissed with the full text", async ({
   await expect(failure(page)).toHaveCount(0)
 })
 
-test("import shows the imported count", async ({ page }) => {
-  await mockApi(page)
-  await page.route("**/api/import/csv", (route) =>
-    json(route, { created: 20, errors: [], skipped: 1, updated: 4 }),
-  )
-  await page.goto("/ajustes")
-  await importCsv(page)
+const PREVIEW = {
+  counts: { created: 2, invalid: 1, noMeasurement: 1, updated: 1 },
+  ignoredColumns: ["IMC"],
+  invalidRows: [
+    { column: "Sono", message: "Número inválido.", row: 5, value: "6-7" },
+  ],
+  period: { from: "2026-06-25", to: "2026-06-28" },
+  updatedDates: ["2026-06-28"],
+}
 
-  await expect(toast(page)).toHaveText("24 medidas importadas")
-})
+async function mockPreview(page: Page, preview: unknown = PREVIEW) {
+  await page.route("**/api/import/csv/preview", (route) => json(route, preview))
+}
 
-test("import of a single measurement uses the singular", async ({ page }) => {
-  await mockApi(page)
-  await page.route("**/api/import/csv", (route) =>
-    json(route, { created: 1, errors: [], skipped: 0, updated: 0 }),
-  )
-  await page.goto("/ajustes")
-  await importCsv(page)
+const dialog = (page: Page) =>
+  page.getByRole("dialog", { name: "Importar CSV" })
 
-  await expect(toast(page)).toHaveText("1 medida importada")
-})
-
-test("import with row errors shows a persistent toast with the partial message", async ({
+test("the info button beside Importar CSV explains the file format", async ({
   page,
 }) => {
   await mockApi(page)
-  await page.route("**/api/import/csv", (route) =>
-    json(route, {
-      created: 2,
-      errors: [{ message: "peso inválido", row: 3 }],
-      skipped: 0,
-      updated: 0,
-    }),
+  await page.goto("/ajustes")
+
+  const help = page.getByRole("dialog", { name: "Formato do CSV" })
+
+  await expect(page.getByText("Colunas obrigatórias")).toBeHidden()
+  await page.getByRole("button", { name: "Formato do CSV" }).click()
+  await expect(help).toContainText(
+    "Colunas obrigatórias: Data e Peso. Datas em DD/MM/AAAA ou AAAA-MM-DD.",
   )
+  await expect(help).toContainText("Colunas desconhecidas, como IMC")
+  await help.getByRole("button", { name: "Fechar" }).click()
+  await expect(help).toHaveCount(0)
+  await expect(
+    page.getByRole("button", { name: "Formato do CSV" }),
+  ).toBeFocused()
+})
+
+test("choosing a file shows the preview and writes nothing until confirmed", async ({
+  page,
+}) => {
+  await mockApi(page)
+  await mockPreview(page)
+
+  let imports = 0
+
+  await page.route("**/api/import/csv", (route) => {
+    imports += 1
+
+    return json(route, { created: 2, skippedInvalid: 1, updated: 1 })
+  })
   await page.goto("/ajustes")
   await importCsv(page)
 
-  await expect(failure(page)).toContainText(
-    "Importação parcial: 2 criados, 0 atualizados, 0 ignorados, 1 erros. Primeiro erro: linha 3, peso inválido.",
+  await expect(dialog(page)).toContainText("Período: 25/06/2026 a 28/06/2026")
+  await expect(dialog(page)).toContainText("Colunas ignoradas: IMC")
+  await expect(
+    dialog(page).getByRole("button", { name: "Sono: número inválido 1 linha" }),
+  ).toBeVisible()
+  await expect(
+    dialog(page).getByRole("button", {
+      name: "Datas que serão atualizadas 1 data",
+    }),
+  ).toBeVisible()
+  expect(imports).toBe(0)
+
+  await dialog(page)
+    .getByRole("button", { name: "Pular inválidas e importar" })
+    .click()
+
+  await expect(toast(page)).toHaveText(
+    "3 medidas importadas (2 novas, 1 atualizada) · 1 inválida pulada",
   )
-  await page.waitForTimeout(3500)
-  await expect(failure(page)).toBeVisible()
-  await failure(page).getByRole("button", { name: "Fechar" }).click()
-  await expect(failure(page)).toHaveCount(0)
+  await expect(dialog(page)).toHaveCount(0)
+  expect(imports).toBe(1)
 })
 
-test("an import failure stays until dismissed", async ({ page }) => {
+test("each preview group opens its full list in a sheet", async ({ page }) => {
   await mockApi(page)
-  await page.route("**/api/import/csv", (route) =>
+  await mockPreview(page, {
+    ...PREVIEW,
+    counts: { created: 2, invalid: 40, noMeasurement: 0, updated: 0 },
+    invalidRows: Array.from({ length: 40 }, (_, index) => ({
+      column: "Data",
+      message: "Data inválida. Use DD/MM/AAAA ou AAAA-MM-DD.",
+      row: index + 2,
+      value: `${index + 1}/05`,
+    })),
+    updatedDates: [],
+  })
+  await page.goto("/ajustes")
+  await importCsv(page)
+
+  const group = dialog(page).getByRole("button", {
+    name: /^Data .* 40 linhas$/,
+  })
+
+  await expect(dialog(page).getByText("Linha 2", { exact: true })).toHaveCount(
+    0,
+  )
+  await group.click()
+
+  const sheet = page.getByRole("dialog", { name: "Data inválida" })
+
+  await expect(sheet).toContainText("Use DD/MM/AAAA ou AAAA-MM-DD.")
+  await expect(sheet.getByRole("listitem")).toHaveCount(40)
+  await expect(sheet.getByRole("listitem").last()).toHaveText("Linha 4140/05")
+  await sheet.getByRole("button", { name: "Fechar" }).click()
+  await expect(sheet).toHaveCount(0)
+  await expect(dialog(page)).toBeVisible()
+  await expect(group).toBeFocused()
+})
+
+test("cancelling the preview leaves the data unchanged", async ({ page }) => {
+  await mockApi(page)
+  await mockPreview(page)
+
+  let imports = 0
+
+  await page.route("**/api/import/csv", (route) => {
+    imports += 1
+
+    return json(route, { created: 0, skippedInvalid: 0, updated: 0 })
+  })
+  await page.goto("/ajustes")
+  await importCsv(page)
+  await dialog(page).getByRole("button", { name: "Cancelar" }).click()
+
+  await expect(dialog(page)).toHaveCount(0)
+  expect(imports).toBe(0)
+})
+
+test("a file without invalid rows offers Confirmar", async ({ page }) => {
+  await mockApi(page)
+  await mockPreview(page, {
+    ...PREVIEW,
+    counts: { created: 1, invalid: 0, noMeasurement: 0, updated: 0 },
+    invalidRows: [],
+    updatedDates: [],
+  })
+  await page.goto("/ajustes")
+  await importCsv(page)
+
+  await expect(
+    dialog(page).getByRole("button", { name: "Confirmar" }),
+  ).toBeVisible()
+})
+
+test("the write action is hidden when no row would be written", async ({
+  page,
+}) => {
+  await mockApi(page)
+  await mockPreview(page, {
+    ...PREVIEW,
+    counts: { created: 0, invalid: 1, noMeasurement: 0, updated: 0 },
+    period: null,
+    updatedDates: [],
+  })
+  await page.goto("/ajustes")
+  await importCsv(page)
+
+  await expect(
+    dialog(page).getByRole("button", { name: "Cancelar" }),
+  ).toBeVisible()
+  await expect(
+    dialog(page).getByRole("button", { name: /importar|Confirmar/ }),
+  ).toHaveCount(0)
+})
+
+test("a file-level error shows a persistent toast and no dialog", async ({
+  page,
+}) => {
+  await mockApi(page)
+  await page.route("**/api/import/csv/preview", (route) =>
     json(
       route,
       {
-        action: "Corrija a linha 1: Invalid CSV headers.",
-        message: "Nenhum registro foi importado.",
+        action:
+          'Inclua uma coluna chamada "Peso" (ou "weight_kg") e tente novamente.',
+        message: 'A coluna obrigatória "Peso" não foi encontrada.',
         name: "ValidationError",
         statusCode: 400,
       },
@@ -269,8 +395,9 @@ test("an import failure stays until dismissed", async ({ page }) => {
   await importCsv(page)
 
   await expect(failure(page)).toContainText(
-    "Nenhum registro foi importado. Corrija a linha 1: Invalid CSV headers.",
+    'A coluna obrigatória "Peso" não foi encontrada.',
   )
+  await expect(dialog(page)).toHaveCount(0)
   await page.waitForTimeout(3500)
   await expect(failure(page)).toBeVisible()
   await expect(page.getByRole("button", { name: "Importar CSV" })).toBeEnabled()

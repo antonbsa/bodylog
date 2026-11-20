@@ -391,83 +391,85 @@ date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,wai
 
 ## CSV Import
 
-### POST /api/import/csv
+Import is two steps over the same file: a preview that writes nothing, then the import. Both take a multipart upload with the CSV in a `file` field and re-validate the whole file; the second call never trusts the first.
 
-Imports measurements from CSV.
+### Supported Format
 
-#### Request
+- Columns are identified by header name. Headers are normalized (lowercase, accents stripped, `_`, `-` and space equal, whitespace collapsed) and must then equal one alias exactly; there is no substring or fuzzy matching. Two headers that map to the same field reject the file.
+- Only `date` and `weight_kg` are required. A column that is absent keeps the stored value of existing records; a present column with an empty cell clears the value.
+- Unknown columns (for example `IMC`) are ignored and listed in the preview; cells past the last header are ignored without being listed.
+- The delimiter is `,` or `;`, detected from the header line. The encoding is UTF-8 (BOM stripped), falling back to Windows-1252.
+- Dates are `YYYY-MM-DD` or `D/M/YYYY` (1-2 digit day and month, 4-digit year), may be mixed in one file and must be real calendar dates. `DD/MM` and 2-digit years are invalid.
+- Numbers accept a dot or comma decimal (`72.5`, `72,5`). A dot is a thousands separator only in `resting_metabolism_kcal` (`1.696` is 1696). Values with units or symbols (`72,5 kg`, `14%`, `7h`) and ranges (`6-7`) are invalid.
+- Values follow the limits in [database](database.md#csv-format) and `domain/measurement.ts`; `notes` are trimmed and blank notes are stored as `null`.
 
-Multipart upload containing a CSV file in a `file` field.
+| Field                     | Accepted headers (normalized)                                            |
+| ------------------------- | ------------------------------------------------------------------------ |
+| `date`                    | `date`, `data`                                                           |
+| `weight_kg`               | `weight_kg`, `peso_kg`, `peso`                                           |
+| `body_fat_percentage`     | `body_fat_percentage`, `gordura_percentual`, `gordura`                   |
+| `muscle_percentage`       | `muscle_percentage`, `musculo_percentual`, `musculo`                     |
+| `resting_metabolism_kcal` | `resting_metabolism_kcal`, `metabolismo_basal_kcal`, `metabolismo basal` |
+| `waist_cm`                | `waist_cm`, `cintura_cm`, `cintura`                                      |
+| `sleep_hours`             | `sleep_hours`, `sono_horas`, `sono`                                      |
+| `disposition`             | `disposition`, `disposicao`                                              |
+| `notes`                   | `notes`, `notas`                                                         |
+| `created_at`              | `created_at`                                                             |
+| `updated_at`              | `updated_at`                                                             |
 
-#### Supported Headers
+### Row Classification
 
-Full canonical format:
+- A fully blank row is ignored.
+- A row with a date and no recognized value is counted as "no measurement" and skipped; it is not an error.
+- A row with any recognized value (including notes only) is valid only with a valid weight and valid values everywhere else.
+- A date that repeats in the file makes the later row invalid, naming the earlier row.
+- Row errors are `{ row, column, value, message }`: `row` counts records in the file, 1-based with the header as row 1, `column` is the header as written in the file, `value` the offending cell and `message` Portuguese text.
 
-```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
-```
+### File-level Errors
 
-Minimal canonical format:
+Return 400 with a Portuguese `message` and `action` (the standard error envelope) and write nothing: empty or unreadable file, no `date` column, no weight column (the message names the missing column), two headers mapped to one field, and a missing `file` field.
 
-```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes
-```
+### POST /api/import/csv/preview
 
-Files exported before the redesign, without `waist_cm,sleep_hours,disposition,notes`, still import (with or without `created_at,updated_at`); the new fields are stored as `null`.
-
-#### Rules
-
-- Validates headers exactly against supported canonical formats.
-- Validates each row, including the limits of every numeric field; an invalid new value is reported per row (for example `Invalid waist`, `Invalid sleep hours`, `Invalid disposition`).
-- Trims `notes`; blank notes are stored as `null`. Notes with commas or line breaks must be quoted.
-- Upserts records by `date`.
-- Uses the current import timestamp when `created_at` or `updated_at` are
-  omitted or empty.
-- Returns an import summary.
-- Reports invalid rows without importing those rows.
+Validates the file and reports what the import would do, without writing.
 
 #### Response 200
 
-Returned when at least one row was imported. The `errors` array may still
-contain row-level validation errors for skipped rows.
-
 ```json
 {
-  "created": 10,
-  "updated": 5,
-  "skipped": 1,
-  "errors": [
+  "period": { "from": "2026-01-02", "to": "2026-06-10" },
+  "counts": { "created": 10, "updated": 5, "noMeasurement": 2, "invalid": 1 },
+  "updatedDates": ["2026-06-09"],
+  "ignoredColumns": ["IMC"],
+  "invalidRows": [
     {
       "row": 7,
-      "message": "Invalid weight value"
+      "column": "Sono",
+      "value": "6-7",
+      "message": "Valor inválido."
     }
   ]
 }
+```
+
+- `period` spans the first and last valid date, and is `null` when no row is valid.
+- `counts.invalid` counts rows, while `invalidRows` has one entry per invalid cell.
+- `updatedDates` lists the valid dates that already have a record, ascending.
+
+### POST /api/import/csv
+
+Re-validates the file and writes every valid row in one D1 `batch()`, all or nothing. New dates are created; existing dates replace only the fields whose column is in the file. `created_at` is kept on update and `updated_at` is the import time, unless the file has those columns.
+
+#### Request
+
+The `file` field plus an optional `skipInvalid=true` form field.
+
+#### Response 200
+
+```json
+{ "created": 10, "updated": 5, "skippedInvalid": 1 }
 ```
 
 #### Response 400
 
-Returned when the request is invalid or CSV validation imports no rows.
-
-```json
-{
-  "ok": false,
-  "created": 0,
-  "updated": 0,
-  "skipped": 1,
-  "errors": [
-    {
-      "row": 1,
-      "message": "Invalid CSV headers"
-    }
-  ]
-}
-```
-
-#### Numeric Format
-
-- Dot decimals are accepted, for example `71.5`.
-- Decimal-comma values are accepted only when they are valid CSV cells, for
-  example `"71,5"`.
-- Unquoted decimal-comma values are rejected because they break the CSV column
-  structure.
+Returned for a file-level error, or when the file has invalid rows and `skipInvalid` is not `true` (nothing is written).
