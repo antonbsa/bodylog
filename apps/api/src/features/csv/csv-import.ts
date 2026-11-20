@@ -103,7 +103,8 @@ export function analyzeMeasurementsCsv(
 
   for (const [index, rawRow] of rows.entries()) {
     const rowNumber = index + 2
-    const row = dropTrailingBlankCells(rawRow, headers.length)
+    // Cells past the header are a spreadsheet's side area and have no field to map to.
+    const row = rawRow.slice(0, headers.length)
 
     if (row.every((cell) => cell.trim() === "")) {
       continue
@@ -118,11 +119,10 @@ export function analyzeMeasurementsCsv(
         value: row[column.index] ?? "",
       })
 
-    if (row.length !== headers.length) {
+    if (row.length < headers.length) {
       errors.push({
         column: "",
-        message:
-          "O número de colunas é diferente do cabeçalho. Use ponto e vírgula como separador se os decimais usam vírgula.",
+        message: "A linha tem menos colunas que o cabeçalho.",
         row: rowNumber,
         value: "",
       })
@@ -288,13 +288,6 @@ function missingColumnError(label: string, canonicalHeader: string) {
 }
 
 /** Spreadsheets often end rows with extra delimiters; blank cells past the header are dropped, anything else still counts as a mismatch. */
-function dropTrailingBlankCells(row: string[], width: number): string[] {
-  return row.length > width &&
-    row.slice(width).every((cell) => cell.trim() === "")
-    ? row.slice(0, width)
-    : row
-}
-
 function recordInvalid(analysis: CsvAnalysis, errors: CsvImportRowError[]) {
   analysis.invalidRowCount += 1
   analysis.invalidRows.push(...errors)

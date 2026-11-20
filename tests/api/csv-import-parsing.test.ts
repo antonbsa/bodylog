@@ -245,10 +245,23 @@ describe("row classification", () => {
     expect(result.invalidRows).toHaveLength(3)
   })
 
-  it("flags a row whose cell count differs from the header", () => {
-    const result = analyze("date,weight_kg", "2026-06-10,72,5,1")
+  it("ignores cells past the header and flags a row with fewer cells", () => {
+    const result = analyze(
+      "date,weight_kg,waist_cm",
+      '2026-06-10,"72,5",80,"12,24 Kg",TRUE,anotação',
+      "2026-06-11,71",
+    )
 
-    expect(result.invalidRows[0]).toMatchObject({ row: 2 })
+    expect(result.validRows).toEqual([
+      expect.objectContaining({ fields: { waistCm: 80 }, weightKg: 72.5 }),
+    ])
+    expect(result.ignoredColumns).toEqual([])
+    expect(result.invalidRows).toEqual([
+      expect.objectContaining({
+        row: 3,
+        message: "A linha tem menos colunas que o cabeçalho.",
+      }),
+    ])
   })
 
   it("tolerates trailing delimiters and ignores blank lines", () => {
