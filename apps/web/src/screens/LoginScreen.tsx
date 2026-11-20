@@ -18,12 +18,11 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [errorMessage, setErrorMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function handleLoginSubmit(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault()
+  async function submitLogin(passwordToSend: string) {
     setErrorMessage("")
     setIsSubmitting(true)
 
-    const result = await login(password)
+    const result = await login(passwordToSend)
 
     if (result.ok) {
       setPassword("")
@@ -34,6 +33,11 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
     setErrorMessage(getLoginErrorMessage(result.error))
     setIsSubmitting(false)
+  }
+
+  function handleLoginSubmit(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault()
+    submitLogin(password)
   }
 
   return (
@@ -81,6 +85,17 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           <Button disabled={isSubmitting} type="submit">
             {isSubmitting ? "Entrando..." : "Entrar"}
           </Button>
+
+          {import.meta.env.DEV ? (
+            <Button
+              disabled={isSubmitting}
+              onClick={() => submitLogin(__DEV_APP_PASSWORD__)}
+              type="button"
+              variant="secondary"
+            >
+              Entrar sem senha
+            </Button>
+          ) : null}
         </form>
       </section>
     </main>

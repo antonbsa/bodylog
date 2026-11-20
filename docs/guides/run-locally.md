@@ -53,7 +53,7 @@ npm run db:query:local -- "SELECT COUNT(*) AS count FROM measurements"
 npm run dev
 ```
 
-This starts the API Worker on `http://localhost:8787` and the web app on `http://localhost:5173`; Vite proxies `/api` to the Worker. Log in with the `APP_PASSWORD` from the committed `.env.development`, which Wrangler loads through `--env-file` (see [Secrets](../operations/secrets.md)).
+This starts the API Worker on `http://localhost:8787` and the web app on `http://localhost:5173`; Vite proxies `/api` to the Worker. Log in with the `APP_PASSWORD` from the committed `.env.development`, which Wrangler loads through `--env-file` (see [Secrets](../operations/secrets.md)). Under `vite serve` the login screen also shows **Entrar sem senha**, which sends that same password; production builds leave it out.
 
 To run one side only:
 
