@@ -1,4 +1,4 @@
-import { Note } from "@phosphor-icons/react"
+import { Note } from "@phosphor-icons/react/dist/csr/Note"
 
 import { WEEKLY_TARGET_DAYS } from "../../utils/dashboard-summary"
 import { formatRowDate, formatWeekRange } from "../../utils/date-format"

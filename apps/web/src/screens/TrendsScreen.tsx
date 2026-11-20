@@ -1,4 +1,4 @@
-import { CaretDown } from "@phosphor-icons/react"
+import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 

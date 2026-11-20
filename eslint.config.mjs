@@ -33,6 +33,29 @@ export default [
     },
   },
   {
+    // Vite's dev optimizer pre-bundles a whole barrel (MBs over the LAN); the build tree-shakes it.
+    files: ["apps/web/src/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@phosphor-icons/react",
+              message:
+                'Import each icon from "@phosphor-icons/react/dist/csr/<Icon>".',
+            },
+            {
+              name: "react-day-picker/locale",
+              message:
+                'Import the locale from "react-day-picker/locale/pt-BR".',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["tests/e2e/**/*.spec.ts"],
     rules: {
       "no-restricted-imports": [

@@ -1,5 +1,6 @@
 import type { Ref, SyntheticEvent } from "react"
-import { Minus, Plus } from "@phosphor-icons/react"
+import { Minus } from "@phosphor-icons/react/dist/csr/Minus"
+import { Plus } from "@phosphor-icons/react/dist/csr/Plus"
 
 import { MaskedNumberInput } from "../../components/MaskedNumberInput"
 import type { NumericFieldConfig } from "../../utils/measurement-form"
