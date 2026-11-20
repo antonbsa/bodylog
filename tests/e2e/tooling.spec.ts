@@ -143,11 +143,33 @@ test("login screen shows invalid password errors", async ({ page }) => {
 
   await page.goto("/")
   await page.getByLabel("Senha").fill("senha-errada")
-  await page.getByRole("button", { name: "Entrar" }).click()
+  await page.getByRole("button", { exact: true, name: "Entrar" }).click()
 
   await expect(page.getByRole("alert")).toHaveText(
     "Senha inválida. Verifique a senha configurada e tente novamente.",
   )
+})
+
+test("dev login button sends the local password without typing it", async ({
+  page,
+}) => {
+  await mockSession(page, false)
+  await page.route("**/api/auth/login", async (route) => {
+    // The e2e server is `vite serve`, so the button carries APP_PASSWORD from `.env.development`.
+    expect(route.request().postDataJSON()).toEqual({ password: "masterpass" })
+
+    await route.fulfill({
+      body: JSON.stringify({ ok: true }),
+      contentType: "application/json",
+      status: 200,
+    })
+  })
+
+  await page.goto("/")
+  await expect(page.getByLabel("Senha")).toHaveAttribute("required")
+  await page.getByRole("button", { name: "Entrar sem senha" }).click()
+
+  await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
 })
 
 test("login screen opens the app after a valid password", async ({ page }) => {
@@ -171,7 +193,7 @@ test("login screen opens the app after a valid password", async ({ page }) => {
 
   await page.goto("/")
   await page.getByLabel("Senha").fill("senha-correta")
-  await page.getByRole("button", { name: "Entrar" }).click()
+  await page.getByRole("button", { exact: true, name: "Entrar" }).click()
 
   await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
   await expect(page.getByText("Esta semana")).toBeVisible()
@@ -217,7 +239,7 @@ test("authenticated session survives a page reload", async ({ page }) => {
 
   await page.goto("/")
   await page.getByLabel("Senha").fill("senha-correta")
-  await page.getByRole("button", { name: "Entrar" }).click()
+  await page.getByRole("button", { exact: true, name: "Entrar" }).click()
   await page.reload()
 
   await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
@@ -258,7 +280,7 @@ test("logout returns to the login screen", async ({ page }) => {
 
   await page.goto("/")
   await page.getByLabel("Senha").fill("senha-correta")
-  await page.getByRole("button", { name: "Entrar" }).click()
+  await page.getByRole("button", { exact: true, name: "Entrar" }).click()
   await page.getByRole("link", { name: "Ajustes" }).click()
   await page.getByRole("button", { name: "Sair" }).click()
 
