@@ -39,6 +39,7 @@ export type MeasurementDerivedValues = {
 /** One invalid cell of an import file; `row` counts records with the header as row 1 and `column` is the header as written in the file. */
 export type CsvImportRowError = {
   column: string
+  /** "Reason. Hint." The import preview titles a group with the reason and shows the hint below it. */
   message: string
   row: number
   value: string

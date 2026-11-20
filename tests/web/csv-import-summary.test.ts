@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   formatImportResultMessage,
   getImportAction,
+  describeImportErrorGroup,
   groupImportErrors,
 } from "../../apps/web/src/utils/csv-import-summary"
 import type { CsvImportPreview } from "../../types/measurements"
@@ -83,5 +84,32 @@ describe("groupImportErrors", () => {
       ["Sono", "Número inválido.", [2]],
       ["Cintura", "Número inválido.", [4]],
     ])
+  })
+})
+
+describe("describeImportErrorGroup", () => {
+  const describeGroup = (column: string, message: string) =>
+    describeImportErrorGroup({ column, errors: [], message })
+
+  it("keeps a reason that already names the column as the title", () => {
+    expect(
+      describeGroup("Data", "Data inválida. Use DD/MM/AAAA ou AAAA-MM-DD."),
+    ).toEqual({ hint: "Use DD/MM/AAAA ou AAAA-MM-DD.", title: "Data inválida" })
+    expect(describeGroup("Peso", "Peso obrigatório.")).toEqual({
+      hint: "",
+      title: "Peso obrigatório",
+    })
+  })
+
+  it("prefixes the column when the reason does not name it", () => {
+    expect(
+      describeGroup(
+        "Disposição",
+        "Fora do limite. Use um número inteiro de 1 a 5.",
+      ),
+    ).toEqual({
+      hint: "Use um número inteiro de 1 a 5.",
+      title: "Disposição: fora do limite",
+    })
   })
 })

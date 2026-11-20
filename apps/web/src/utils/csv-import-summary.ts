@@ -60,3 +60,22 @@ export function groupImportErrors(
 
   return [...groups.values()]
 }
+
+/** Splits a group's message into a title naming the column, like "Sono: número inválido", and the hint that follows it. */
+export function describeImportErrorGroup(group: ImportErrorGroup): {
+  hint: string
+  title: string
+} {
+  const [reason = "", ...rest] = group.message.split(/(?<=\.)\s+/)
+  const shortReason = reason.replace(/\.$/, "")
+  const namesColumn = shortReason
+    .toLocaleLowerCase("pt-BR")
+    .startsWith(group.column.toLocaleLowerCase("pt-BR"))
+
+  return {
+    hint: rest.join(" "),
+    title: namesColumn
+      ? shortReason
+      : `${group.column}: ${shortReason.charAt(0).toLocaleLowerCase("pt-BR")}${shortReason.slice(1)}`,
+  }
+}

@@ -166,7 +166,7 @@ export function analyzeMeasurementsCsv(
     if (date && firstRowOfDate.has(date)) {
       addError(
         dateColumn,
-        `Data repetida: já aparece na linha ${firstRowOfDate.get(date)}.`,
+        `Data repetida. Já aparece na linha ${firstRowOfDate.get(date)}.`,
       )
     }
 
@@ -370,8 +370,8 @@ function parseNumericCell(
   const isInteger = "integer" in MEASUREMENT_LIMITS[field]
 
   return isInteger
-    ? `Use um número inteiro de ${min} a ${max}.`
-    : `Valor fora do limite (${min} a ${max}).`
+    ? `Fora do limite. Use um número inteiro de ${min} a ${max}.`
+    : `Fora do limite. Use um valor de ${min} a ${max}.`
 }
 
 /** An ISO-normalized timestamp, undefined for an empty cell (keep the stored or default one) and null when unreadable. */

@@ -262,7 +262,7 @@ test("choosing a file shows the preview and writes nothing until confirmed", asy
   await expect(dialog(page)).toContainText("Período: 25/06/2026 a 28/06/2026")
   await expect(dialog(page)).toContainText("Colunas ignoradas: IMC")
   await expect(
-    dialog(page).getByRole("button", { name: "Sono Número inválido. 1 linha" }),
+    dialog(page).getByRole("button", { name: "Sono: número inválido 1 linha" }),
   ).toBeVisible()
   await expect(
     dialog(page).getByRole("button", {
@@ -307,11 +307,9 @@ test("each preview group opens its full list in a sheet", async ({ page }) => {
   )
   await group.click()
 
-  const sheet = page.getByRole("dialog", { name: "Data" })
+  const sheet = page.getByRole("dialog", { name: "Data inválida" })
 
-  await expect(sheet).toContainText(
-    "Data inválida. Use DD/MM/AAAA ou AAAA-MM-DD.",
-  )
+  await expect(sheet).toContainText("Use DD/MM/AAAA ou AAAA-MM-DD.")
   await expect(sheet.getByRole("listitem")).toHaveCount(40)
   await expect(sheet.getByRole("listitem").last()).toHaveText("Linha 4140/05")
   await sheet.getByRole("button", { name: "Fechar" }).click()

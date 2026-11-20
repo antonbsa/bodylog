@@ -206,7 +206,7 @@ describe("row classification", () => {
     expect(result.invalidRows).toEqual([
       {
         column: "Data",
-        message: "Data repetida: já aparece na linha 2.",
+        message: "Data repetida. Já aparece na linha 2.",
         row: 3,
         value: "10/6/2026",
       },

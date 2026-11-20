@@ -6,6 +6,7 @@ import { Button } from "../../components/Button"
 import type { CsvImportPreview } from "../../../../../types/measurements"
 import { formatDisplayDateFromIso } from "../../utils/date-format"
 import {
+  describeImportErrorGroup,
   getImportAction,
   groupImportErrors,
   plural,
@@ -70,37 +71,6 @@ export function ImportPreviewDialog({
               </p>
             )}
 
-            {preview.invalidRows.length > 0 && (
-              <section aria-labelledby="import-invalid-heading">
-                <h3 className="import-heading" id="import-invalid-heading">
-                  Linhas inválidas
-                </h3>
-                <ul className="import-list">
-                  {groupImportErrors(preview.invalidRows).map((group) => (
-                    <li key={`${group.column}-${group.message}`}>
-                      <DetailRow
-                        count={plural(group.errors.length, "linha", "linhas")}
-                        detail={{
-                          items: group.errors.map((error, index) => ({
-                            key: `${error.row}-${index}`,
-                            label: `Linha ${error.row}`,
-                            value: error.value,
-                          })),
-                          subtitle: group.message,
-                          title: group.column || "Arquivo",
-                        }}
-                      >
-                        {group.column && <strong>{group.column}</strong>}
-                        <span className="import-row-message">
-                          {group.message}
-                        </span>
-                      </DetailRow>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
             {preview.updatedDates.length > 0 && (
               <ul className="import-list">
                 <li>
@@ -119,6 +89,40 @@ export function ImportPreviewDialog({
                   </DetailRow>
                 </li>
               </ul>
+            )}
+            {preview.invalidRows.length > 0 && (
+              <section aria-labelledby="import-invalid-heading">
+                <h3 className="import-heading" id="import-invalid-heading">
+                  Linhas inválidas
+                </h3>
+                <ul className="import-list">
+                  {groupImportErrors(preview.invalidRows).map((group) => {
+                    const { hint, title } = describeImportErrorGroup(group)
+
+                    return (
+                      <li key={`${group.column}-${group.message}`}>
+                        <DetailRow
+                          count={plural(group.errors.length, "linha", "linhas")}
+                          detail={{
+                            items: group.errors.map((error, index) => ({
+                              key: `${error.row}-${index}`,
+                              label: `Linha ${error.row}`,
+                              value: error.value,
+                            })),
+                            subtitle: hint,
+                            title,
+                          }}
+                        >
+                          <strong>{title}</strong>
+                          {hint && (
+                            <span className="import-row-message">{hint}</span>
+                          )}
+                        </DetailRow>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
             )}
           </div>
         )}
@@ -186,7 +190,9 @@ function DetailRow({
         <Dialog.Title className="import-sheet-title">
           {detail.title}
         </Dialog.Title>
-        <p className="import-sheet-subtitle">{detail.subtitle}</p>
+        {detail.subtitle && (
+          <p className="import-sheet-subtitle">{detail.subtitle}</p>
+        )}
         <ul className="import-sheet-list">
           {detail.items.map((item) => (
             <li key={item.key}>
