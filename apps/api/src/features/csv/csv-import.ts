@@ -1,481 +1,393 @@
 import type { MeasurementRepository } from "../../db/repositories/measurements"
 import {
   isWithinMeasurementLimit,
+  MEASUREMENT_LIMITS,
   normalizeNotes,
-  type MEASUREMENT_LIMITS,
 } from "../../../../../domain/measurement"
-import type { ImportedMeasurementInput } from "../../types"
+import {
+  createCsvFileError,
+  createCsvInvalidRowsError,
+} from "../../http/request-validation"
+import type { ImportedMeasurementRow } from "../../types"
 import type {
+  CsvImportPreview,
+  CsvImportResult,
   CsvImportRowError,
-  CsvImportSummary,
 } from "../../../../../types/measurements"
+import { findCsvField, type CsvField } from "./csv-columns"
+import { decodeCsvBytes, detectDelimiter, parseCsvRecords } from "./csv-text"
+import { parseCsvDate, parseCsvNumber } from "./csv-values"
 
-const legacyHeaders = [
-  "date",
-  "weight_kg",
-  "body_fat_percentage",
-  "muscle_percentage",
-  "resting_metabolism_kcal",
-] as const
+type CsvColumn = {
+  field: CsvField
+  header: string
+  index: number
+}
 
-const newFieldHeaders = [
-  "waist_cm",
-  "sleep_hours",
+type LimitedField = keyof typeof MEASUREMENT_LIMITS
+
+/** Fields whose cells hold a measurement; a row with none of them is "no measurement". */
+const VALUE_FIELDS: CsvField[] = [
+  "weightKg",
+  "bodyFatPercentage",
+  "musclePercentage",
+  "restingMetabolismKcal",
+  "waistCm",
+  "sleepHours",
   "disposition",
   "notes",
-] as const
-const auditHeaders = ["created_at", "updated_at"] as const
-
-// CSVs exported before the redesign have neither the new fields nor, for
-// spreadsheet imports, the audit timestamps; all four combinations import.
-const supportedHeaderSets: readonly (readonly string[])[] = [
-  legacyHeaders,
-  [...legacyHeaders, ...auditHeaders],
-  [...legacyHeaders, ...newFieldHeaders],
-  [...legacyHeaders, ...newFieldHeaders, ...auditHeaders],
 ]
 
-type ImportCsvOptions = {
-  importedAt?: Date
+const NUMERIC_FIELDS = [
+  "weightKg",
+  "bodyFatPercentage",
+  "musclePercentage",
+  "restingMetabolismKcal",
+  "waistCm",
+  "sleepHours",
+  "disposition",
+] as const satisfies readonly (CsvField & LimitedField)[]
+
+type NumericField = (typeof NUMERIC_FIELDS)[number]
+
+export type CsvAnalysis = {
+  ignoredColumns: string[]
+  invalidRowCount: number
+  invalidRows: CsvImportRowError[]
+  noMeasurementCount: number
+  validRows: ImportedMeasurementRow[]
 }
 
-type CsvRowResult =
-  | {
-      input: ImportedMeasurementInput
-      ok: true
+/** Validates a whole file without touching the database; throws a validation error for file-level problems. */
+export function analyzeMeasurementsCsv(
+  bytes: ArrayBuffer,
+  importedAt: string = new Date().toISOString(),
+): CsvAnalysis {
+  const text = decodeCsvBytes(bytes)
+
+  if (text.trim() === "") {
+    throw createCsvFileError("O arquivo CSV está vazio.")
+  }
+
+  const records = parseCsvRecords(text, detectDelimiter(text))
+
+  if (!records) {
+    throw createCsvFileError(
+      "Não foi possível ler o arquivo CSV.",
+      "Verifique se as aspas das células estão fechadas e tente novamente.",
+    )
+  }
+
+  const [headers = [], ...rows] = records
+  const { columns, ignoredColumns } = mapColumns(headers)
+  const columnOf = (field: CsvField) =>
+    columns.find((column) => column.field === field)
+  const analysis: CsvAnalysis = {
+    ignoredColumns,
+    invalidRowCount: 0,
+    invalidRows: [],
+    noMeasurementCount: 0,
+    validRows: [],
+  }
+  const firstRowOfDate = new Map<string, number>()
+  const dateColumn = columnOf("date")
+  const weightColumn = columnOf("weightKg")
+
+  if (!dateColumn) {
+    throw missingColumnError("Data", "date")
+  }
+
+  if (!weightColumn) {
+    throw missingColumnError("Peso", "weight_kg")
+  }
+
+  for (const [index, rawRow] of rows.entries()) {
+    const rowNumber = index + 2
+    const row = dropTrailingBlankCells(rawRow, headers.length)
+
+    if (row.every((cell) => cell.trim() === "")) {
+      continue
     }
-  | {
-      errors: CsvImportRowError[]
-      ok: false
+
+    const errors: CsvImportRowError[] = []
+    const addError = (column: CsvColumn, message: string) =>
+      errors.push({
+        column: column.header,
+        message,
+        row: rowNumber,
+        value: row[column.index] ?? "",
+      })
+
+    if (row.length !== headers.length) {
+      errors.push({
+        column: "",
+        message:
+          "O número de colunas é diferente do cabeçalho. Use ponto e vírgula como separador se os decimais usam vírgula.",
+        row: rowNumber,
+        value: "",
+      })
+      recordInvalid(analysis, errors)
+      continue
     }
+
+    const cell = (column: CsvColumn) => (row[column.index] ?? "").trim()
+    const hasValues = columns.some(
+      (column) => VALUE_FIELDS.includes(column.field) && cell(column) !== "",
+    )
+    const rawDate = cell(dateColumn)
+
+    if (!hasValues && rawDate === "") {
+      continue
+    }
+
+    const date = parseCsvDate(rawDate)
+
+    if (!date) {
+      addError(
+        dateColumn,
+        rawDate === ""
+          ? "Data obrigatória."
+          : "Data inválida. Use DD/MM/AAAA ou AAAA-MM-DD.",
+      )
+    }
+
+    if (!hasValues) {
+      if (date) {
+        analysis.noMeasurementCount += 1
+      } else {
+        recordInvalid(analysis, errors)
+      }
+
+      continue
+    }
+
+    const parsed = parseRowValues(columns, cell, addError)
+
+    if (date && firstRowOfDate.has(date)) {
+      addError(
+        dateColumn,
+        `Data repetida: já aparece na linha ${firstRowOfDate.get(date)}.`,
+      )
+    }
+
+    if (errors.length > 0 || !date || parsed.weightKg === undefined) {
+      recordInvalid(analysis, errors)
+      continue
+    }
+
+    firstRowOfDate.set(date, rowNumber)
+    analysis.validRows.push({
+      createdAt: parsed.createdAt,
+      date,
+      fields: parsed.fields,
+      updatedAt: parsed.updatedAt ?? importedAt,
+      weightKg: parsed.weightKg,
+    })
+  }
+
+  return analysis
+}
+
+export async function previewMeasurementsCsv(
+  bytes: ArrayBuffer,
+  repository: MeasurementRepository,
+): Promise<CsvImportPreview> {
+  const analysis = analyzeMeasurementsCsv(bytes)
+  const existingDates = new Set(await repository.listDates())
+  const dates = analysis.validRows.map((row) => row.date).sort()
+  const updatedDates = dates.filter((date) => existingDates.has(date))
+
+  return {
+    counts: {
+      created: dates.length - updatedDates.length,
+      invalid: analysis.invalidRowCount,
+      noMeasurement: analysis.noMeasurementCount,
+      updated: updatedDates.length,
+    },
+    ignoredColumns: analysis.ignoredColumns,
+    invalidRows: analysis.invalidRows,
+    period:
+      dates.length > 0
+        ? { from: dates[0] as string, to: dates[dates.length - 1] as string }
+        : null,
+    updatedDates,
+  }
+}
 
 export async function importMeasurementsCsv(
-  csv: string,
+  bytes: ArrayBuffer,
   repository: MeasurementRepository,
-  options: ImportCsvOptions = {},
-): Promise<CsvImportSummary> {
-  const importedAt = (options.importedAt ?? new Date()).toISOString()
-  const parseResult = parseCsv(csv)
+  options: { importedAt?: Date; skipInvalid: boolean },
+): Promise<CsvImportResult> {
+  const analysis = analyzeMeasurementsCsv(
+    bytes,
+    (options.importedAt ?? new Date()).toISOString(),
+  )
 
-  if (!parseResult.ok) {
-    return {
-      created: 0,
-      errors: [
-        {
-          message: parseResult.error,
-          row: 1,
-        },
-      ],
-      skipped: 0,
-      updated: 0,
-    }
+  if (analysis.invalidRowCount > 0 && !options.skipInvalid) {
+    throw createCsvInvalidRowsError(analysis.invalidRowCount)
   }
 
-  const [headers, ...rows] = parseResult.rows
-  const headerResult = validateHeaders(headers ?? [])
-
-  if (!headerResult.ok) {
-    return {
-      created: 0,
-      errors: [
-        {
-          message: headerResult.error,
-          row: 1,
-        },
-      ],
-      skipped: rows.length,
-      updated: 0,
-    }
+  if (analysis.validRows.length === 0) {
+    throw createCsvFileError("O arquivo não tem medidas válidas para importar.")
   }
 
-  const summary: CsvImportSummary = {
-    created: 0,
-    errors: [],
-    skipped: 0,
-    updated: 0,
-  }
+  const existingDates = new Set(await repository.listDates())
+  const updated = analysis.validRows.filter((row) =>
+    existingDates.has(row.date),
+  ).length
 
-  for (const [index, row] of rows.entries()) {
-    const rowNumber = index + 2
-
-    if (isBlankRow(row)) {
-      summary.skipped += 1
-      continue
-    }
-
-    const rowResult = parseMeasurementCsvRow(row, {
-      headers: headerResult.headers,
-      importedAt,
-      rowNumber,
-    })
-
-    if (!rowResult.ok) {
-      summary.errors.push(...rowResult.errors)
-      summary.skipped += 1
-      continue
-    }
-
-    const result = await repository.upsertImportedByDate(rowResult.input)
-
-    if (result.operation === "created") {
-      summary.created += 1
-    } else {
-      summary.updated += 1
-    }
-  }
-
-  return summary
-}
-
-function validateHeaders(headers: string[]):
-  | {
-      headers: string[]
-      ok: true
-    }
-  | {
-      error: string
-      ok: false
-    } {
-  const normalizedHeaders = headers.map((header) => header.trim())
-
-  if (supportedHeaderSets.some((set) => arraysEqual(normalizedHeaders, set))) {
-    return {
-      headers: normalizedHeaders,
-      ok: true,
-    }
-  }
+  await repository.upsertImportedBatch(analysis.validRows)
 
   return {
-    error: "Invalid CSV headers",
-    ok: false,
+    created: analysis.validRows.length - updated,
+    skippedInvalid: analysis.invalidRowCount,
+    updated,
   }
 }
 
-function parseMeasurementCsvRow(
-  row: string[],
-  options: {
-    headers: string[]
-    importedAt: string
-    rowNumber: number
-  },
-): CsvRowResult {
-  const errors: CsvImportRowError[] = []
+function mapColumns(headers: string[]): {
+  columns: CsvColumn[]
+  ignoredColumns: string[]
+} {
+  const columns: CsvColumn[] = []
+  const ignoredColumns: string[] = []
 
-  if (row.length !== options.headers.length) {
-    return {
-      errors: [
-        {
-          message: `Expected ${options.headers.length} columns. Quote decimal-comma values or use dot decimals.`,
-          row: options.rowNumber,
-        },
-      ],
-      ok: false,
-    }
-  }
+  for (const [index, rawHeader] of headers.entries()) {
+    const header = rawHeader.trim()
+    const field = findCsvField(header)
 
-  const cell = (header: string) => {
-    const index = options.headers.indexOf(header)
-
-    return index === -1 ? undefined : row[index]
-  }
-  const date = cell("date") ?? ""
-  const parsedWeightKg = parseRequiredNumber(cell("weight_kg"))
-  const parsedBodyFatPercentage = parseOptionalNumber(
-    cell("body_fat_percentage"),
-  )
-  const parsedMusclePercentage = parseOptionalNumber(cell("muscle_percentage"))
-  const parsedRestingMetabolismKcal = parseOptionalRestingMetabolism(
-    cell("resting_metabolism_kcal"),
-  )
-  const parsedWaistCm = parseOptionalNumber(cell("waist_cm"))
-  const parsedSleepHours = parseOptionalNumber(cell("sleep_hours"))
-  const parsedDisposition = parseOptionalNumber(cell("disposition"))
-  const notes = normalizeNotes(cell("notes") ?? "")
-  const parsedCreatedAt = parseOptionalTimestamp(
-    cell("created_at"),
-    options.importedAt,
-  )
-  const parsedUpdatedAt = parseOptionalTimestamp(
-    cell("updated_at"),
-    options.importedAt,
-  )
-
-  const addError = (message: string) =>
-    errors.push({ message, row: options.rowNumber })
-  const isInvalid = (
-    field: keyof typeof MEASUREMENT_LIMITS,
-    value: number | null | undefined,
-  ) =>
-    value === undefined ||
-    (value !== null && !isWithinMeasurementLimit(field, value))
-
-  if (!isDateOnly(date)) {
-    addError("Invalid date")
-  }
-
-  if (
-    parsedWeightKg === null ||
-    !isWithinMeasurementLimit("weightKg", parsedWeightKg)
-  ) {
-    addError("Invalid weight value")
-  }
-
-  if (isInvalid("bodyFatPercentage", parsedBodyFatPercentage)) {
-    addError("Invalid body fat percentage")
-  }
-
-  if (isInvalid("musclePercentage", parsedMusclePercentage)) {
-    addError("Invalid muscle percentage")
-  }
-
-  const restingMetabolismKcal =
-    parsedRestingMetabolismKcal === null ||
-    parsedRestingMetabolismKcal === undefined
-      ? parsedRestingMetabolismKcal
-      : Math.trunc(parsedRestingMetabolismKcal)
-
-  if (isInvalid("restingMetabolismKcal", restingMetabolismKcal)) {
-    addError("Invalid resting metabolism")
-  }
-
-  if (isInvalid("waistCm", parsedWaistCm)) {
-    addError("Invalid waist")
-  }
-
-  if (isInvalid("sleepHours", parsedSleepHours)) {
-    addError("Invalid sleep hours")
-  }
-
-  if (isInvalid("disposition", parsedDisposition)) {
-    addError("Invalid disposition")
-  }
-
-  if (parsedCreatedAt === null) {
-    addError("Invalid created_at timestamp")
-  }
-
-  if (parsedUpdatedAt === null) {
-    addError("Invalid updated_at timestamp")
-  }
-
-  if (
-    errors.length > 0 ||
-    parsedWeightKg === null ||
-    parsedBodyFatPercentage === undefined ||
-    parsedMusclePercentage === undefined ||
-    restingMetabolismKcal === undefined ||
-    parsedWaistCm === undefined ||
-    parsedSleepHours === undefined ||
-    parsedDisposition === undefined
-  ) {
-    return {
-      errors,
-      ok: false,
-    }
-  }
-
-  return {
-    input: {
-      bodyFatPercentage: parsedBodyFatPercentage,
-      createdAt: parsedCreatedAt ?? options.importedAt,
-      date,
-      disposition: parsedDisposition,
-      musclePercentage: parsedMusclePercentage,
-      notes,
-      restingMetabolismKcal,
-      sleepHours: parsedSleepHours,
-      updatedAt: parsedUpdatedAt ?? options.importedAt,
-      waistCm: parsedWaistCm,
-      weightKg: parsedWeightKg,
-    },
-    ok: true,
-  }
-}
-
-function parseCsv(csv: string):
-  | {
-      ok: true
-      rows: string[][]
-    }
-  | {
-      error: string
-      ok: false
-    } {
-  const rows: string[][] = []
-  let currentCell = ""
-  let currentRow: string[] = []
-  let isQuoted = false
-
-  for (let index = 0; index < csv.length; index += 1) {
-    const character = csv[index]
-    const nextCharacter = csv[index + 1]
-
-    if (isQuoted) {
-      if (character === '"' && nextCharacter === '"') {
-        currentCell += '"'
-        index += 1
-      } else if (character === '"') {
-        isQuoted = false
-      } else {
-        currentCell += character
+    if (!field) {
+      if (header !== "") {
+        ignoredColumns.push(header)
       }
 
       continue
     }
 
-    if (character === '"') {
-      if (currentCell.length > 0) {
-        return {
-          error: "Invalid quoted cell",
-          ok: false,
+    const duplicate = columns.find((column) => column.field === field)
+
+    if (duplicate) {
+      throw createCsvFileError(
+        `As colunas "${duplicate.header}" e "${header}" representam o mesmo campo.`,
+        "Mantenha apenas uma delas no arquivo e tente novamente.",
+      )
+    }
+
+    columns.push({ field, header, index })
+  }
+
+  return { columns, ignoredColumns }
+}
+
+function missingColumnError(label: string, canonicalHeader: string) {
+  return createCsvFileError(
+    `A coluna obrigatória "${label}" não foi encontrada.`,
+    `Inclua uma coluna chamada "${label}" (ou "${canonicalHeader}") e tente novamente.`,
+  )
+}
+
+/** Spreadsheets often end rows with extra delimiters; blank cells past the header are dropped, anything else still counts as a mismatch. */
+function dropTrailingBlankCells(row: string[], width: number): string[] {
+  return row.length > width &&
+    row.slice(width).every((cell) => cell.trim() === "")
+    ? row.slice(0, width)
+    : row
+}
+
+function recordInvalid(analysis: CsvAnalysis, errors: CsvImportRowError[]) {
+  analysis.invalidRowCount += 1
+  analysis.invalidRows.push(...errors)
+}
+
+function parseRowValues(
+  columns: CsvColumn[],
+  cell: (column: CsvColumn) => string,
+  addError: (column: CsvColumn, message: string) => void,
+): {
+  createdAt?: string
+  fields: ImportedMeasurementRow["fields"]
+  updatedAt?: string
+  weightKg?: number
+} {
+  const fields: Record<string, number | string | null> = {}
+  const result: ReturnType<typeof parseRowValues> = { fields }
+
+  for (const column of columns) {
+    const text = cell(column)
+
+    if (column.field === "notes") {
+      fields.notes = normalizeNotes(text)
+    } else if (column.field === "createdAt" || column.field === "updatedAt") {
+      const timestamp = parseTimestamp(text)
+
+      if (timestamp === null) {
+        addError(column, "Data e hora inválidas.")
+      } else if (timestamp !== undefined) {
+        result[column.field] = timestamp
+      }
+    } else if (isNumericField(column.field)) {
+      const value = parseNumericCell(column.field, text)
+
+      if (typeof value === "string") {
+        addError(column, value)
+      } else if (column.field === "weightKg") {
+        if (value === null) {
+          addError(column, "Peso obrigatório.")
+        } else {
+          result.weightKg = value
         }
+      } else {
+        fields[column.field] = value
       }
-
-      isQuoted = true
-      continue
-    }
-
-    if (character === ",") {
-      currentRow.push(currentCell)
-      currentCell = ""
-      continue
-    }
-
-    if (character === "\n" || character === "\r") {
-      currentRow.push(currentCell)
-      rows.push(currentRow)
-      currentCell = ""
-      currentRow = []
-
-      if (character === "\r" && nextCharacter === "\n") {
-        index += 1
-      }
-
-      continue
-    }
-
-    currentCell += character
-  }
-
-  if (isQuoted) {
-    return {
-      error: "Unclosed quoted cell",
-      ok: false,
     }
   }
 
-  if (currentCell.length > 0 || currentRow.length > 0) {
-    currentRow.push(currentCell)
-    rows.push(currentRow)
-  }
-
-  return {
-    ok: true,
-    rows,
-  }
+  return result
 }
 
-function parseRequiredNumber(value: string | undefined): number | null {
-  if (value === undefined || value.trim() === "") {
+function isNumericField(field: CsvField): field is NumericField {
+  return (NUMERIC_FIELDS as readonly string[]).includes(field)
+}
+
+/** The number, null for an empty cell, or a Portuguese error message. */
+function parseNumericCell(
+  field: NumericField,
+  text: string,
+): number | string | null {
+  if (text === "") {
     return null
   }
 
-  const parsedValue = Number(normalizeDecimalNumber(value))
+  const parsed = parseCsvNumber(text, {
+    thousandsDot: field === "restingMetabolismKcal",
+  })
 
-  return Number.isFinite(parsedValue) ? parsedValue : null
-}
-
-function parseOptionalNumber(
-  value: string | undefined,
-): number | null | undefined {
-  if (value === undefined || value.trim() === "") {
-    return null
+  if (parsed === null) {
+    return "Número inválido. Use apenas dígitos, com ponto ou vírgula decimal."
   }
 
-  const parsedValue = Number(normalizeDecimalNumber(value))
+  const value = field === "restingMetabolismKcal" ? Math.round(parsed) : parsed
 
-  return Number.isFinite(parsedValue) ? parsedValue : undefined
-}
-
-function parseOptionalRestingMetabolism(
-  value: string | undefined,
-): number | null | undefined {
-  if (value === undefined || value.trim() === "") {
-    return null
+  if (isWithinMeasurementLimit(field, value)) {
+    return value
   }
 
-  const normalizedValue = normalizeIntegerNumber(value)
-  const parsedValue = Number(normalizedValue)
+  const { max, min } = MEASUREMENT_LIMITS[field]
+  const isInteger = "integer" in MEASUREMENT_LIMITS[field]
 
-  return Number.isFinite(parsedValue) ? parsedValue : undefined
+  return isInteger
+    ? `Use um número inteiro de ${min} a ${max}.`
+    : `Valor fora do limite (${min} a ${max}).`
 }
 
-function normalizeDecimalNumber(value: string): string {
-  const trimmedValue = value.trim()
-
-  if (trimmedValue.includes(",") && !trimmedValue.includes(".")) {
-    return trimmedValue.replace(",", ".")
-  }
-
-  return trimmedValue
-}
-
-function normalizeIntegerNumber(value: string): string {
-  const trimmedValue = value.trim()
-
-  if (/^\d{1,3}([.,]\d{3})+$/.test(trimmedValue)) {
-    return trimmedValue.replaceAll(/[.,]/g, "")
-  }
-
-  return normalizeDecimalNumber(trimmedValue)
-}
-
-function parseOptionalTimestamp(
-  value: string | undefined,
-  fallback: string,
-): string | null | undefined {
-  if (value === undefined || value.trim() === "") {
+/** An ISO-normalized timestamp, undefined for an empty cell (keep the stored or default one) and null when unreadable. */
+function parseTimestamp(text: string): string | null | undefined {
+  if (text === "") {
     return undefined
   }
 
-  const parsedValue = Date.parse(value)
+  const time = Date.parse(text)
 
-  if (Number.isNaN(parsedValue)) {
-    return null
-  }
-
-  return new Date(parsedValue).toISOString() || fallback
-}
-
-function isBlankRow(row: string[]): boolean {
-  return row.every((cell) => cell.trim() === "")
-}
-
-function isDateOnly(value: string): boolean {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
-
-  if (!match) {
-    return false
-  }
-
-  const [, year, month, day] = match
-  const parsedDate = new Date(
-    Date.UTC(Number(year), Number(month) - 1, Number(day)),
-  )
-
-  return (
-    parsedDate.getUTCFullYear() === Number(year) &&
-    parsedDate.getUTCMonth() === Number(month) - 1 &&
-    parsedDate.getUTCDate() === Number(day)
-  )
-}
-
-function arraysEqual(
-  actual: readonly string[],
-  expected: readonly string[],
-): boolean {
-  return (
-    actual.length === expected.length &&
-    actual.every((value, index) => value === expected[index])
-  )
+  return Number.isNaN(time) ? null : new Date(time).toISOString()
 }

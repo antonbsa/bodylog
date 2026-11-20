@@ -1,7 +1,7 @@
 import { Measurement } from "../../domain/measurement"
 import type {
   CreateMeasurementInput,
-  ImportedMeasurementInput,
+  ImportedMeasurementRow,
   UpdateMeasurementByDateInput,
 } from "../../types"
 
@@ -48,6 +48,16 @@ const measurementColumns = `
   created_at,
   updated_at
 `
+
+const importableFieldColumns = [
+  ["bodyFatPercentage", "body_fat_percentage"],
+  ["musclePercentage", "muscle_percentage"],
+  ["restingMetabolismKcal", "resting_metabolism_kcal"],
+  ["waistCm", "waist_cm"],
+  ["sleepHours", "sleep_hours"],
+  ["disposition", "disposition"],
+  ["notes", "notes"],
+] as const
 
 export class MeasurementRepository {
   private readonly createId: () => string
@@ -170,113 +180,50 @@ export class MeasurementRepository {
     return row ? mapMeasurementRow(row) : null
   }
 
-  async upsertImportedByDate(input: ImportedMeasurementInput): Promise<{
-    measurement: Measurement
-    operation: "created" | "updated"
-  }> {
-    const existingMeasurement = await this.getByDate(input.date)
+  async listDates(): Promise<string[]> {
+    const result = await this.db
+      .prepare("SELECT date FROM measurements")
+      .all<{ date: string }>()
 
-    if (existingMeasurement) {
-      await this.db
-        .prepare(
-          `
-            UPDATE measurements
-            SET
-              weight_kg = ?,
-              body_fat_percentage = ?,
-              muscle_percentage = ?,
-              resting_metabolism_kcal = ?,
-              waist_cm = ?,
-              sleep_hours = ?,
-              disposition = ?,
-              notes = ?,
-              created_at = ?,
-              updated_at = ?
-            WHERE date = ?
-          `,
-        )
-        .bind(
-          input.weightKg,
-          input.bodyFatPercentage ?? null,
-          input.musclePercentage ?? null,
-          input.restingMetabolismKcal ?? null,
-          input.waistCm ?? null,
-          input.sleepHours ?? null,
-          input.disposition ?? null,
-          input.notes ?? null,
-          input.createdAt,
-          input.updatedAt,
-          input.date,
-        )
-        .run()
+    return result.results.map((row) => row.date)
+  }
 
-      const measurement = await this.getByDate(input.date)
-
-      if (!measurement) {
-        throw new Error("Imported measurement update failed")
-      }
-
-      return {
-        measurement,
-        operation: "updated",
-      }
+  /** Writes every row in one D1 batch (a transaction), so a failure leaves the table untouched. */
+  async upsertImportedBatch(rows: ImportedMeasurementRow[]): Promise<void> {
+    if (rows.length === 0) {
+      return
     }
 
-    const measurement = new Measurement({
-      id: this.createId(),
-      date: input.date,
-      weightKg: input.weightKg,
-      bodyFatPercentage: input.bodyFatPercentage ?? null,
-      musclePercentage: input.musclePercentage ?? null,
-      restingMetabolismKcal: input.restingMetabolismKcal ?? null,
-      waistCm: input.waistCm ?? null,
-      sleepHours: input.sleepHours ?? null,
-      disposition: input.disposition ?? null,
-      notes: input.notes ?? null,
-      createdAt: input.createdAt,
-      updatedAt: input.updatedAt,
-    })
+    await this.db.batch(rows.map((row) => this.prepareImportedUpsert(row)))
+  }
 
-    await this.db
+  private prepareImportedUpsert(row: ImportedMeasurementRow) {
+    const fieldEntries = importableFieldColumns.flatMap(([field, column]) =>
+      field in row.fields ? [{ column, value: row.fields[field] ?? null }] : [],
+    )
+    const columns = ["weight_kg", ...fieldEntries.map((entry) => entry.column)]
+    const values = [row.weightKg, ...fieldEntries.map((entry) => entry.value)]
+    // Overwrite only what the file carries: absent columns and, without a created_at column, the stored creation time stay.
+    const updatedColumns = row.createdAt
+      ? [...columns, "created_at", "updated_at"]
+      : [...columns, "updated_at"]
+
+    return this.db
       .prepare(
         `
-          INSERT INTO measurements (
-            id,
-            date,
-            weight_kg,
-            body_fat_percentage,
-            muscle_percentage,
-            resting_metabolism_kcal,
-            waist_cm,
-            sleep_hours,
-            disposition,
-            notes,
-            created_at,
-            updated_at
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO measurements (id, date, ${columns.join(", ")}, created_at, updated_at)
+          VALUES (${new Array(columns.length + 4).fill("?").join(", ")})
+          ON CONFLICT(date) DO UPDATE SET
+            ${updatedColumns.map((column) => `${column} = excluded.${column}`).join(",\n            ")}
         `,
       )
       .bind(
-        measurement.id,
-        measurement.date,
-        measurement.weightKg,
-        measurement.bodyFatPercentage,
-        measurement.musclePercentage,
-        measurement.restingMetabolismKcal,
-        measurement.waistCm,
-        measurement.sleepHours,
-        measurement.disposition,
-        measurement.notes,
-        measurement.createdAt,
-        measurement.updatedAt,
+        this.createId(),
+        row.date,
+        ...values,
+        row.createdAt ?? row.updatedAt,
+        row.updatedAt,
       )
-      .run()
-
-    return {
-      measurement,
-      operation: "created",
-    }
   }
 
   async list(options: ListMeasurementsOptions = {}): Promise<Measurement[]> {

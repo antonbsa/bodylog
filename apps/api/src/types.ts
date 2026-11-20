@@ -18,11 +18,6 @@ export type CreateMeasurementInput = {
   notes?: string | null
 }
 
-export type ImportedMeasurementInput = CreateMeasurementInput & {
-  createdAt: string
-  updatedAt: string
-}
-
 export type UpdateMeasurementByDateInput = {
   weightKg: number
   bodyFatPercentage?: number | null
@@ -36,4 +31,13 @@ export type UpdateMeasurementByDateInput = {
 
 export type AppEnv = {
   Bindings: AppBindings
+}
+
+/** A valid import row; `fields` holds only the columns present in the file, where null clears the stored value. */
+export type ImportedMeasurementRow = {
+  createdAt?: string
+  date: string
+  fields: Omit<UpdateMeasurementByDateInput, "weightKg">
+  updatedAt: string
+  weightKg: number
 }

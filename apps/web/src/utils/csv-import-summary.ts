@@ -1,21 +1,31 @@
-import type { CsvImportSummary } from "../../../../types/measurements"
+import type {
+  CsvImportPreview,
+  CsvImportResult,
+} from "../../../../types/measurements"
 
-export function formatImportSuccessMessage(summary: CsvImportSummary): string {
-  const count = summary.created + summary.updated
-
-  return count === 1 ? "1 medida importada" : `${count} medidas importadas`
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`
 }
 
-export function formatImportPartialMessage(summary: CsvImportSummary): string {
-  return `Importação parcial: ${summary.created} criados, ${summary.updated} atualizados, ${summary.skipped} ignorados, ${summary.errors.length} erros. ${formatFirstImportError(summary)}`
+/** Toast after a confirmed import, e.g. `5 medidas importadas (3 novas, 2 atualizadas) · 1 inválida pulada`. */
+export function formatImportResultMessage(result: CsvImportResult): string {
+  const total = result.created + result.updated
+  const message = `${plural(total, "medida importada", "medidas importadas")} (${plural(result.created, "nova", "novas")}, ${plural(result.updated, "atualizada", "atualizadas")})`
+
+  return result.skippedInvalid > 0
+    ? `${message} · ${plural(result.skippedInvalid, "inválida pulada", "inválidas puladas")}`
+    : message
 }
 
-function formatFirstImportError(summary: CsvImportSummary): string {
-  const firstError = summary.errors[0]
-
-  if (!firstError) {
-    return ""
+/** The action the preview dialog offers; null when confirming would write nothing. */
+export function getImportAction(
+  preview: CsvImportPreview,
+): { label: string; skipInvalid: boolean } | null {
+  if (preview.counts.created + preview.counts.updated === 0) {
+    return null
   }
 
-  return `Primeiro erro: linha ${firstError.row}, ${firstError.message}.`
+  return preview.counts.invalid > 0
+    ? { label: "Pular inválidas e importar", skipInvalid: true }
+    : { label: "Confirmar", skipInvalid: false }
 }

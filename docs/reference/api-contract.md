@@ -423,7 +423,7 @@ Import is two steps over the same file: a preview that writes nothing, then the 
 - A row with a date and no recognized value is counted as "no measurement" and skipped; it is not an error.
 - A row with any recognized value (including notes only) is valid only with a valid weight and valid values everywhere else.
 - A date that repeats in the file makes the later row invalid, naming the earlier row.
-- Row errors are `{ row, column, value, message }`: `row` is the 1-based line number in the file (the header is line 1), `column` is the header as written in the file, `value` the offending cell and `message` Portuguese text.
+- Row errors are `{ row, column, value, message }`: `row` counts records in the file, 1-based with the header as row 1, `column` is the header as written in the file, `value` the offending cell and `message` Portuguese text.
 
 ### File-level Errors
 

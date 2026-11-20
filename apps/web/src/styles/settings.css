@@ -34,6 +34,127 @@
   border-top: 1px solid var(--line);
 }
 
+.set-format + .set-row {
+  border-top: 1px solid var(--line);
+}
+
 .set-row.danger {
+  color: var(--danger);
+}
+
+.set-hint {
+  margin: 0 0 12px;
+  color: var(--fg-2);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.set-format {
+  padding-bottom: 12px;
+  color: var(--fg-2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.set-format summary {
+  min-height: 32px;
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.set-format p {
+  margin: 8px 0 0;
+}
+
+/* Import preview dialog: header and actions stay put while the body scrolls. */
+.import-preview {
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+
+.import-preview-body {
+  flex: 1;
+  min-height: 0;
+  margin-top: 8px;
+  overflow-y: auto;
+}
+
+.import-note {
+  margin: 0 0 12px;
+  color: var(--fg-2);
+  font-size: 14px;
+}
+
+.import-counts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.import-counts div {
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  text-align: center;
+}
+
+.import-counts dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.import-counts dt {
+  color: var(--fg-2);
+  font-size: 12px;
+}
+
+.import-details {
+  margin: 0 0 12px;
+  font-size: 14px;
+}
+
+.import-details summary {
+  display: flex;
+  justify-content: space-between;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.import-details summary span {
+  color: var(--fg-2);
+}
+
+.import-details ul,
+.import-errors {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.import-heading {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.import-errors li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.import-errors code {
+  font-family: var(--font-mono);
+  color: var(--fg-2);
+}
+
+.import-errors span {
+  flex-basis: 100%;
   color: var(--danger);
 }

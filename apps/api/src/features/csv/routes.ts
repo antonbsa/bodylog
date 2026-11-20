@@ -1,11 +1,10 @@
-import { Hono } from "hono"
+import { Hono, type Context } from "hono"
 
 import { ValidationError } from "../../../../../infra/errors"
 import { MeasurementRepository } from "../../db/repositories/measurements"
-import { createCsvImportValidationError } from "../../http/request-validation"
 import type { AppEnv } from "../../types"
 import { serializeMeasurementsCsv } from "./csv-export"
-import { importMeasurementsCsv } from "./csv-import"
+import { importMeasurementsCsv, previewMeasurementsCsv } from "./csv-import"
 
 export const csvExportRoutes = new Hono<AppEnv>()
 
@@ -24,7 +23,7 @@ csvExportRoutes.get("/csv", async (c) => {
 
 export const csvImportRoutes = new Hono<AppEnv>()
 
-csvImportRoutes.post("/csv", async (c) => {
+async function readUpload(c: Context<AppEnv>) {
   const body = await c.req.parseBody().catch(() => null)
   const file = body?.file
 
@@ -35,13 +34,26 @@ csvImportRoutes.post("/csv", async (c) => {
     })
   }
 
-  const repository = new MeasurementRepository(c.env.DB)
-  const summary = await importMeasurementsCsv(await file.text(), repository)
-  const importedCount = summary.created + summary.updated
-
-  if (importedCount === 0 && summary.errors.length > 0) {
-    throw createCsvImportValidationError(summary)
+  return {
+    bytes: await file.arrayBuffer(),
+    skipInvalid: body?.skipInvalid === "true",
   }
+}
 
-  return c.json(summary)
+csvImportRoutes.post("/csv/preview", async (c) => {
+  const { bytes } = await readUpload(c)
+
+  return c.json(
+    await previewMeasurementsCsv(bytes, new MeasurementRepository(c.env.DB)),
+  )
+})
+
+csvImportRoutes.post("/csv", async (c) => {
+  const { bytes, skipInvalid } = await readUpload(c)
+
+  return c.json(
+    await importMeasurementsCsv(bytes, new MeasurementRepository(c.env.DB), {
+      skipInvalid,
+    }),
+  )
 })

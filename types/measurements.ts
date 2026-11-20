@@ -36,14 +36,33 @@ export type MeasurementDerivedValues = {
   muscleKg: number | null
 }
 
+/** One invalid cell of an import file; `row` counts records with the header as row 1 and `column` is the header as written in the file. */
 export type CsvImportRowError = {
+  column: string
   message: string
   row: number
+  value: string
 }
 
-export type CsvImportSummary = {
+/** Response of `POST /api/import/csv/preview`: what the import would do, with nothing written. */
+export type CsvImportPreview = {
+  counts: {
+    created: number
+    /** Rows counted once, while `invalidRows` has one entry per invalid cell. */
+    invalid: number
+    noMeasurement: number
+    updated: number
+  }
+  ignoredColumns: string[]
+  invalidRows: CsvImportRowError[]
+  /** First and last valid date; null when no row is valid. */
+  period: { from: string; to: string } | null
+  updatedDates: string[]
+}
+
+/** Response of `POST /api/import/csv`. */
+export type CsvImportResult = {
   created: number
-  errors: CsvImportRowError[]
-  skipped: number
+  skippedInvalid: number
   updated: number
 }
