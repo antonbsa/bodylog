@@ -93,6 +93,7 @@ async function signInWithGitHub(env: ReturnType<typeof createTestEnv>["env"]) {
 }
 
 afterEach(() => {
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
 
@@ -301,6 +302,35 @@ describe("GET /api/auth/github/callback", () => {
 
     expect(response.headers.get("location")).toBe("/?error=failed")
     expect(sqlite.prepare("SELECT * FROM sessions").all()).toEqual([])
+  })
+
+  it("answers a failure to store the account with error=failed instead of a JSON page", async () => {
+    const { env, sqlite } = createTestEnv()
+
+    stubGitHub()
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    sqlite.exec("DROP TABLE user_identities")
+    const response = await signInWithGitHub(env)
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get("location")).toBe("/?error=failed")
+  })
+
+  it("logs a failed sign-in without the token response body", async () => {
+    const { env } = createTestEnv()
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    stubGitHub({
+      token: { access_token: "gho_secret", token_type: 42 },
+    })
+    const response = await signInWithGitHub(env)
+
+    expect(response.headers.get("location")).toBe("/?error=failed")
+    expect(errorLog).toHaveBeenCalled()
+    expect(JSON.stringify(errorLog.mock.calls)).not.toContain("gho_secret")
+    expect(errorLog.mock.calls.flat().some((arg) => arg instanceof Error)).toBe(
+      false,
+    )
   })
 
   it("accepts the RFC 9207 issuer GitHub adds to the callback", async () => {

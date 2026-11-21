@@ -136,8 +136,6 @@ githubAuthRoutes.get("/callback", async (c) => {
     return fail("state")
   }
 
-  let profile: ProviderProfile
-
   try {
     const tokenResponse = await oauth.authorizationCodeGrantRequest(
       authorizationServer,
@@ -154,15 +152,21 @@ githubAuthRoutes.get("/callback", async (c) => {
       tokenResponse,
     )
 
-    profile = await fetchProfile(tokens.access_token)
+    const profile = await fetchProfile(tokens.access_token)
+    const user = await new UserRepository(c.env.DB).upsertFromProfile(profile)
+
+    await startSession(c, user.id)
   } catch (error) {
-    console.error("GitHub sign-in failed", error)
+    // Only name and message: oauth4webapi errors can carry the token response, access_token included, in `cause`.
+    console.error(
+      "GitHub sign-in failed",
+      error instanceof Error
+        ? `${error.name}: ${error.message}`
+        : "unknown error",
+    )
     return fail("failed")
   }
 
-  const user = await new UserRepository(c.env.DB).upsertFromProfile(profile)
-
-  await startSession(c, user.id)
   c.header("cache-control", "no-store")
 
   return c.html(signedInPage())

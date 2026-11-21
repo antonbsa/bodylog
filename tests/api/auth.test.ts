@@ -275,6 +275,33 @@ describe("dev login", () => {
     expect(await session.json()).toEqual(firstBody)
   })
 
+  it("ends the session the browser already had when it signs in again", async () => {
+    const { env, sqlite } = createTestEnv({ DEV_LOGIN_ENABLED: "true" })
+    const first = await app.request(
+      "/api/auth/dev-login",
+      { method: "POST" },
+      env,
+    )
+    const oldCookie = `${SESSION_COOKIE_NAME}=${sessionCookieFrom(first)}`
+
+    await app.request(
+      "/api/auth/dev-login",
+      { headers: { cookie: oldCookie }, method: "POST" },
+      env,
+    )
+
+    expect(sqlite.prepare("SELECT * FROM sessions").all()).toHaveLength(1)
+    expect(
+      (
+        await app.request(
+          "/api/auth/session",
+          { headers: { cookie: oldCookie } },
+          env,
+        )
+      ).status,
+    ).toBe(401)
+  })
+
   it("stores only the hash of the session id", async () => {
     const { env, sqlite } = createTestEnv({ DEV_LOGIN_ENABLED: "true" })
     const response = await app.request(

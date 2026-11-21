@@ -56,12 +56,17 @@ function setSessionCookie(
   })
 }
 
-/** Creates a session for the user and sets its cookie; each sign-in also sweeps expired sessions, so no cron is needed. */
+/** Creates a session for the user and sets its cookie, ending the one the browser already had; each sign-in also sweeps expired sessions, so no cron is needed. */
 export async function startSession(c: Context<AppEnv>, userId: string) {
   const now = new Date()
   const sessions = new SessionRepository(c.env.DB)
+  const previousSessionId = getCookie(c, SESSION_COOKIE_NAME)
   const sessionId = createSessionId()
   const expiresAt = new Date(now.getTime() + SESSION_TTL_MS)
+
+  if (previousSessionId) {
+    await sessions.delete(await hashSessionId(previousSessionId))
+  }
 
   await sessions.deleteExpired(now.toISOString())
   await sessions.create({

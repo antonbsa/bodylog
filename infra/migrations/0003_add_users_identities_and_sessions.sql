@@ -15,6 +15,8 @@ CREATE TABLE user_identities (
   PRIMARY KEY (provider, provider_user_id)
 );
 
+CREATE INDEX idx_user_identities_user_id ON user_identities(user_id);
+
 CREATE TABLE sessions (
   id_hash TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -24,6 +26,7 @@ CREATE TABLE sessions (
 );
 
 CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
+CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 
 -- Rows without an owner can't be kept; production data is re-imported after the release (ADR 0044).
 DROP TABLE measurements;

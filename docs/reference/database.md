@@ -144,7 +144,7 @@ ALTER TABLE measurements ADD COLUMN disposition INTEGER;
 ALTER TABLE measurements ADD COLUMN notes TEXT;
 ```
 
-Migration `0003_add_users_identities_and_sessions.sql` creates `users`, `user_identities` and `sessions`, then drops and recreates `measurements` with `user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE` and `UNIQUE (user_id, date)` in place of the unique `date`. Rows that existed before it are deleted, since they have no owner.
+Migration `0003_add_users_identities_and_sessions.sql` creates `users`, `user_identities` and `sessions`, then drops and recreates `measurements` with `user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE` and `UNIQUE (user_id, date)` in place of the unique `date`, plus indexes on `sessions(expires_at)`, `sessions(user_id)` and `user_identities(user_id)`. Rows that existed before it are deleted, since they have no owner.
 
 ## CSV Format
 
