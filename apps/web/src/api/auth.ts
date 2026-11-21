@@ -25,13 +25,10 @@ export async function checkSession(): Promise<boolean> {
   }
 }
 
-export async function login(password: string): Promise<LoginResult> {
+/** Signs in as the local seed user; the API answers 404 outside `npm run dev`. */
+export async function devLogin(): Promise<LoginResult> {
   try {
-    const response = await api("/api/auth/login", {
-      body: JSON.stringify({ password }),
-      headers: { "content-type": "application/json" },
-      method: "POST",
-    })
+    const response = await api("/api/auth/dev-login", { method: "POST" })
 
     if (response.ok) {
       return { ok: true }
@@ -39,8 +36,8 @@ export async function login(password: string): Promise<LoginResult> {
 
     return {
       error: await parseApiError(response, {
-        action: "Verifique a senha e tente novamente.",
-        message: "Não foi possível entrar.",
+        action: "Confira se a API local está rodando com o .env.development.",
+        message: "Não foi possível entrar como dev.",
       }),
       ok: false,
     }

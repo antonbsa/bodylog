@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 
+import type { SessionResponse } from "../../../../../types/auth"
 import { NotFoundError, UnauthorizedError } from "../../../../../infra/errors"
 import { isDevLoginEnabled } from "../../config"
 import { UserRepository } from "../../db/repositories/users"
@@ -19,7 +20,7 @@ authRoutes.get("/session", requireSession, async (c) => {
     throw new UnauthorizedError()
   }
 
-  return c.json({ user })
+  return c.json({ user } satisfies SessionResponse)
 })
 
 authRoutes.post("/logout", async (c) => {
@@ -48,5 +49,5 @@ authRoutes.post("/dev-login", async (c) => {
 
   await startSession(c, user.id)
 
-  return c.json({ user })
+  return c.json({ user } satisfies SessionResponse)
 })

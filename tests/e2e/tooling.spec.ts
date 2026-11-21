@@ -1,15 +1,13 @@
 import { readFile } from "node:fs/promises"
 
-import { expect, test, type Page } from "./fixtures"
+import { expect, type Page, signedInSession, test } from "./fixtures"
 
 async function mockSession(page: Page, authenticated: boolean) {
   await page.route("**/api/auth/session", async (route) => {
     await route.fulfill({
       body: JSON.stringify(
         authenticated
-          ? {
-              authenticated: true,
-            }
+          ? signedInSession
           : {
               action: "Entre novamente para continuar.",
               message: "Sessão inválida ou expirada.",
@@ -87,12 +85,14 @@ async function mockMeasurementList(page: Page) {
   })
 }
 
-test("login screen renders first", async ({ page }) => {
+test("login screen renders first with the GitHub sign-in", async ({ page }) => {
   await mockSession(page, false)
   await page.goto("/")
 
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
-  await expect(page.getByLabel("Senha")).toBeVisible()
+  await expect(
+    page.getByRole("link", { name: "Entrar com GitHub" }),
+  ).toHaveAttribute("href", "/api/auth/github")
 })
 
 test("unknown routes show the not-found screen", async ({ page }) => {
@@ -108,154 +108,77 @@ test("unknown routes show the not-found screen", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
 })
 
-test("login form exposes password manager metadata", async ({ page }) => {
-  await mockSession(page, false)
-  await page.goto("/")
+for (const [code, message] of [
+  ["declined", "Você cancelou o login no GitHub. Tente de novo quando quiser."],
+  [
+    "state",
+    "O login expirou ou foi aberto em outra janela. Tente entrar de novo.",
+  ],
+  [
+    "failed",
+    "Não foi possível entrar com o GitHub. Tente novamente em instantes.",
+  ],
+]) {
+  test(`login screen explains a ${code} sign-in and clears it from the address`, async ({
+    page,
+  }) => {
+    await mockSession(page, false)
+    await page.goto(`/?error=${code}`)
 
-  const usernameInput = page.locator('input[name="username"]')
-  const passwordInput = page.getByLabel("Senha")
+    await expect(page.getByRole("alert")).toHaveText(message)
+    await expect(page).toHaveURL("/")
 
-  await expect(usernameInput).toHaveAttribute("autocomplete", "username")
-  await expect(usernameInput).toHaveAttribute("type", "text")
-  await expect(usernameInput).toHaveValue("bodylog")
-  await expect(usernameInput).toHaveClass("password-manager-username")
-  await expect(passwordInput).toHaveAttribute("id", "password")
-  await expect(passwordInput).toHaveAttribute("name", "password")
-  await expect(passwordInput).toHaveAttribute("autocomplete", "password")
-  await expect(passwordInput).toHaveAttribute("autocapitalize", "none")
-  await expect(passwordInput).toHaveAttribute("autocorrect", "off")
-})
-
-test("login screen shows invalid password errors", async ({ page }) => {
-  await mockSession(page, false)
-  await page.route("**/api/auth/login", async (route) => {
-    await route.fulfill({
-      body: JSON.stringify({
-        action: "Verifique a senha configurada e tente novamente.",
-        message: "Senha inválida.",
-        name: "UnauthorizedError",
-        statusCode: 401,
-      }),
-      contentType: "application/json",
-      status: 401,
-    })
+    await page.reload()
+    await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+    await expect(page.getByRole("alert")).toHaveCount(0)
   })
+}
 
-  await page.goto("/")
-  await page.getByLabel("Senha").fill("senha-errada")
-  await page.getByRole("button", { exact: true, name: "Entrar" }).click()
-
-  await expect(page.getByRole("alert")).toHaveText(
-    "Senha inválida. Verifique a senha configurada e tente novamente.",
-  )
-})
-
-test("the built login screen leaves out the dev-only Entrar sem senha button", async ({
+test("the built login screen leaves out the dev-only Entrar como dev button", async ({
   page,
 }) => {
   await mockSession(page, false)
   await page.goto("/")
 
   await expect(
-    page.getByRole("button", { name: "Entrar", exact: true }),
+    page.getByRole("link", { name: "Entrar com GitHub" }),
   ).toBeVisible()
   await expect(
-    page.getByRole("button", { name: "Entrar sem senha" }),
+    page.getByRole("button", { name: "Entrar como dev" }),
   ).toHaveCount(0)
 })
 
-test("login screen opens the app after a valid password", async ({ page }) => {
-  await mockSession(page, false)
-  await page.route("**/api/auth/login", async (route) => {
-    expect(route.request().postDataJSON()).toEqual({
-      password: "senha-correta",
-    })
-
-    await route.fulfill({
-      body: JSON.stringify({
-        ok: true,
-      }),
-      contentType: "application/json",
-      headers: {
-        "set-cookie": "bodylog_session=test-session; HttpOnly; SameSite=Lax",
-      },
-      status: 200,
-    })
-  })
+test("a signed-in session opens Início and survives a page reload", async ({
+  page,
+}) => {
+  await mockSession(page, true)
 
   await page.goto("/")
-  await page.getByLabel("Senha").fill("senha-correta")
-  await page.getByRole("button", { exact: true, name: "Entrar" }).click()
-
   await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
-  await expect(page.getByText("Esta semana")).toBeVisible()
-})
 
-test("authenticated session survives a page reload", async ({ page }) => {
-  let isAuthenticated = false
-
-  await page.route("**/api/auth/session", async (route) => {
-    await route.fulfill({
-      body: JSON.stringify(
-        isAuthenticated
-          ? {
-              authenticated: true,
-            }
-          : {
-              action: "Entre novamente para continuar.",
-              message: "Sessão inválida ou expirada.",
-              name: "UnauthorizedError",
-              statusCode: 401,
-            },
-      ),
-      contentType: "application/json",
-      status: isAuthenticated ? 200 : 401,
-    })
-  })
-  await page.route("**/api/auth/login", async (route) => {
-    isAuthenticated = true
-
-    await route.fulfill({
-      body: JSON.stringify({
-        ok: true,
-      }),
-      contentType: "application/json",
-      headers: {
-        "set-cookie": "bodylog_session=test-session; HttpOnly; SameSite=Lax",
-      },
-      status: 200,
-    })
-  })
-  await mockWeeklyDashboard(page)
-  await mockMeasurementList(page)
-
-  await page.goto("/")
-  await page.getByLabel("Senha").fill("senha-correta")
-  await page.getByRole("button", { exact: true, name: "Entrar" }).click()
   await page.reload()
-
   await expect(page.getByRole("heading", { name: "Início" })).toBeVisible()
   await expect(page.getByText("Esta semana")).toBeVisible()
 })
 
 test("logout returns to the login screen", async ({ page }) => {
+  let isAuthenticated = true
   let logoutRequestCount = 0
 
-  await mockSession(page, false)
-  await page.route("**/api/auth/login", async (route) => {
-    await route.fulfill({
-      body: JSON.stringify({
-        ok: true,
-      }),
+  await mockWeeklyDashboard(page)
+  await mockMeasurementList(page)
+  await page.route("**/api/auth/session", (route) =>
+    route.fulfill({
+      body: JSON.stringify(
+        isAuthenticated ? signedInSession : { statusCode: 401 },
+      ),
       contentType: "application/json",
-      headers: {
-        "set-cookie": "bodylog_session=test-session; HttpOnly; SameSite=Lax",
-      },
-      status: 200,
-    })
-  })
+      status: isAuthenticated ? 200 : 401,
+    }),
+  )
   await page.route("**/api/auth/logout", async (route) => {
     logoutRequestCount += 1
+    isAuthenticated = false
 
     await route.fulfill({
       body: JSON.stringify({
@@ -271,8 +194,6 @@ test("logout returns to the login screen", async ({ page }) => {
   })
 
   await page.goto("/")
-  await page.getByLabel("Senha").fill("senha-correta")
-  await page.getByRole("button", { exact: true, name: "Entrar" }).click()
   await page.getByRole("link", { name: "Ajustes" }).click()
   await page.getByRole("button", { name: "Sair" }).click()
 
@@ -297,6 +218,9 @@ test("logout returns to the login screen", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
   expect(logoutRequestCount).toBe(1)
+
+  await page.reload()
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
 })
 
 test("basic PWA manifest and icons are reachable", async ({

@@ -1,4 +1,10 @@
-import { expect, test, type Page, type Route } from "./fixtures"
+import {
+  expect,
+  type Page,
+  type Route,
+  signedInSession,
+  test,
+} from "./fixtures"
 
 const CSV_HEADER =
   "date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal"
@@ -13,7 +19,7 @@ function json(route: Route, body: unknown, status = 200) {
 
 async function mockApi(page: Page) {
   await page.route("**/api/auth/session", (route) =>
-    json(route, { authenticated: true }),
+    json(route, signedInSession),
   )
   await page.route("**/api/auth/logout", (route) => json(route, { ok: true }))
   await page.route("**/api/dashboard/weekly", (route) => {

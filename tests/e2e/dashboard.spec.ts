@@ -1,4 +1,10 @@
-import { expect, test, type Page, type Route } from "./fixtures"
+import {
+  expect,
+  type Page,
+  type Route,
+  signedInSession,
+  test,
+} from "./fixtures"
 
 const TODAY = "2026-06-12"
 
@@ -110,7 +116,7 @@ async function mockHome(page: Page, mocks: HomeMocks = {}) {
 
   await page.clock.setFixedTime(new Date(2026, 5, 12, 12))
   await page.route("**/api/auth/session", (route) =>
-    json(route, { authenticated: true }),
+    json(route, signedInSession),
   )
   await page.route("**/api/dashboard/weekly", (route) => {
     counters.dashboard += 1
@@ -371,7 +377,7 @@ test("returning to the foreground refreshes Início and the history", async ({
 
   await page.clock.setFixedTime(new Date(2026, 5, 12, 12))
   await page.route("**/api/auth/session", (route) =>
-    json(route, { authenticated: true }),
+    json(route, signedInSession),
   )
   await page.route("**/api/dashboard/weekly", (route) => {
     dashboardRequests += 1

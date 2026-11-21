@@ -1,11 +1,11 @@
-import { expect, test, type Page } from "./fixtures"
+import { expect, type Page, signedInSession, test } from "./fixtures"
 
 async function mockApi(page: Page, authenticated = true) {
   await page.route("**/api/auth/session", async (route) => {
     await route.fulfill({
       body: JSON.stringify(
         authenticated
-          ? { authenticated: true }
+          ? signedInSession
           : {
               action: "Entre novamente para continuar.",
               message: "Sessão inválida ou expirada.",
@@ -57,13 +57,6 @@ test("viewport meta blocks scaling and html only allows panning", async ({
   expect(content).toContain("maximum-scale=1")
   expect(content).toContain("user-scalable=no")
   await expect(page.locator("html")).toHaveCSS("touch-action", "pan-x pan-y")
-})
-
-test("login inputs compute to at least 16px", async ({ page }) => {
-  await mockApi(page, false)
-  await page.goto("/")
-  await expect(page.locator("input").first()).toBeVisible()
-  await expectInputsAtLeast16px(page)
 })
 
 test("registration form inputs compute to at least 16px", async ({ page }) => {
