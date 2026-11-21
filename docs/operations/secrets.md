@@ -3,9 +3,11 @@
 BodyLog has two runtime secrets, both read by the Worker:
 
 ```txt
-APP_PASSWORD     the single user's login password
-SESSION_SECRET   signs the session cookie
+GITHUB_CLIENT_ID       the GitHub OAuth App's client id
+GITHUB_CLIENT_SECRET   the GitHub OAuth App's client secret
 ```
+
+Each deployed environment has its own GitHub OAuth App, because an OAuth App accepts a single callback URL. Create it under GitHub **Settings → Developer settings → OAuth Apps → New OAuth App**, with the environment's URL as **Homepage URL** and `<that URL>/api/auth/github/callback` as **Authorization callback URL**, then generate a client secret.
 
 ## Production
 
@@ -13,27 +15,29 @@ Set them as Cloudflare Worker secrets from `apps/api`, never in `wrangler.toml` 
 
 ```sh
 cd apps/api
-npx wrangler secret put APP_PASSWORD --env production
-npx wrangler secret put SESSION_SECRET --env production
+npx wrangler secret put GITHUB_CLIENT_ID --env production
+npx wrangler secret put GITHUB_CLIENT_SECRET --env production
 ```
 
-Changing `SESSION_SECRET` invalidates every existing session, so the installed PWA asks for the password again.
+The production OAuth App's callback is `https://bodylog.antonbsa.dev/api/auth/github/callback`. Rotating the client secret signs nobody out: sessions live in D1 and don't depend on it.
 
 ## Preview
 
-Preview has its own values, distinct from production, so a preview session never works in production:
+Preview has its own OAuth App, whose callback is the preview Worker's `workers.dev` URL plus `/api/auth/github/callback`:
 
 ```sh
 cd apps/api
-npx wrangler secret put APP_PASSWORD --env preview
-npx wrangler secret put SESSION_SECRET --env preview
+npx wrangler secret put GITHUB_CLIENT_ID --env preview
+npx wrangler secret put GITHUB_CLIENT_SECRET --env preview
 ```
 
 Each deploy checks that both secrets exist in its environment (`npm run check-secrets:preview` or `check-secrets:production`, via `infra/scripts/deploy/check-secrets.mjs`) and fails before migrations, naming any that is missing. A new secret is added to `REQUIRED_SECRETS` there.
 
+`APP_PASSWORD` and `SESSION_SECRET` are no longer read; delete them from each environment with `npx wrangler secret delete <NAME> --env <preview|production>` once the release that removes them is deployed there.
+
 ## Local Development
 
-`.env.development` at the repo root is committed with placeholder values for both secrets and the non-secret vars; `wrangler dev` reads it through `--env-file`. `.env.local` and `.env.production` are gitignored and hold real values that exist nowhere else: never delete, move or overwrite them.
+`.env.development` at the repo root is committed with placeholder GitHub credentials, `DEV_LOGIN_ENABLED="true"` and the non-secret vars; `wrangler dev` reads it, then `.env.local` on top, through two `--env-file` flags. `.env.local` and `.env.production` are gitignored and hold real values that exist nowhere else: never delete, move or overwrite them. Real local GitHub credentials are optional ([Environment setup](environment-setup.md#local-github-sign-in)).
 
 ## CI
 

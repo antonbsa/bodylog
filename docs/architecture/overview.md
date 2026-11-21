@@ -102,7 +102,7 @@ Colors are CSS custom properties in `apps/web/src/styles/tokens.css`. The theme 
 apps/api/src/
   index.ts              wrangler main; re-exports the app
   app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
-  config.ts             env-derived settings (password, session secret, height, time zone)
+  config.ts             env-derived settings (GitHub OAuth client, dev login flag, height, time zone)
   types.ts              API-only bindings and input types
   features/<name>/      routes.ts plus that feature's services (auth, measurements, dashboard, history, trends, csv)
   db/repositories/      D1 access, one file per table
@@ -110,7 +110,7 @@ apps/api/src/
   domain/               API domain objects (Measurement, week range, week summary)
 ```
 
-`app.ts` mounts `/api/auth/*` and `/api/health` as public routes. Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
+`app.ts` mounts `/api/auth/*` and `/api/health` as public routes. Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix and sets `c.var.userId`, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
 
 ## Database
 
@@ -156,14 +156,13 @@ Handle persistence:
 
 ## Authentication
 
-The app uses simple single-user authentication.
+Accounts sign in with GitHub OAuth; the full decision is `0044-multi-user-accounts-with-oauth-sign-in.md`.
 
-- The password is stored as a Cloudflare secret/environment variable.
-- The backend validates login requests.
-- A secure session cookie should be used.
-- All data routes require authentication.
-
-This is acceptable for personal usage but not a scalable authentication model.
+- `features/auth/github.ts` runs the authorization code flow with PKCE through `oauth4webapi`. `GET /api/auth/github` keeps `state` and `code_verifier` in a short-lived cookie scoped to `/api/auth/github` and redirects to GitHub; the callback validates them, exchanges the code, reads `/user` and `/user/emails`, and creates or refreshes the user and its identity in `users` and `user_identities`.
+- The callback sets the session cookie on a 200 page that redirects to `/` client-side, because WebKit drops a `Set-Cookie` on a redirect that ends a cross-site chain. Failures redirect to `/?error=<code>` without a session.
+- `features/auth/session.ts` keeps sessions in D1: the `bodylog_session` cookie holds a random id, `sessions` stores its SHA-256, and `requireSession` resolves it to the user id, renewing it in its last week and deleting it once expired. Each new sign-in sweeps expired rows.
+- Every measurement query goes through `MeasurementRepository`, which is built for one user id and filters each statement by it.
+- `POST /api/auth/dev-login` signs in as a local seed user only when `DEV_LOGIN_ENABLED="true"` (set only in `.env.development`).
 
 ## Deployment
 
@@ -177,8 +176,8 @@ The whole app deploys to Cloudflare.
 The architecture does not need to support:
 
 - Vercel deployment;
-- multi-user scale;
-- complex authorization;
+- data sharing between accounts;
+- roles or admin authorization;
 - offline-first behavior;
 - native mobile deployment;
 - desktop-optimized dashboards;
@@ -207,9 +206,9 @@ Mitigation:
 - validate rows clearly;
 - add mapping only after seeing real CSV exports.
 
-### Authentication Simplicity
+### Sign-up Abuse
 
-Simple password auth is enough for personal usage but should not be treated as production-grade multi-user security.
+Sign-up is open to any GitHub account, with no rate limit. Every account starts empty and sees only its own rows, so abuse costs storage, not privacy.
 
 ## Cross-Cutting Concerns
 
@@ -234,18 +233,18 @@ Guidelines:
 
 ### Security and Privacy
 
-BodyLog stores personal body metrics. Even though the app is single-user, security and privacy should be considered from the beginning.
+BodyLog stores personal body metrics for several accounts, so every data path is scoped to the signed-in user.
 
 Guidelines:
 
-- Store passwords, session secrets, and deployment credentials only in environment variables or Cloudflare secrets.
+- Store OAuth client secrets and deployment credentials only in environment variables or Cloudflare secrets.
 - Protect all data routes with authentication.
 - Use secure session handling appropriate for Cloudflare Workers.
-- Avoid logging passwords, session tokens, CSV contents, or measurement values.
+- Avoid logging OAuth codes or tokens, session ids, CSV contents, or measurement values.
 - Treat CSV import/export as sensitive data movement.
 - Do not commit real personal data, exported CSV backups, secrets, or production database files.
 - Avoid health interpretation, diagnosis, recommendations, or motivational value judgments.
-- Do not design code in a way that assumes future multi-user authorization is already solved.
+- Scope every new query on user data to the session's user, and cover it in `tests/api/user-isolation.test.ts`.
 
 ### Data Correctness
 

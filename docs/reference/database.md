@@ -1,27 +1,40 @@
 # Data Model
 
+## Accounts
+
+A **user** is one account. It signs in through one or more **identities**, one per provider, and holds **sessions** and measurements; deleting a user deletes all three (`ON DELETE CASCADE`). The rules are in `0044-multi-user-accounts-with-oauth-sign-in.md`.
+
+| Table             | Columns                                                                     | Notes                                                                                                                                         |
+| ----------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`           | `id`, `display_name`, `email` (nullable), `created_at`, `updated_at`        | Display name and email are refreshed from the provider on every sign-in; the email is set only when the provider verified it.                 |
+| `user_identities` | `provider`, `provider_user_id`, `user_id`, `email` (nullable), `created_at` | Primary key `(provider, provider_user_id)`, so a provider account maps to one user. `provider` is `github`, or `dev` for the local seed user. |
+| `sessions`        | `id_hash`, `user_id`, `expires_at`, `max_expires_at`, `created_at`          | `id_hash` is the SHA-256 (hex) of the cookie's random id. `expires_at` moves forward on renewal, never past `max_expires_at`.                 |
+
+Timestamps are ISO 8601 UTC strings, so comparing them as text compares them in time.
+
 ## Entity: Measurement
 
-A measurement represents the body metrics recorded for one date.
+A measurement represents the body metrics one user recorded for one date.
 
-There is at most one measurement per date.
+There is at most one measurement per date per user (`UNIQUE (user_id, date)`).
 
 ## Fields
 
-| Field                   | Type        | Required | Description                                              |
-| ----------------------- | ----------- | -------: | -------------------------------------------------------- |
-| `id`                    | string      |      yes | Unique measurement identifier.                           |
-| `date`                  | string      |      yes | Measurement date in `YYYY-MM-DD` format. Must be unique. |
-| `weightKg`              | number      |      yes | Body weight in kilograms.                                |
-| `bodyFatPercentage`     | number/null |       no | Body fat percentage from the scale.                      |
-| `musclePercentage`      | number/null |       no | Muscle percentage from the scale.                        |
-| `restingMetabolismKcal` | number/null |       no | Resting metabolism from the scale.                       |
-| `waistCm`               | number/null |       no | Waist in centimeters, one decimal (30–250).              |
-| `sleepHours`            | number/null |       no | Hours slept the previous night, one decimal (0–24).      |
-| `disposition`           | number/null |       no | Integer from 1 (indisposto) to 5 (disposto).             |
-| `notes`                 | string/null |       no | Free text, trimmed; blank notes are stored as `null`.    |
-| `createdAt`             | string      |      yes | Creation timestamp.                                      |
-| `updatedAt`             | string      |      yes | Last update timestamp.                                   |
+| Field                   | Type        | Required | Description                                               |
+| ----------------------- | ----------- | -------: | --------------------------------------------------------- |
+| `id`                    | string      |      yes | Unique measurement identifier.                            |
+| `userId`                | string      |      yes | Owning user; stored as `user_id`, not sent over the API.  |
+| `date`                  | string      |      yes | Measurement date in `YYYY-MM-DD` format, unique per user. |
+| `weightKg`              | number      |      yes | Body weight in kilograms.                                 |
+| `bodyFatPercentage`     | number/null |       no | Body fat percentage from the scale.                       |
+| `musclePercentage`      | number/null |       no | Muscle percentage from the scale.                         |
+| `restingMetabolismKcal` | number/null |       no | Resting metabolism from the scale.                        |
+| `waistCm`               | number/null |       no | Waist in centimeters, one decimal (30–250).               |
+| `sleepHours`            | number/null |       no | Hours slept the previous night, one decimal (0–24).       |
+| `disposition`           | number/null |       no | Integer from 1 (indisposto) to 5 (disposto).              |
+| `notes`                 | string/null |       no | Free text, trimmed; blank notes are stored as `null`.     |
+| `createdAt`             | string      |      yes | Creation timestamp.                                       |
+| `updatedAt`             | string      |      yes | Last update timestamp.                                    |
 
 Hard validation limits that block saving: weight 20–300 kg, body fat and muscle 1–80%, resting metabolism 500–5000 kcal, waist 30–250 cm, sleep 0–24 h, disposition integer 1–5 (`0032-add-waist-sleep-disposition-and-notes-fields.md`). The limits live in `domain/measurement.ts`.
 
@@ -131,6 +144,8 @@ ALTER TABLE measurements ADD COLUMN disposition INTEGER;
 ALTER TABLE measurements ADD COLUMN notes TEXT;
 ```
 
+Migration `0003_add_users_identities_and_sessions.sql` creates `users`, `user_identities` and `sessions`, then drops and recreates `measurements` with `user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE` and `UNIQUE (user_id, date)` in place of the unique `date`. Rows that existed before it are deleted, since they have no owner.
+
 ## CSV Format
 
 Canonical CSV headers:
@@ -139,6 +154,6 @@ Canonical CSV headers:
 date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
 ```
 
-CSV export uses this full canonical format and omits the internal `id` field. CSV import identifies columns by header name (the canonical names and the spreadsheet aliases), requires only `date` and `weight_kg`, and upserts records by `date`; the format and the overwrite rules are in the [API contract](api-contract.md#csv-import).
+CSV export uses this full canonical format and omits the internal `id` field. CSV import identifies columns by header name (the canonical names and the spreadsheet aliases), requires only `date` and `weight_kg`, and upserts the signed-in user's records by `date`; the format and the overwrite rules are in the [API contract](api-contract.md#csv-import).
 
 Imported values are validated against the same limits as the form; dates must be real calendar dates, such as `2026-02-28` or `28/02/2026`, never `2026-02-30`.

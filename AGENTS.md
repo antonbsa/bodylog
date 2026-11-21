@@ -1,6 +1,6 @@
 # Project Guidance
 
-BodyLog is a personal, single-user, mobile-first tracker for daily bioimpedance records and weekly progress, replacing a spreadsheet. It favors delivery over product completeness.
+BodyLog is a personal, mobile-first tracker for daily bioimpedance records and weekly progress, replacing a spreadsheet. It favors delivery over product completeness.
 
 ## Project Map
 
@@ -54,9 +54,9 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 
 ## Env Vars
 
-- `.env.development` at the repo root is committed with placeholder secrets; `wrangler dev` reads it through `--env-file`, and Vite reads root env files (`envDir: "../.."`).
+- `.env.development` at the repo root is committed with placeholder secrets; `wrangler dev` reads it and then `.env.local` on top (two `--env-file` flags), and Vite reads root env files (`envDir: "../.."`).
 - `.env.local` and `.env.production` (gitignored) hold real values that exist nowhere else. Never delete, move or overwrite them, directly or through `git clean`/`rm -rf`/"reset to clean"; `.claude/settings.json` and the guard hooks (Tooling) block the obvious paths. If a task seems to need one changed, stop and ask.
-- Worker secrets (`APP_PASSWORD`, `SESSION_SECRET`) are Cloudflare secrets set per environment with `npx wrangler secret put <NAME> --env <preview|production>` from `apps/api`; document a new one in [secrets](docs/operations/secrets.md), add it to `REQUIRED_SECRETS` in `infra/scripts/deploy/check-secrets.mjs`, and never commit its value. Symptom: a deploy succeeds and the Worker fails at runtime on the missing secret. Why it slips: wrangler deploys a Worker whether or not its secrets exist, and only the check script fails the deploy. Verify: `grep -n REQUIRED_SECRETS infra/scripts/deploy/check-secrets.mjs` lists every secret in `AppBindings` (`apps/api/src/types.ts`).
+- Worker secrets (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`) are Cloudflare secrets set per environment with `npx wrangler secret put <NAME> --env <preview|production>` from `apps/api`; document a new one in [secrets](docs/operations/secrets.md), add it to `REQUIRED_SECRETS` in `infra/scripts/deploy/check-secrets.mjs`, and never commit its value. Symptom: a deploy succeeds and the Worker fails at runtime on the missing secret. Why it slips: wrangler deploys a Worker whether or not its secrets exist, and only the check script fails the deploy. Verify: `grep -n REQUIRED_SECRETS infra/scripts/deploy/check-secrets.mjs` lists every secret in `AppBindings` (`apps/api/src/types.ts`).
 
 ## Engineering
 
@@ -64,13 +64,13 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 - Small is fine, throwaway isn't: the simplest version should be one you'll extend, not one you'll replace.
 - Before writing your own code, use what the project's dependencies already offer, then a well-maintained library; a new dependency needs a stated reason.
 - For a design with no precedent in the codebase, follow how established products solve it.
-- Stack (ADRs 0013–0017, 0040): TypeScript everywhere, React + Vite, Hono on Cloudflare Workers, D1, deployed to Cloudflare only (no Vercel compatibility); auth is one password from secrets; a later move to serverless Postgres is planned, which is why SQL stays behind repositories.
+- Stack (ADRs 0013–0017, 0040): TypeScript everywhere, React + Vite, Hono on Cloudflare Workers, D1, deployed to Cloudflare only (no Vercel compatibility); auth is GitHub OAuth with server-side sessions in D1 (ADR 0044); a later move to serverless Postgres is planned, which is why SQL stays behind repositories.
 - Shared code: request/response shapes are declared once in root `types/`, and rules both apps run (measurement limits, notes normalization, derived values) live in root `domain/`. Each app imports only its own `src/` plus these roots. Symptom: `apps/web` imports from `apps/api/src` (or the reverse). Why it slips: the import typechecks and bundles, so CI stays green. Verify with `grep -rn "api/src" apps/web/src` and `grep -rn "web/src" apps/api/src`, both returning nothing.
 
 ## Product Rules
 
-- Single user, mobile-first, a body metrics tracker rather than a generic fitness app; no multi-user support or complex auth.
-- One measurement per date. Selecting a date with a record loads it for editing; a date without one shows an empty form for creation. Only weight is required.
+- Multi-user, mobile-first, a body metrics tracker rather than a generic fitness app. Each account sees and edits only its own measurements, and every query on user data is scoped to the session's user (ADR 0044).
+- One measurement per date per user. Selecting a date with a record loads it for editing; a date without one shows an empty form for creation. Only weight is required.
 - Weeks run Monday to Sunday. The current-week comparison is the partial current week vs the previous full week.
 - Percentage metric changes are shown in percentage points. A change may be labeled as increased, decreased or stable, never as good or bad, and the app gives no recommendations or health interpretation.
 - Charts exist only on the Tendências screen (ADR 0030): one line chart at a time, with no ideal bands or targets.

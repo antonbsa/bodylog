@@ -11,13 +11,17 @@ Backend conventions for the Hono Worker on Cloudflare Workers + D1. The Worker a
 ## Route handlers
 
 - Validate input with the parsers in `http/request-validation.ts` and throw the `AppError` subclasses from `infra/errors.ts` (`createValidationError`/`createNotFoundError` for known codes); `app.onError` serializes them. Each error carries a Portuguese `message` and `action` the web shows as-is.
-- Read env-derived settings through `config.ts` (`getUserHeightCm`, `getUserTimeZone`, ...), not raw `c.env` strings.
-- Persistence goes through `db/repositories/` (one file per table, `new MeasurementRepository(c.env.DB)`); SQL never appears in a route or service, so the planned move to Postgres touches only repositories.
+- Read env-derived settings through `config.ts` (`getUserHeightCm`, `getGitHubClient`, ...), not raw `c.env` strings.
+- Persistence goes through `db/repositories/` (one file per table, `new MeasurementRepository(c.env.DB, c.get("userId"))`); SQL never appears in a route or service, so the planned move to Postgres touches only repositories.
 - A change that adds, removes or reshapes a route, or changes the error envelope, updates [docs/reference/api-contract.md](../../docs/reference/api-contract.md) in the same change; a schema change also updates [docs/reference/database.md](../../docs/reference/database.md).
 
-## SQL that only the fake D1 has run
+## Data scoped by user
 
-- Symptom: a new or edited repository query passes `npm run test:unit` and fails against real D1 (wrong column, bad syntax). Why it slips: `tests/api` hands the app a hand-written fake D1 that dispatches on the SQL text, so it never parses or executes the statement.
+- Every query on user data filters by the owner: `MeasurementRepository` takes the user id in its constructor and adds it to each statement. Symptom: one account sees or overwrites another's rows. Why it slips: single-user tests pass, since one user's rows are all the rows. Verify: extend `tests/api/user-isolation.test.ts` with two users for every route that reads or writes user data.
+
+## SQL that only SQLite has run
+
+- Symptom: a repository query passes `npm run test:unit` and fails on real D1. Why it slips: `tests/api` runs it on Node's SQLite with the real migrations, which parses and executes it but is not D1 (no D1 limits, a different SQLite build).
 - Verify: run the statement against local D1 after `npm run db:setup:local`, a `SELECT` directly (see "D1 debug queries") and a write only with the owner's yes.
 
 ## D1 debug queries
