@@ -1,5 +1,5 @@
 import { Dialog, Flex } from "@radix-ui/themes"
-import { Info } from "@phosphor-icons/react"
+import { Info } from "@phosphor-icons/react/dist/csr/Info"
 
 import { Button } from "../../components/Button"
 

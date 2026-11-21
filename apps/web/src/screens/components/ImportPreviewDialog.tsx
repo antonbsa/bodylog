@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { CaretRight } from "@phosphor-icons/react"
+import { CaretRight } from "@phosphor-icons/react/dist/csr/CaretRight"
 import { Dialog, Flex } from "@radix-ui/themes"
 
 import { Button } from "../../components/Button"

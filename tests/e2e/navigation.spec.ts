@@ -270,7 +270,11 @@ test("a stored theme preference is applied before React mounts", async ({
   )
 
   // Abort the app bundle so only the inline script in index.html can set the attribute.
-  await page.route("**/src/main.tsx*", (route) => route.abort())
+  await page.route("**/*", (route) =>
+    route.request().resourceType() === "script"
+      ? route.abort()
+      : route.fallback(),
+  )
   await page.reload()
 
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark")

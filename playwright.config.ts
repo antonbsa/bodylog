@@ -16,14 +16,15 @@ export default defineConfig({
   // CI uploads the HTML report as an artifact when E2E fails.
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   webServer: {
-    command: `BODYLOG_WEB_PORT=${webPort} npm --workspace @bodylog/web run dev`,
+    // Each test opens a cold browser context, which loads ~86 unbundled modules from `vite serve` but 3 files from the build.
+    command: `npm --workspace @bodylog/web exec -- vite build && npm --workspace @bodylog/web exec -- vite preview --host localhost --port ${webPort} --strictPort`,
     reuseExistingServer: true,
     url: webBaseUrl,
   },
   use: {
     baseURL: webBaseUrl,
     trace: "retain-on-failure",
-    screenshot: "on",
+    screenshot: "only-on-failure",
   },
   projects: [
     {
