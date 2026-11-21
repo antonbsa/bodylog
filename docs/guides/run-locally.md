@@ -53,7 +53,7 @@ npm run db:query:local -- "SELECT COUNT(*) AS count FROM measurements"
 npm run dev
 ```
 
-This starts the API Worker on `http://localhost:8787` and the web app on `http://localhost:5173`; Vite proxies `/api` to the Worker. Under `vite serve` the login screen shows **Entrar como dev**, which calls `POST /api/auth/dev-login` and signs in as the local seed user that owns the seeded measurements; it works because the committed `.env.development` sets `DEV_LOGIN_ENABLED="true"`, and production builds leave the button out. **Entrar com GitHub** needs a real GitHub OAuth App ([Environment setup](../operations/environment-setup.md#local-github-sign-in)).
+This starts the API Worker on `http://localhost:8787` and the web app on `http://localhost:5173`; Vite proxies `/api` to the Worker. Under `vite serve` the login screen shows **Entrar como dev**, which calls `POST /api/auth/dev-login` and signs in as the local seed user that owns the seeded measurements; it works because the committed `.env.development` sets `DEV_LOGIN_ENABLED="true"`, and production builds leave the button out. **Entrar com GitHub** needs a real GitHub OAuth App ([Environment setup](../operations/environment-setup.md#local-github-sign-in)). If either side exits, the other is stopped too, so a failed API never leaves the web app running on its own.
 
 To run one side only:
 
