@@ -1,6 +1,6 @@
 # Architecture Overview
 
-How BodyLog works end to end and why. What it does for the user is in [Product](../product.md); the HTTP surface and the tables are in [API contract](../reference/api-contract.md) and [Database](../reference/database.md); the reasoning behind each choice is in the [decisions](../decisions/README.md).
+How BodyLog works end to end and why. What it does for the user is in [Product](../product.md); the HTTP surface, the tables and the measurement rules are in [API contract](../reference/api-contract.md), [Database](../reference/database.md) and [Measurements](../reference/measurements.md); the reasoning behind each choice is in the [decisions](../decisions/README.md).
 
 ## In Short
 

@@ -22,7 +22,8 @@ Pick the page that matches what you're doing.
 ## Look Up
 
 - **[API contract](reference/api-contract.md)**: the HTTP surface: routes, shapes and errors.
-- **[Database](reference/database.md)**: the measurement table, the derived values and the weekly average and comparison rules.
+- **[Database](reference/database.md)**: the D1 tables, how they relate, their unique keys and the session lifecycle.
+- **[Measurements](reference/measurements.md)**: the measurement fields and limits, the derived values, the weekly average and comparison rules, and the CSV format.
 - **[Glossary](../GLOSSARY.md)**: the domain terms: Measurement, Derived values, Week, Current week, Comparison week, Variation, Percentage points.
 - **[Project history](history.md)**: how the app got to its current shape: the spreadsheet replacement and the mobile redesign.
 

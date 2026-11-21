@@ -13,7 +13,7 @@ Backend conventions for the Hono Worker on Cloudflare Workers + D1. The Worker a
 - Validate input with the parsers in `http/request-validation.ts` and throw the `AppError` subclasses from `infra/errors.ts` (`createValidationError`/`createNotFoundError` for known codes); `app.onError` serializes them. Each error carries a Portuguese `message` and `action` the web shows as-is.
 - Read env-derived settings through `config.ts` (`getUserHeightCm`, `getGitHubClient`, ...), not raw `c.env` strings.
 - Persistence goes through `db/repositories/` (one file per table, `new MeasurementRepository(c.env.DB, c.get("userId"))`); SQL never appears in a route or service, so the planned move to Postgres touches only repositories.
-- A change that adds, removes or reshapes a route, or changes the error envelope, updates [docs/reference/api-contract.md](../../docs/reference/api-contract.md) in the same change; a schema change also updates [docs/reference/database.md](../../docs/reference/database.md).
+- A change that adds, removes or reshapes a route, or changes the error envelope, updates [docs/reference/api-contract.md](../../docs/reference/api-contract.md) in the same change; a schema change also updates [docs/reference/database.md](../../docs/reference/database.md), and a measurement field or rule change [docs/reference/measurements.md](../../docs/reference/measurements.md).
 
 ## Data scoped by user
 

@@ -406,7 +406,7 @@ Import is two steps over the same file: a preview that writes nothing, then the 
 - The delimiter is `,` or `;`, detected from the header line. The encoding is UTF-8 (BOM stripped), falling back to Windows-1252.
 - Dates are `YYYY-MM-DD` or `D/M/YYYY` (1-2 digit day and month, 4-digit year), may be mixed in one file and must be real calendar dates. `DD/MM` and 2-digit years are invalid.
 - Numbers accept a dot or comma decimal (`72.5`, `72,5`). A dot is a thousands separator only in `resting_metabolism_kcal` (`1.696` is 1696). Values with units or symbols (`72,5 kg`, `14%`, `7h`) and ranges (`6-7`) are invalid.
-- Values follow the limits in [database](database.md#csv-format) and `domain/measurement.ts`; `notes` are trimmed and blank notes are stored as `null`.
+- Values follow the limits in [measurements](measurements.md#csv-format) and `domain/measurement.ts`; `notes` are trimmed and blank notes are stored as `null`.
 
 | Field                     | Accepted headers (normalized)                                            |
 | ------------------------- | ------------------------------------------------------------------------ |
