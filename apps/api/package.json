@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --env-file ../../.env.development --env-file ../../.env.local --port 8787 --show-interactive-dev-session false",
+    "dev": "wrangler dev --envFile ../../.env.development --envFile ../../.env.local --port 8787 --show-interactive-dev-session false",
     "deploy": "wrangler deploy --env production",
     "deploy:preview": "wrangler deploy --env preview",
     "typecheck": "tsc -p tsconfig.json --noEmit"

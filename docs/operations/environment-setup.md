@@ -24,7 +24,7 @@ Locally, the Vite dev server on `http://localhost:5173` proxies `/api` requests 
 
 `apps/api/wrangler.toml` is the only Wrangler config:
 
-- The top level is local dev only: worker `bodylog-dev`, non-secret vars, and the `bodylog-dev` D1 binding with a placeholder `database_id`, so an accidental `--remote` without `--env production` cannot reach production data. Local API development loads the root `.env.development` file through `--env-file`.
+- The top level is local dev only: worker `bodylog-dev`, non-secret vars, and the `bodylog-dev` D1 binding with a placeholder `database_id`, so an accidental `--remote` without `--env production` cannot reach production data. Local API development loads the root `.env.development` file through `--envFile`.
 - `[env.production]` re-declares everything production needs, because named environments do not inherit vars or bindings: worker `bodylog`, vars, observability, the `bodylog-prod` D1 database and `[env.production.assets]`.
 - `[env.preview]` mirrors it for worker `bodylog-preview` and its own `bodylog-preview` D1 database, so preview never reads production data; a change to production's vars, assets or bindings is repeated there.
 - Assets stay out of the top level because `wrangler dev` fails when `apps/web/dist` is missing.

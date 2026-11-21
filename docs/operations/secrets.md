@@ -37,7 +37,7 @@ Each deploy checks that both secrets exist in its environment (`npm run check-se
 
 ## Local Development
 
-`.env.development` at the repo root is committed with placeholder GitHub credentials, `DEV_LOGIN_ENABLED="true"` and the non-secret vars; `wrangler dev` reads it, then `.env.local` on top, through two `--env-file` flags. `.env.local` and `.env.production` are gitignored and hold real values that exist nowhere else: never delete, move or overwrite them. Real local GitHub credentials are optional ([Environment setup](environment-setup.md#local-github-sign-in)).
+`.env.development` at the repo root is committed with placeholder GitHub credentials, `DEV_LOGIN_ENABLED="true"` and the non-secret vars; `wrangler dev` reads it, then `.env.local` on top, through two `--envFile` flags; a missing `.env.local` is skipped. `.env.local` and `.env.production` are gitignored and hold real values that exist nowhere else: never delete, move or overwrite them. Real local GitHub credentials are optional ([Environment setup](environment-setup.md#local-github-sign-in)).
 
 ## CI
 
