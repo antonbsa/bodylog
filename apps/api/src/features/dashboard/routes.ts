@@ -11,7 +11,7 @@ import {
 export const dashboardRoutes = new Hono<AppEnv>()
 
 dashboardRoutes.get("/weekly", async (c) => {
-  const repository = new MeasurementRepository(c.env.DB)
+  const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
   const dashboard = await getWeeklyDashboard(repository, {
     currentDate: getCurrentDateOnly(getUserTimeZone(c.env)),
     heightCm: getUserHeightCm(c.env),

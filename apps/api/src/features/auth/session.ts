@@ -1,89 +1,136 @@
+import type { Context } from "hono"
+import { deleteCookie, getCookie, setCookie } from "hono/cookie"
+
+import { SessionRepository } from "../../db/repositories/sessions"
+import type { AppEnv } from "../../types"
+
 export const SESSION_COOKIE_NAME = "bodylog_session"
-export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 
-const textEncoder = new TextEncoder()
+const DAY_MS = 24 * 60 * 60 * 1000
+const SESSION_TTL_MS = 30 * DAY_MS
+const SESSION_RENEW_WINDOW_MS = 7 * DAY_MS
+const SESSION_MAX_LIFETIME_MS = 180 * DAY_MS
 
-function encodeBase64Url(bytes: ArrayBuffer): string {
-  const binary = String.fromCharCode(...new Uint8Array(bytes))
+/** Cookie attributes shared by every BodyLog cookie; `Secure` is dropped on localhost so plain-http dev works. */
+export function getCookieSecurityOptions(requestUrl: string) {
+  const { hostname } = new URL(requestUrl)
+  const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1"
 
-  return btoa(binary)
+  return {
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: !isLocalhost,
+  } as const
+}
+
+export async function hashSessionId(sessionId: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(sessionId),
+  )
+
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("")
+}
+
+function createSessionId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32))
+
+  return btoa(String.fromCharCode(...bytes))
     .replaceAll("+", "-")
     .replaceAll("/", "_")
     .replace(/=+$/, "")
 }
 
-async function sign(payload: string, secret: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    textEncoder.encode(secret),
-    {
-      hash: "SHA-256",
-      name: "HMAC",
-    },
-    false,
-    ["sign"],
-  )
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    textEncoder.encode(payload),
-  )
-
-  return encodeBase64Url(signature)
+function setSessionCookie(
+  c: Context<AppEnv>,
+  sessionId: string,
+  expiresAt: Date,
+  now: Date,
+) {
+  setCookie(c, SESSION_COOKIE_NAME, sessionId, {
+    ...getCookieSecurityOptions(c.req.url),
+    maxAge: Math.floor((expiresAt.getTime() - now.getTime()) / 1000),
+    path: "/",
+  })
 }
 
-function equalConstantTime(left: string, right: string): boolean {
-  if (left.length !== right.length) {
-    return false
-  }
+/** Creates a session for the user and sets its cookie; each sign-in also sweeps expired sessions, so no cron is needed. */
+export async function startSession(c: Context<AppEnv>, userId: string) {
+  const now = new Date()
+  const sessions = new SessionRepository(c.env.DB)
+  const sessionId = createSessionId()
+  const expiresAt = new Date(now.getTime() + SESSION_TTL_MS)
 
-  let diff = 0
-
-  for (let index = 0; index < left.length; index += 1) {
-    diff |= left.charCodeAt(index) ^ right.charCodeAt(index)
-  }
-
-  return diff === 0
+  await sessions.deleteExpired(now.toISOString())
+  await sessions.create({
+    createdAt: now.toISOString(),
+    expiresAt: expiresAt.toISOString(),
+    idHash: await hashSessionId(sessionId),
+    maxExpiresAt: new Date(
+      now.getTime() + SESSION_MAX_LIFETIME_MS,
+    ).toISOString(),
+    userId,
+  })
+  setSessionCookie(c, sessionId, expiresAt, now)
 }
 
-export async function createSessionCookieValue(
-  sessionSecret: string,
-  now = new Date(),
-): Promise<string> {
-  const issuedAt = String(now.getTime())
-  const signature = await sign(issuedAt, sessionSecret)
+/** The signed-in user's id, renewing the session in its last week; null when the cookie has no live session. */
+export async function resolveSession(
+  c: Context<AppEnv>,
+): Promise<string | null> {
+  const sessionId = getCookie(c, SESSION_COOKIE_NAME)
 
-  return `${issuedAt}.${signature}`
+  if (!sessionId) {
+    return null
+  }
+
+  const now = new Date()
+  const sessions = new SessionRepository(c.env.DB)
+  const session = await sessions.getByIdHash(await hashSessionId(sessionId))
+
+  if (!session) {
+    return null
+  }
+
+  const expiresAt = new Date(session.expiresAt)
+
+  if (expiresAt <= now) {
+    await sessions.delete(session.idHash)
+    return null
+  }
+
+  if (expiresAt.getTime() - now.getTime() < SESSION_RENEW_WINDOW_MS) {
+    const renewedExpiresAt = new Date(
+      Math.min(
+        now.getTime() + SESSION_TTL_MS,
+        new Date(session.maxExpiresAt).getTime(),
+      ),
+    )
+
+    if (renewedExpiresAt > expiresAt) {
+      await sessions.updateExpiresAt(
+        session.idHash,
+        renewedExpiresAt.toISOString(),
+      )
+      setSessionCookie(c, sessionId, renewedExpiresAt, now)
+    }
+  }
+
+  return session.userId
 }
 
-export async function isValidSessionCookieValue(
-  cookieValue: string | undefined,
-  sessionSecret: string,
-  now = new Date(),
-): Promise<boolean> {
-  if (!cookieValue) {
-    return false
+/** Deletes the cookie's session row, so a copied cookie stops working, and clears the cookie. */
+export async function endSession(c: Context<AppEnv>) {
+  const sessionId = getCookie(c, SESSION_COOKIE_NAME)
+
+  if (sessionId) {
+    await new SessionRepository(c.env.DB).delete(await hashSessionId(sessionId))
   }
 
-  const [issuedAt, signature, extra] = cookieValue.split(".")
-
-  if (!issuedAt || !signature || extra) {
-    return false
-  }
-
-  const issuedAtMs = Number(issuedAt)
-
-  if (!Number.isSafeInteger(issuedAtMs) || issuedAtMs > now.getTime()) {
-    return false
-  }
-
-  const ageSeconds = Math.floor((now.getTime() - issuedAtMs) / 1000)
-
-  if (ageSeconds > SESSION_MAX_AGE_SECONDS) {
-    return false
-  }
-
-  const expectedSignature = await sign(issuedAt, sessionSecret)
-
-  return equalConstantTime(signature, expectedSignature)
+  deleteCookie(c, SESSION_COOKIE_NAME, {
+    ...getCookieSecurityOptions(c.req.url),
+    path: "/",
+  })
 }

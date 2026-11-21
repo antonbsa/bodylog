@@ -8,7 +8,7 @@ import { getTrends } from "./trends-service"
 export const trendsRoutes = new Hono<AppEnv>()
 
 trendsRoutes.get("/", async (c) => {
-  const repository = new MeasurementRepository(c.env.DB)
+  const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
 
   return c.json(
     await getTrends(repository, { heightCm: getUserHeightCm(c.env) }),

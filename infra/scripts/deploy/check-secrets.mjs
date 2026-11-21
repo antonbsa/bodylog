@@ -13,7 +13,7 @@ import { runWranglerWithRetry } from "./lib/run-wrangler-with-retry.mjs"
 
 const API_DIR = resolve(fileURLToPath(import.meta.url), "../../../../apps/api")
 
-const REQUIRED_SECRETS = ["APP_PASSWORD", "SESSION_SECRET"]
+const REQUIRED_SECRETS = ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"]
 const ENVIRONMENTS = ["preview", "production"]
 
 const envIndex = process.argv.indexOf("--env")

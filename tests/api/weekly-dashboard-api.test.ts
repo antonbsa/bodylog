@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { app } from "../../apps/api/src/app"
-import {
-  createSessionCookieValue,
-  SESSION_COOKIE_NAME,
-} from "../../apps/api/src/features/auth/session"
+import { createSignedInEnv, SIGNED_IN_COOKIE } from "./test-env"
 import { getCurrentDateOnly } from "../../apps/api/src/features/dashboard/weekly-dashboard-service"
 import type { WeeklyDashboard } from "../../types/dashboard"
 
@@ -35,14 +32,11 @@ describe("weekly dashboard api", () => {
 
   it("returns the current week, previous week, counts, and partial-week metadata", async () => {
     const env = createEnv()
-    const sessionCookieValue = await createSessionCookieValue(
-      env.SESSION_SECRET,
-    )
     const response = await app.request(
       "/api/dashboard/weekly",
       {
         headers: {
-          cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}`,
+          cookie: SIGNED_IN_COOKIE,
         },
       },
       env,
@@ -99,14 +93,11 @@ describe("weekly dashboard api", () => {
     expect(getCurrentDateOnly("America/Sao_Paulo")).toBe("2026-06-14")
 
     const env = createEnv()
-    const sessionCookieValue = await createSessionCookieValue(
-      env.SESSION_SECRET,
-    )
     const response = await app.request(
       "/api/dashboard/weekly",
       {
         headers: {
-          cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}`,
+          cookie: SIGNED_IN_COOKIE,
         },
       },
       env,
@@ -119,58 +110,46 @@ describe("weekly dashboard api", () => {
   })
 })
 
-function createEnv(): {
-  APP_PASSWORD: string
-  DB: D1Database
-  SESSION_SECRET: string
-  USER_HEIGHT_CM: string
-  USER_TIME_ZONE: string
-} {
-  return {
-    APP_PASSWORD: "correct-password",
-    DB: new DashboardMeasurementD1([
-      measurementRow({
-        id: "previous-1",
-        date: "2026-06-01",
-        weightKg: 71,
-        bodyFatPercentage: 16,
-        musclePercentage: 42,
-        restingMetabolismKcal: 1680,
-        waistCm: 90,
-      }),
-      measurementRow({
-        id: "previous-2",
-        date: "2026-06-07",
-        weightKg: 73,
-        bodyFatPercentage: 16.4,
-        musclePercentage: 43.5,
-        restingMetabolismKcal: 1700,
-        waistCm: 92,
-      }),
-      measurementRow({
-        id: "current-1",
-        date: "2026-06-08",
-        weightKg: 74,
-        bodyFatPercentage: 14,
-        musclePercentage: 44,
-        restingMetabolismKcal: 1710,
-        waistCm: 88.5,
-        sleepHours: 7,
-      }),
-      measurementRow({
-        id: "current-2",
-        date: "2026-06-10",
-        weightKg: 72,
-        bodyFatPercentage: null,
-        musclePercentage: null,
-        restingMetabolismKcal: 1690,
-        sleepHours: 8,
-      }),
-    ]) as unknown as D1Database,
-    SESSION_SECRET: "test-session-secret",
-    USER_HEIGHT_CM: "168",
-    USER_TIME_ZONE: "America/Sao_Paulo",
-  }
+function createEnv() {
+  return createSignedInEnv([
+    measurementRow({
+      id: "previous-1",
+      date: "2026-06-01",
+      weightKg: 71,
+      bodyFatPercentage: 16,
+      musclePercentage: 42,
+      restingMetabolismKcal: 1680,
+      waistCm: 90,
+    }),
+    measurementRow({
+      id: "previous-2",
+      date: "2026-06-07",
+      weightKg: 73,
+      bodyFatPercentage: 16.4,
+      musclePercentage: 43.5,
+      restingMetabolismKcal: 1700,
+      waistCm: 92,
+    }),
+    measurementRow({
+      id: "current-1",
+      date: "2026-06-08",
+      weightKg: 74,
+      bodyFatPercentage: 14,
+      musclePercentage: 44,
+      restingMetabolismKcal: 1710,
+      waistCm: 88.5,
+      sleepHours: 7,
+    }),
+    measurementRow({
+      id: "current-2",
+      date: "2026-06-10",
+      weightKg: 72,
+      bodyFatPercentage: null,
+      musclePercentage: null,
+      restingMetabolismKcal: 1690,
+      sleepHours: 8,
+    }),
+  ]).env
 }
 
 function measurementRow(input: {
@@ -197,61 +176,4 @@ function measurementRow(input: {
     created_at: "2026-06-10T12:00:00.000Z",
     updated_at: "2026-06-10T12:00:00.000Z",
   }
-}
-
-class DashboardMeasurementD1 {
-  private readonly rows: MeasurementRow[]
-
-  constructor(rows: MeasurementRow[]) {
-    this.rows = rows
-  }
-
-  prepare(query: string): DashboardMeasurementD1Statement {
-    return new DashboardMeasurementD1Statement(this.rows, normalizeSql(query))
-  }
-}
-
-class DashboardMeasurementD1Statement {
-  private readonly rows: MeasurementRow[]
-  private readonly query: string
-
-  constructor(rows: MeasurementRow[], query: string) {
-    this.rows = rows
-    this.query = query
-  }
-
-  bind(): DashboardMeasurementD1Statement {
-    return this
-  }
-
-  async all<T>(): Promise<D1Result<T>> {
-    if (
-      !this.query.includes("FROM measurements") ||
-      !this.query.includes("ORDER BY date DESC")
-    ) {
-      throw new Error(`Unsupported all query: ${this.query}`)
-    }
-
-    const results = [...this.rows].sort((left, right) =>
-      right.date.localeCompare(left.date),
-    )
-
-    return {
-      results: results as T[],
-      success: true,
-      meta: {
-        changed_db: false,
-        changes: 0,
-        duration: 0,
-        last_row_id: 0,
-        rows_read: results.length,
-        rows_written: 0,
-        size_after: 0,
-      },
-    } as D1Result<T>
-  }
-}
-
-function normalizeSql(query: string): string {
-  return query.replace(/\s+/g, " ").trim()
 }

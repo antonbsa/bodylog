@@ -1,10 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { app } from "../../apps/api/src/app"
-import {
-  createSessionCookieValue,
-  SESSION_COOKIE_NAME,
-} from "../../apps/api/src/features/auth/session"
+import { createSignedInEnv, SIGNED_IN_COOKIE } from "./test-env"
 import type { HistoryWeeksPage } from "../../types/history"
 
 type MeasurementRow = {
@@ -102,24 +99,15 @@ describe("history api", () => {
 })
 
 async function getWeeks(query: string, rows: MeasurementRow[]) {
-  const env = createEnv(rows)
-  const sessionCookieValue = await createSessionCookieValue(env.SESSION_SECRET)
-
   return app.request(
     `/api/history/weeks${query}`,
-    { headers: { cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}` } },
-    env,
+    { headers: { cookie: SIGNED_IN_COOKIE } },
+    createEnv(rows),
   )
 }
 
 function createEnv(rows: MeasurementRow[]) {
-  return {
-    APP_PASSWORD: "correct-password",
-    DB: new DashboardMeasurementD1(rows) as unknown as D1Database,
-    SESSION_SECRET: "test-session-secret",
-    USER_HEIGHT_CM: "168",
-    USER_TIME_ZONE: "America/Sao_Paulo",
-  }
+  return createSignedInEnv(rows).env
 }
 
 function measurementRow(input: {
@@ -146,67 +134,4 @@ function measurementRow(input: {
     created_at: "2026-06-10T12:00:00.000Z",
     updated_at: "2026-06-10T12:00:00.000Z",
   }
-}
-
-class DashboardMeasurementD1 {
-  private readonly rows: MeasurementRow[]
-
-  constructor(rows: MeasurementRow[]) {
-    this.rows = rows
-  }
-
-  prepare(query: string): DashboardMeasurementD1Statement {
-    return new DashboardMeasurementD1Statement(this.rows, normalizeSql(query))
-  }
-}
-
-class DashboardMeasurementD1Statement {
-  private readonly rows: MeasurementRow[]
-  private readonly query: string
-  private bindings: unknown[] = []
-
-  constructor(rows: MeasurementRow[], query: string) {
-    this.rows = rows
-    this.query = query
-  }
-
-  bind(...bindings: unknown[]): DashboardMeasurementD1Statement {
-    this.bindings = bindings
-    return this
-  }
-
-  async all<T>(): Promise<D1Result<T>> {
-    if (
-      !this.query.includes("FROM measurements") ||
-      !this.query.includes("ORDER BY date DESC")
-    ) {
-      throw new Error(`Unsupported all query: ${this.query}`)
-    }
-
-    // Only the `date < ?` filter is emulated; history queries bind nothing else.
-    const before = this.query.includes("date < ?")
-      ? String(this.bindings[0])
-      : undefined
-    const results = this.rows
-      .filter((row) => before === undefined || row.date < before)
-      .sort((left, right) => right.date.localeCompare(left.date))
-
-    return {
-      results: results as T[],
-      success: true,
-      meta: {
-        changed_db: false,
-        changes: 0,
-        duration: 0,
-        last_row_id: 0,
-        rows_read: results.length,
-        rows_written: 0,
-        size_after: 0,
-      },
-    } as D1Result<T>
-  }
-}
-
-function normalizeSql(query: string): string {
-  return query.replace(/\s+/g, " ").trim()
 }

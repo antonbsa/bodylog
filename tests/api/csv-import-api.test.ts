@@ -1,19 +1,13 @@
 import { describe, expect, it } from "vitest"
 
 import { app } from "../../apps/api/src/app"
-import {
-  createSessionCookieValue,
-  SESSION_COOKIE_NAME,
-} from "../../apps/api/src/features/auth/session"
 import { MeasurementRepository } from "../../apps/api/src/db/repositories/measurements"
-import { createSqliteD1 } from "./sqlite-d1"
-
-const baseEnv = {
-  APP_PASSWORD: "correct-password",
-  SESSION_SECRET: "test-session-secret",
-  USER_HEIGHT_CM: "168",
-  USER_TIME_ZONE: "America/Sao_Paulo",
-}
+import {
+  createSignedInEnv,
+  createTestEnv,
+  SIGNED_IN_COOKIE,
+  SIGNED_IN_USER_ID,
+} from "./test-env"
 
 const SPREADSHEET = Buffer.from(
   [
@@ -35,29 +29,27 @@ function setup(
     waist?: number
   }> = [],
 ) {
-  const { d1, sqlite } = createSqliteD1()
-
-  for (const row of seed) {
-    sqlite
-      .prepare(
-        `INSERT INTO measurements (id, date, weight_kg, waist_cm, notes, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z')`,
-      )
-      .run(
-        `id-${row.date}`,
-        row.date,
-        row.weight,
-        row.waist ?? null,
-        row.notes ?? null,
-      )
-  }
-
+  const testEnv = createSignedInEnv(
+    seed.map((row) => ({
+      created_at: "2026-01-01T00:00:00.000Z",
+      date: row.date,
+      id: `id-${row.date}`,
+      notes: row.notes,
+      waist_cm: row.waist,
+      weight_kg: row.weight,
+    })),
+  )
+  // The owner column is the same on every row here, so assertions leave it out.
   const rows = () =>
-    sqlite.prepare("SELECT * FROM measurements ORDER BY date").all() as Array<
-      Record<string, unknown>
-    >
+    testEnv
+      .measurementRows(SIGNED_IN_USER_ID)
+      .map((row) =>
+        Object.fromEntries(
+          Object.entries(row).filter(([column]) => column !== "user_id"),
+        ),
+      )
 
-  return { env: { ...baseEnv, DB: d1 }, rows }
+  return { env: testEnv.env, rows }
 }
 
 async function post(
@@ -81,7 +73,7 @@ async function post(
     form.append(key, value)
   }
 
-  const cookie = `${SESSION_COOKIE_NAME}=${await createSessionCookieValue(baseEnv.SESSION_SECRET)}`
+  const cookie = SIGNED_IN_COOKIE
 
   return app.request(
     path,
@@ -248,8 +240,8 @@ describe("POST /api/import/csv", () => {
 
 describe("MeasurementRepository.upsertImportedBatch", () => {
   it("writes all rows or none when one statement fails", async () => {
-    const { d1, sqlite } = createSqliteD1()
-    const repository = new MeasurementRepository(d1)
+    const { createUser, env, sqlite } = createTestEnv()
+    const repository = new MeasurementRepository(env.DB, createUser("u1"))
     const row = { date: "2026-06-10", fields: {}, updatedAt: "t", weightKg: 72 }
 
     // A NOT NULL violation on the second row must roll back the first.

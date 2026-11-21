@@ -1,7 +1,9 @@
 export type AppBindings = {
-  APP_PASSWORD: string
   DB: D1Database
-  SESSION_SECRET: string
+  /** Enables `POST /api/auth/dev-login`; set to "true" only in `.env.development`. */
+  DEV_LOGIN_ENABLED?: string
+  GITHUB_CLIENT_ID: string
+  GITHUB_CLIENT_SECRET: string
   USER_HEIGHT_CM: string
   USER_TIME_ZONE: string
 }
@@ -31,6 +33,10 @@ export type UpdateMeasurementByDateInput = {
 
 export type AppEnv = {
   Bindings: AppBindings
+  Variables: {
+    /** Set by `requireSession` for every protected route. */
+    userId: string
+  }
 }
 
 /** A valid import row; `fields` holds only the columns present in the file, where null clears the stored value. */

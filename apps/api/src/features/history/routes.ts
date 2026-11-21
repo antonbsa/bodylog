@@ -19,7 +19,7 @@ historyRoutes.get("/weeks", async (c) => {
     throw createValidationError("INVALID_DATE")
   }
 
-  const repository = new MeasurementRepository(c.env.DB)
+  const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
   const page = await getHistoryWeeks(repository, {
     before,
     currentDate: getCurrentDateOnly(getUserTimeZone(c.env)),

@@ -1,0 +1,180 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+
+import { app } from "../../apps/api/src/app"
+import type { WeeklyDashboard } from "../../types/dashboard"
+import type { HistoryWeeksPage } from "../../types/history"
+import type { TrendsResponse } from "../../types/trends"
+import { createTestEnv } from "./test-env"
+
+/** Ana and Bia each have a record on 2026-06-08; only Bia has one on 2026-06-09. */
+function setup() {
+  const testEnv = createTestEnv()
+  const ana = testEnv.signIn("ana")
+  const bia = testEnv.signIn("bia")
+
+  testEnv.insertMeasurement("ana", {
+    date: "2026-06-08",
+    id: "ana-08",
+    weight_kg: 60,
+  })
+  testEnv.insertMeasurement("bia", {
+    date: "2026-06-08",
+    id: "bia-08",
+    weight_kg: 90,
+  })
+  testEnv.insertMeasurement("bia", {
+    date: "2026-06-09",
+    id: "bia-09",
+    weight_kg: 91,
+  })
+
+  const request = (cookie: string, path: string, init: RequestInit = {}) =>
+    app.request(
+      path,
+      { ...init, headers: { ...init.headers, cookie } },
+      testEnv.env,
+    )
+
+  return { ...testEnv, ana, bia, request }
+}
+
+function csvUpload(content: string) {
+  const form = new FormData()
+
+  form.append("file", new File([content], "m.csv", { type: "text/csv" }))
+
+  return { body: form, method: "POST" }
+}
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] })
+  vi.setSystemTime(new Date("2026-06-10T12:00:00.000Z"))
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+
+describe("per-user data", () => {
+  it("lists only the caller's measurements", async () => {
+    const { ana, request } = setup()
+    const body = (await (await request(ana, "/api/measurements")).json()) as {
+      items: Array<{ id: string }>
+    }
+
+    expect(body.items.map((item) => item.id)).toEqual(["ana-08"])
+  })
+
+  it("loads the caller's record for a date another user also recorded", async () => {
+    const { ana, bia, request } = setup()
+    const anaItem = await (
+      await request(ana, "/api/measurements/by-date/2026-06-08")
+    ).json()
+
+    expect(anaItem).toMatchObject({ item: { id: "ana-08", weightKg: 60 } })
+    expect(
+      (await request(ana, "/api/measurements/by-date/2026-06-09")).status,
+    ).toBe(404)
+    expect(
+      await (await request(bia, "/api/measurements/by-date/2026-06-09")).json(),
+    ).toMatchObject({ item: { id: "bia-09" } })
+  })
+
+  it("lets both users record the same date, each editing only their own", async () => {
+    const { ana, bia, measurementRows, request } = setup()
+    const put = (cookie: string, weightKg: number) =>
+      request(cookie, "/api/measurements/by-date/2026-06-10", {
+        body: JSON.stringify({ weightKg }),
+        headers: { "content-type": "application/json" },
+        method: "PUT",
+      })
+
+    expect((await put(ana, 61)).status).toBe(200)
+    expect((await put(bia, 92)).status).toBe(200)
+    expect((await put(ana, 62)).status).toBe(200)
+
+    expect(
+      measurementRows("ana").map((row) => [row.date, row.weight_kg]),
+    ).toEqual([
+      ["2026-06-08", 60],
+      ["2026-06-10", 62],
+    ])
+    expect(
+      measurementRows("bia").map((row) => [row.date, row.weight_kg]),
+    ).toEqual([
+      ["2026-06-08", 90],
+      ["2026-06-09", 91],
+      ["2026-06-10", 92],
+    ])
+  })
+
+  it("never deletes another user's measurement", async () => {
+    const { ana, bia, measurementRows, request } = setup()
+    const response = await request(bia, "/api/measurements/ana-08", {
+      method: "DELETE",
+    })
+
+    expect(response.status).toBe(404)
+    expect(measurementRows("ana")).toHaveLength(1)
+    expect(
+      (await request(ana, "/api/measurements/ana-08", { method: "DELETE" }))
+        .status,
+    ).toBe(200)
+  })
+
+  it("builds the dashboard, history and trends from the caller's records", async () => {
+    const { ana, request } = setup()
+    const dashboard = (await (
+      await request(ana, "/api/dashboard/weekly")
+    ).json()) as WeeklyDashboard
+    const history = (await (
+      await request(ana, "/api/history/weeks")
+    ).json()) as HistoryWeeksPage
+    const trends = (await (
+      await request(ana, "/api/trends")
+    ).json()) as TrendsResponse
+
+    expect(dashboard.current.recordedDates).toEqual(["2026-06-08"])
+    expect(dashboard.current.averages.weightKg).toBe(60)
+    expect(
+      history.weeks.flatMap((week) => week.measurements.map((m) => m.id)),
+    ).toEqual(["ana-08"])
+    expect(trends.points.map((point) => point.weightKg)).toEqual([60])
+  })
+
+  it("exports only the caller's measurements", async () => {
+    const { bia, request } = setup()
+    const csv = await (await request(bia, "/api/export/csv")).text()
+
+    expect(csv).toContain("2026-06-09")
+    expect(csv).not.toContain("60")
+    expect(csv.trim().split("\n")).toHaveLength(3)
+  })
+
+  it("previews and imports into the caller's account only", async () => {
+    const { ana, measurementRows, request } = setup()
+    const file = "date,weight_kg\n2026-06-08,61\n2026-06-09,62\n"
+    const preview = await (
+      await request(ana, "/api/import/csv/preview", csvUpload(file))
+    ).json()
+
+    // Bia's 2026-06-09 doesn't count as an update for Ana.
+    expect(preview).toMatchObject({ counts: { created: 1, updated: 1 } })
+
+    expect(
+      (await request(ana, "/api/import/csv", csvUpload(file))).status,
+    ).toBe(200)
+    expect(
+      measurementRows("ana").map((row) => [row.date, row.weight_kg]),
+    ).toEqual([
+      ["2026-06-08", 61],
+      ["2026-06-09", 62],
+    ])
+    expect(
+      measurementRows("bia").map((row) => [row.date, row.weight_kg]),
+    ).toEqual([
+      ["2026-06-08", 90],
+      ["2026-06-09", 91],
+    ])
+  })
+})

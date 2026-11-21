@@ -1,25 +1,11 @@
 import { describe, expect, it } from "vitest"
 
 import { MeasurementRepository } from "../../apps/api/src/db/repositories/measurements"
-
-type MeasurementRow = {
-  id: string
-  date: string
-  weight_kg: number
-  body_fat_percentage: number | null
-  muscle_percentage: number | null
-  resting_metabolism_kcal: number | null
-  waist_cm: number | null
-  sleep_hours: number | null
-  disposition: number | null
-  notes: string | null
-  created_at: string
-  updated_at: string
-}
+import { createTestEnv } from "./test-env"
 
 describe("MeasurementRepository", () => {
   it("creates a measurement", async () => {
-    const db = new InMemoryMeasurementD1()
+    const db = createDb()
     const repository = createRepository(db)
 
     const measurement = await repository.create({
@@ -45,7 +31,7 @@ describe("MeasurementRepository", () => {
   })
 
   it("updates a measurement by date", async () => {
-    const db = new InMemoryMeasurementD1()
+    const db = createDb()
     let now = "2026-06-10T12:00:00.000Z"
     const repository = createRepository(db, {
       now: () => new Date(now),
@@ -82,7 +68,7 @@ describe("MeasurementRepository", () => {
   })
 
   it("returns null when updating a missing date", async () => {
-    const repository = createRepository(new InMemoryMeasurementD1())
+    const repository = createRepository(createDb())
 
     await expect(
       repository.updateByDate("2026-06-09", {
@@ -93,7 +79,7 @@ describe("MeasurementRepository", () => {
 
   it("round-trips waist, sleep, disposition and notes", async () => {
     let now = "2026-06-10T12:00:00.000Z"
-    const repository = createRepository(new InMemoryMeasurementD1(), {
+    const repository = createRepository(createDb(), {
       now: () => new Date(now),
     })
 
@@ -134,21 +120,13 @@ describe("MeasurementRepository", () => {
   })
 
   it("reads rows without the new columns set as null", async () => {
-    const db = new InMemoryMeasurementD1()
+    const db = createDb()
 
-    db.rows.set("old", {
+    db.insertMeasurement(USER_ID, {
       id: "old",
       date: "2026-05-01",
       weight_kg: 75,
-      body_fat_percentage: null,
-      muscle_percentage: null,
-      resting_metabolism_kcal: null,
-      waist_cm: null,
-      sleep_hours: null,
-      disposition: null,
-      notes: null,
       created_at: "2026-05-01T12:00:00.000Z",
-      updated_at: "2026-05-01T12:00:00.000Z",
     })
 
     expect(await createRepository(db).getByDate("2026-05-01")).toMatchObject({
@@ -160,7 +138,7 @@ describe("MeasurementRepository", () => {
   })
 
   it("gets a measurement by date", async () => {
-    const repository = createRepository(new InMemoryMeasurementD1())
+    const repository = createRepository(createDb())
 
     await repository.create({
       date: "2026-06-09",
@@ -181,7 +159,7 @@ describe("MeasurementRepository", () => {
   })
 
   it("lists measurements by date descending", async () => {
-    const repository = createRepository(new InMemoryMeasurementD1())
+    const repository = createRepository(createDb())
 
     await repository.create({
       date: "2026-06-08",
@@ -206,7 +184,7 @@ describe("MeasurementRepository", () => {
   })
 
   it("lists measurements with date filters and pagination", async () => {
-    const repository = createRepository(new InMemoryMeasurementD1())
+    const repository = createRepository(createDb())
 
     await repository.create({
       date: "2026-06-07",
@@ -238,7 +216,7 @@ describe("MeasurementRepository", () => {
   })
 
   it("returns the latest measurement before a date with to and limit 1", async () => {
-    const repository = createRepository(new InMemoryMeasurementD1())
+    const repository = createRepository(createDb())
 
     for (const date of ["2026-06-05", "2026-06-08", "2026-06-10"]) {
       await repository.create({ date, weightKg: 72 })
@@ -255,7 +233,7 @@ describe("MeasurementRepository", () => {
   })
 
   it("deletes a measurement", async () => {
-    const repository = createRepository(new InMemoryMeasurementD1())
+    const repository = createRepository(createDb())
     const measurement = await repository.create({
       date: "2026-06-09",
       weightKg: 72.9,
@@ -267,13 +245,23 @@ describe("MeasurementRepository", () => {
   })
 })
 
+const USER_ID = "user-a"
+
+function createDb() {
+  const testEnv = createTestEnv()
+
+  testEnv.createUser(USER_ID)
+
+  return testEnv
+}
+
 function createRepository(
-  db: InMemoryMeasurementD1,
+  db: ReturnType<typeof createDb>,
   options: {
     now?: () => Date
   } = {},
 ): MeasurementRepository {
-  return new MeasurementRepository(db as unknown as D1Database, {
+  return new MeasurementRepository(db.env.DB, USER_ID, {
     createId: createSequentialId(),
     now: options.now ?? (() => new Date("2026-06-10T12:00:00.000Z")),
   })
@@ -287,205 +275,4 @@ function createSequentialId(): () => string {
 
     return `measurement-${currentId}`
   }
-}
-
-class InMemoryMeasurementD1 {
-  readonly rows = new Map<string, MeasurementRow>()
-
-  prepare(query: string): InMemoryD1Statement {
-    return new InMemoryD1Statement(this, normalizeSql(query))
-  }
-}
-
-class InMemoryD1Statement {
-  private bindings: unknown[] = []
-  private readonly db: InMemoryMeasurementD1
-  private readonly query: string
-
-  constructor(db: InMemoryMeasurementD1, query: string) {
-    this.db = db
-    this.query = query
-  }
-
-  bind(...bindings: unknown[]): InMemoryD1Statement {
-    this.bindings = bindings
-
-    return this
-  }
-
-  async run(): Promise<D1Result> {
-    if (this.query.startsWith("INSERT INTO measurements")) {
-      return this.insertMeasurement()
-    }
-
-    if (this.query.startsWith("UPDATE measurements")) {
-      return this.updateMeasurement()
-    }
-
-    if (this.query.startsWith("DELETE FROM measurements")) {
-      return this.deleteMeasurement()
-    }
-
-    throw new Error(`Unsupported run query: ${this.query}`)
-  }
-
-  async first<T>(): Promise<T | null> {
-    if (!this.query.includes("FROM measurements WHERE date = ?")) {
-      throw new Error(`Unsupported first query: ${this.query}`)
-    }
-
-    const date = this.bindings[0]
-    const row = [...this.db.rows.values()].find((item) => item.date === date)
-
-    return (row ?? null) as T | null
-  }
-
-  async all<T>(): Promise<D1Result<T>> {
-    if (
-      !this.query.includes("FROM measurements") ||
-      !this.query.includes("ORDER BY date DESC")
-    ) {
-      throw new Error(`Unsupported all query: ${this.query}`)
-    }
-
-    let bindingIndex = 0
-    let results = [...this.db.rows.values()]
-
-    if (this.query.includes("date >= ?")) {
-      const from = String(this.bindings[bindingIndex])
-      bindingIndex += 1
-      results = results.filter((row) => row.date >= from)
-    }
-
-    if (this.query.includes("date <= ?")) {
-      const to = String(this.bindings[bindingIndex])
-      bindingIndex += 1
-      results = results.filter((row) => row.date <= to)
-    }
-
-    results = results.sort((left, right) => right.date.localeCompare(left.date))
-
-    if (this.query.includes("LIMIT ?")) {
-      const limit = Number(this.bindings[bindingIndex])
-      bindingIndex += 1
-      const offset = this.query.includes("OFFSET ?")
-        ? Number(this.bindings[bindingIndex])
-        : 0
-
-      results = results.slice(offset, offset + limit)
-    } else if (this.query.includes("LIMIT -1 OFFSET ?")) {
-      const offset = Number(this.bindings[bindingIndex])
-
-      results = results.slice(offset)
-    }
-
-    return createD1Result(results as T[])
-  }
-
-  private async insertMeasurement(): Promise<D1Result> {
-    const [
-      id,
-      date,
-      weightKg,
-      bodyFatPercentage,
-      musclePercentage,
-      restingMetabolismKcal,
-      waistCm,
-      sleepHours,
-      disposition,
-      notes,
-      createdAt,
-      updatedAt,
-    ] = this.bindings
-
-    if ([...this.db.rows.values()].some((row) => row.date === date)) {
-      throw new Error(`UNIQUE constraint failed: measurements.date`)
-    }
-
-    this.db.rows.set(String(id), {
-      id: String(id),
-      date: String(date),
-      weight_kg: Number(weightKg),
-      body_fat_percentage: nullableNumber(bodyFatPercentage),
-      muscle_percentage: nullableNumber(musclePercentage),
-      resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
-      waist_cm: nullableNumber(waistCm),
-      sleep_hours: nullableNumber(sleepHours),
-      disposition: nullableNumber(disposition),
-      notes: notes === null || notes === undefined ? null : String(notes),
-      created_at: String(createdAt),
-      updated_at: String(updatedAt),
-    })
-
-    return createD1Result([], 1)
-  }
-
-  private async updateMeasurement(): Promise<D1Result> {
-    const [
-      weightKg,
-      bodyFatPercentage,
-      musclePercentage,
-      restingMetabolismKcal,
-      waistCm,
-      sleepHours,
-      disposition,
-      notes,
-      updatedAt,
-      date,
-    ] = this.bindings
-    const row = [...this.db.rows.values()].find((item) => item.date === date)
-
-    if (!row) {
-      return createD1Result([], 0)
-    }
-
-    this.db.rows.set(row.id, {
-      ...row,
-      weight_kg: Number(weightKg),
-      body_fat_percentage: nullableNumber(bodyFatPercentage),
-      muscle_percentage: nullableNumber(musclePercentage),
-      resting_metabolism_kcal: nullableNumber(restingMetabolismKcal),
-      waist_cm: nullableNumber(waistCm),
-      sleep_hours: nullableNumber(sleepHours),
-      disposition: nullableNumber(disposition),
-      notes: notes === null || notes === undefined ? null : String(notes),
-      updated_at: String(updatedAt),
-    })
-
-    return createD1Result([], 1)
-  }
-
-  private async deleteMeasurement(): Promise<D1Result> {
-    const id = String(this.bindings[0])
-    const deleted = this.db.rows.delete(id)
-
-    return createD1Result([], deleted ? 1 : 0)
-  }
-}
-
-function normalizeSql(query: string): string {
-  return query.replace(/\s+/g, " ").trim()
-}
-
-function nullableNumber(value: unknown): number | null {
-  return value === null || value === undefined ? null : Number(value)
-}
-
-function createD1Result<T = unknown>(
-  results: T[] = [],
-  changes = 0,
-): D1Result<T> {
-  return {
-    results,
-    success: true,
-    meta: {
-      changed_db: false,
-      changes,
-      duration: 0,
-      last_row_id: 0,
-      rows_read: results.length,
-      rows_written: changes,
-      size_after: 0,
-    },
-  } as D1Result<T>
 }

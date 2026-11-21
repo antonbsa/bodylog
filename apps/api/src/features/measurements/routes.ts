@@ -21,7 +21,7 @@ measurementRoutes.get("/", async (c) => {
     throw createValidationError(listQuery.code)
   }
 
-  const repository = new MeasurementRepository(c.env.DB)
+  const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
   const measurements = await repository.list(listQuery.query)
   const heightCm = getUserHeightCm(c.env)
 
@@ -40,7 +40,7 @@ measurementRoutes.get("/by-date/:date", async (c) => {
     throw createValidationError("INVALID_DATE")
   }
 
-  const repository = new MeasurementRepository(c.env.DB)
+  const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
   const measurement = await repository.getByDate(date)
 
   if (!measurement) {
@@ -67,7 +67,7 @@ measurementRoutes.put("/by-date/:date", async (c) => {
     throw createValidationError(input.code)
   }
 
-  const repository = new MeasurementRepository(c.env.DB)
+  const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
   const existingMeasurement = await repository.getByDate(date)
   const measurement = existingMeasurement
     ? await repository.updateByDate(date, input.measurement)
@@ -88,7 +88,7 @@ measurementRoutes.delete("/:id", async (c) => {
     throw createValidationError("INVALID_MEASUREMENT_ID")
   }
 
-  const repository = new MeasurementRepository(c.env.DB)
+  const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
   const deleted = await repository.delete(id)
 
   if (!deleted) {
