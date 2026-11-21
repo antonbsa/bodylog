@@ -35,7 +35,7 @@ The web app and the API share one origin, so the session cookie is first-party: 
 
 ## Local GitHub Sign-in
 
-Locally, **Entrar como dev** covers day-to-day work ([Run locally](../guides/run-locally.md#start)). To try the real GitHub flow, create a separate OAuth App with `http://localhost:5173` as **Homepage URL** and `http://localhost:5173/api/auth/github/callback` as **Authorization callback URL** (if GitHub reports a `redirect_uri` mismatch, register the `redirect_uri` shown in the URL `/api/auth/github` redirects to, since the Worker derives it from the origin it sees), and put its credentials in `.env.local` at the repo root:
+Locally, **Entrar como dev** covers day-to-day work ([Run locally](../guides/run-locally.md#start)). To try the real GitHub flow, create a separate OAuth App with `http://localhost:5173` as **Homepage URL** and `http://localhost:5173/api/auth/github/callback` as **Authorization callback URL**, and put its credentials in `.env.local` at the repo root:
 
 ```txt
 GITHUB_CLIENT_ID="..."
@@ -43,6 +43,8 @@ GITHUB_CLIENT_SECRET="..."
 ```
 
 `wrangler dev` loads `.env.local` after `.env.development`, so these replace the placeholders. Without them, **Entrar com GitHub** reaches GitHub with a placeholder client id and GitHub rejects it.
+
+The API's `dev` script passes `--local-upstream localhost:5173`, so the Worker sees the Vite origin and derives that callback even though it listens on 8787; Vite runs with `strictPort`, so the port can't drift. GitHub sign-in doesn't work from a phone via `dev:lan` (the callback stays on localhost): use **Entrar como dev** there and test GitHub sign-in on preview.
 
 ## Non-Secret Variables
 

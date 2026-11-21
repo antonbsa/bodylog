@@ -62,7 +62,7 @@ npm run dev:api
 npm run dev:web
 ```
 
-`npm run dev:lan` also exposes the web app on the local network (`--host 0.0.0.0`), for opening it from a phone on the same Wi-Fi.
+`npm run dev:lan` also exposes the web app on the local network (`--host 0.0.0.0`), for opening it from a phone on the same Wi-Fi; use **Entrar como dev** there, since GitHub sign-in only works from `localhost` ([Environment setup](../operations/environment-setup.md#local-github-sign-in)).
 
 ## Check It Works
 
