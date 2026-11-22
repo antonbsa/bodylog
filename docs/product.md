@@ -185,7 +185,7 @@ The system must calculate derived body metrics from the stored values.
 
 #### Acceptance Criteria
 
-- BMI is calculated from weight and configured height.
+- BMI is calculated from weight and the height the user sets in Ajustes; while no height is set, BMI shows "—" and Ajustes says the height is missing.
 - Body fat mass is calculated when weight and body fat percentage are available.
 - Muscle mass is calculated when weight and muscle percentage are available.
 - Derived values are not required to be stored in the database.
@@ -367,7 +367,7 @@ The data access layer should be isolated enough to support a future migration fr
 - One record per date per account, with date-based create/edit behavior.
 - Required field: weight.
 - Optional fields: body fat percentage, muscle percentage, resting metabolism, waist, sleep hours, disposition (1–5) and notes.
-- BMI calculated from configured height; body fat mass and muscle mass calculated when possible.
+- BMI calculated from the user's height; body fat mass and muscle mass calculated when possible.
 
 ### Weekly Analysis
 

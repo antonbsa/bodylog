@@ -4,8 +4,6 @@ export type AppBindings = {
   DEV_LOGIN_ENABLED?: string
   GITHUB_CLIENT_ID: string
   GITHUB_CLIENT_SECRET: string
-  USER_HEIGHT_CM: string
-  USER_TIME_ZONE: string
 }
 
 export type CreateMeasurementInput = {

@@ -102,11 +102,11 @@ Colors are CSS custom properties in `apps/web/src/styles/tokens.css`. The theme 
 apps/api/src/
   index.ts              wrangler main; re-exports the app
   app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
-  config.ts             env-derived settings (GitHub OAuth client, dev login flag, height, time zone)
+  config.ts             env-derived settings (GitHub OAuth client, dev login flag)
   types.ts              API-only bindings and input types
-  features/<name>/      routes.ts plus that feature's services (auth, measurements, dashboard, history, trends, csv)
+  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv)
   db/repositories/      D1 access, one file per table
-  http/                 cross-feature HTTP helpers (request validation, session guard)
+  http/                 cross-feature HTTP helpers (request validation, session guard, the user's height and zone)
   domain/               API domain objects (Measurement, week range, week summary)
 ```
 

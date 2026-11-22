@@ -1,8 +1,10 @@
 import { NotFoundError, ValidationError } from "../../../../infra/errors"
 import {
+  isWithinHeightLimit,
   isWithinMeasurementLimit,
   normalizeNotes,
 } from "../../../../domain/measurement"
+import type { UpdateProfileRequest } from "../../../../types/auth"
 import type { MeasurementInput } from "../../../../types/measurements"
 
 type ErrorDetails = {
@@ -40,6 +42,7 @@ type ValidationErrorCode =
   | "INVALID_MEASUREMENT_ID"
   | "INVALID_MEASUREMENT_INPUT"
   | "INVALID_MEASUREMENTS_QUERY"
+  | "INVALID_PROFILE_INPUT"
 
 type NotFoundErrorCode = "MEASUREMENT_NOT_FOUND"
 
@@ -59,6 +62,11 @@ const VALIDATION_ERROR_DETAILS: Record<ValidationErrorCode, ErrorDetails> = {
   INVALID_MEASUREMENTS_QUERY: {
     action: "Revise os filtros de listagem e tente novamente.",
     message: "Parâmetros de listagem inválidos.",
+  },
+  // The zone is sent by the app, never typed, so the action speaks only of the height.
+  INVALID_PROFILE_INPUT: {
+    action: "Revise a altura e tente novamente.",
+    message: "Dados do perfil inválidos.",
   },
 }
 
@@ -158,6 +166,56 @@ export function parseMeasurementInput(body: unknown): MeasurementInputResult {
       weightKg: body.weightKg,
     },
     valid: true,
+  }
+}
+
+/** A `PATCH /api/me` body with at least one valid field. */
+export function parseProfileInput(body: unknown): UpdateProfileRequest | null {
+  if (!isRecord(body) || (!("heightCm" in body) && !("timeZone" in body))) {
+    return null
+  }
+
+  const update: UpdateProfileRequest = {}
+
+  if ("heightCm" in body) {
+    const { heightCm } = body
+
+    if (
+      heightCm !== null &&
+      !(isFiniteNumber(heightCm) && isWithinHeightLimit(heightCm))
+    ) {
+      return null
+    }
+
+    update.heightCm = heightCm
+  }
+
+  if ("timeZone" in body) {
+    if (!isTimeZone(body.timeZone)) {
+      return null
+    }
+
+    update.timeZone = body.timeZone
+  }
+
+  return update
+}
+
+/**
+ * An IANA zone name Intl accepts, refusing UTC offsets like "+03:00" even where Intl takes them.
+ * Kept as sent: the app compares it with the device's own spelling, which the Worker's ICU may canonicalize differently.
+ */
+function isTimeZone(value: unknown): value is string {
+  if (typeof value !== "string" || !/^[A-Za-z][\w+\-/]*$/.test(value)) {
+    return false
+  }
+
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: value }).format()
+
+    return true
+  } catch {
+    return false
   }
 }
 

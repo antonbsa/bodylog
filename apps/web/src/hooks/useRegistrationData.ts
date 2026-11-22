@@ -16,7 +16,7 @@ import type { ListedMeasurement } from "../types"
 
 export type RegistrationData = {
   date: string
-  /** Configured height, present only when a record exists (edit mode). */
+  /** The user's height, sent only with an existing record (edit mode); null while unset. */
   heightCm: number | null
   measurement: Measurement | null
   /** Latest record before `date`, used only for the "anterior" hints. */

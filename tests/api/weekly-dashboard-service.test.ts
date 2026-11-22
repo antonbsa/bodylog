@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest"
 
 import { Measurement } from "../../apps/api/src/domain/measurement"
 
-const USER_HEIGHT_CM = 168
+const HEIGHT_CM = 168
 
 describe("getWeeklyDashboard", () => {
   it("compares the current partial week against the previous full week", async () => {
@@ -18,7 +18,7 @@ describe("getWeeklyDashboard", () => {
       ]),
       {
         currentDate: "2026-06-10",
-        heightCm: USER_HEIGHT_CM,
+        heightCm: HEIGHT_CM,
       },
     )
 

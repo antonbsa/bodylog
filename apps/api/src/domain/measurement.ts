@@ -19,9 +19,9 @@ export type MeasurementFields = {
 }
 
 /**
- * Domain entity for a single date's body metrics. Height is configured
- * outside the measurement record, so derived values are computed on demand
- * from a height passed by the caller rather than stored on the instance.
+ * Domain entity for a single date's body metrics. Height belongs to the
+ * user, not the record, so derived values are computed on demand from a
+ * height passed by the caller rather than stored on the instance.
  */
 export class Measurement {
   readonly id: string
@@ -52,7 +52,7 @@ export class Measurement {
     this.updatedAt = fields.updatedAt
   }
 
-  getDerivedValues(heightCm: number): DerivedMeasurementValues {
+  getDerivedValues(heightCm: number | null): DerivedMeasurementValues {
     return calculateDerivedValues(this, heightCm)
   }
 

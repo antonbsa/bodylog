@@ -75,7 +75,7 @@ Deletes the session row, so replaying the old cookie answers 401, and clears the
 
 ### GET /api/auth/session
 
-Returns the signed-in user.
+Returns the signed-in user with the profile the app needs at start.
 
 #### Response 200
 
@@ -84,14 +84,55 @@ Returns the signed-in user.
   "user": {
     "id": "string",
     "displayName": "string",
-    "email": "string | null"
+    "email": "string | null",
+    "heightCm": "number | null",
+    "timeZone": "string | null"
   }
 }
 ```
 
+`heightCm` is null until the user sets it in Ajustes, and BMI is null meanwhile. `timeZone` is the IANA zone the device last reported, null until the first sync; the API reads a null zone as `America/Sao_Paulo` ([ADR 0046](../decisions/0046-per-user-height-and-device-time-zone.md)).
+
 #### Response 401
 
 The `UnauthorizedError` above.
+
+## Profile
+
+### PATCH /api/me
+
+Updates the signed-in user's height, time zone, or both. The web app sends `timeZone` on start when the device's zone differs from the stored one.
+
+#### Request
+
+```json
+{
+  "heightCm": 172,
+  "timeZone": "America/Sao_Paulo"
+}
+```
+
+#### Rules
+
+- At least one of the two fields; an absent field keeps its stored value.
+- `heightCm` is a whole number from 50 to 250, or `null` to clear it.
+- `timeZone` is an IANA zone name that Intl resolves, stored as sent so the app's next comparison with the device's spelling matches. UTC offsets such as `+03:00` are refused.
+- An invalid body changes nothing.
+
+#### Response 200
+
+The `GET /api/auth/session` body with the updated user.
+
+#### Response 400
+
+```json
+{
+  "action": "Revise a altura e tente novamente.",
+  "message": "Dados do perfil inválidos.",
+  "name": "ValidationError",
+  "statusCode": 400
+}
+```
 
 ## Measurements
 
@@ -136,6 +177,8 @@ offset=number
 }
 ```
 
+`derived.bmi` uses the user's height and is `null` while it is unset; the same holds for every `bmi` below.
+
 ---
 
 ### GET /api/measurements/by-date/:date
@@ -164,7 +207,7 @@ Finds a measurement by date.
 }
 ```
 
-`heightCm` is the configured user height, so the registration screen can recompute the BMI live while editing.
+`heightCm` is the user's height, or `null` while unset, so the registration screen can recompute the BMI live while editing.
 
 #### Response 404
 
@@ -294,7 +337,7 @@ Each week also returns its `recordedDates` (ascending `YYYY-MM-DD`) so the UI ca
 }
 ```
 
-`current` always represents the actual current week in the configured user time zone, even when it has no records yet; the web UI reads `current` and `previous` only.
+`current` always represents the actual current week in the user's time zone (`America/Sao_Paulo` while none is stored), even when it has no records yet; the web UI reads `current` and `previous` only.
 
 ## History
 
@@ -372,7 +415,7 @@ Returns every measurement as one point, oldest first, for the Tendências screen
 }
 ```
 
-Every metric can be `null`; `bmi` is derived from the configured user height. No records return `{ "points": [] }`.
+Every metric can be `null`; `bmi` is derived from the user's height and is `null` while it is unset. No records return `{ "points": [] }`.
 
 ## CSV Export
 

@@ -74,6 +74,7 @@ async function mockApi(
   page: Page,
   options: {
     failPut?: boolean
+    heightCm?: number | null
     lookupDelayMs?: number
     records?: StoredMeasurement[]
   } = {},
@@ -151,7 +152,10 @@ async function mockApi(
         return json(route, { message: "Medida não encontrada." }, 404)
       }
 
-      return json(route, { heightCm: 180, item: record })
+      return json(route, {
+        heightCm: options.heightCm === undefined ? 180 : options.heightCm,
+        item: record,
+      })
     }
 
     state.puts.push({ body: request.postDataJSON(), date })
@@ -401,6 +405,25 @@ test("loads a past date for editing with calculated values and previous hints", 
   await expect(field(page, "Peso")).toHaveValue("7,5")
   await expect(calculated).not.toContainText("22,2")
   await expect(calculated).toContainText("—")
+})
+
+test("editing without a height shows BMI as a dash and the other calculated values", async ({
+  page,
+}) => {
+  await mockApi(page, {
+    heightCm: null,
+    records: [existingMeasurement, previousMeasurement],
+  })
+
+  await page.goto(`/registro?data=${EXISTING_DATE}`)
+
+  const calculated = page.getByRole("group", {
+    name: "Valores calculados, somente leitura",
+  })
+
+  await expect(calculated.getByText("IMC").locator("..")).toContainText("—")
+  await expect(calculated).toContainText("14,4kg")
+  await expect(calculated).toContainText("28,8kg")
 })
 
 test("saving an edit clears emptied fields with null", async ({ page }) => {

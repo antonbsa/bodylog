@@ -9,6 +9,7 @@ import { authRoutes } from "./features/auth/routes"
 import { csvExportRoutes, csvImportRoutes } from "./features/csv/routes"
 import { dashboardRoutes } from "./features/dashboard/routes"
 import { historyRoutes } from "./features/history/routes"
+import { meRoutes } from "./features/me/routes"
 import { measurementRoutes } from "./features/measurements/routes"
 import { trendsRoutes } from "./features/trends/routes"
 import { requireSession } from "./http/require-session"
@@ -53,6 +54,7 @@ for (const [prefix, routes] of [
   ["/trends", trendsRoutes],
   ["/export", csvExportRoutes],
   ["/import", csvImportRoutes],
+  ["/me", meRoutes],
 ] as const) {
   protectedApi.use(`${prefix}/*`, requireSession)
   protectedApi.route(prefix, routes)

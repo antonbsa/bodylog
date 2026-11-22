@@ -99,6 +99,8 @@ Replace simple password authentication with a more robust model if the app becom
 
 Add reminders for daily measurement logging.
 
+The user would pick only a local time (for example 07:00). The server sends the reminder as a Web Push at that time in `users.time_zone`, the zone the device reports on its own (ADR 0046). Ajustes would then show that zone read-only next to the chosen time, so the user can see where the time is computed. A browser can't reliably schedule a notification by itself, which is why the server has to send it.
+
 ## Data Quality Indicators
 
 Show warnings when weekly averages are based on too few measurements.

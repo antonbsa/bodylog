@@ -185,7 +185,9 @@ describe("GET /api/auth/github/callback", () => {
       user: {
         displayName: "Mona Octocat",
         email: "mona@example.com",
+        heightCm: null,
         id: expect.any(String),
+        timeZone: null,
       },
     })
   })

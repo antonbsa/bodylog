@@ -6,7 +6,7 @@ export type TrendsRepository = Pick<MeasurementRepository, "list">
 /** Every measurement, oldest first, so the client can window and average without paging. */
 export async function getTrends(
   repository: TrendsRepository,
-  config: { heightCm: number },
+  config: { heightCm: number | null },
 ): Promise<TrendsResponse> {
   const measurements = await repository.list()
 

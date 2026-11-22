@@ -13,9 +13,9 @@ export type Measurement = {
   updatedAt: string
 }
 
-/** Response of `GET /api/measurements/by-date/:date`; height lets the form recompute derived values. */
+/** Response of `GET /api/measurements/by-date/:date`; height lets the form recompute derived values, and is null while unset. */
 export type MeasurementLookup = {
-  heightCm: number
+  heightCm: number | null
   item: Measurement
 }
 
@@ -31,7 +31,8 @@ export type MeasurementInput = {
 }
 
 export type MeasurementDerivedValues = {
-  bmi: number
+  /** Null while the user has no height set. */
+  bmi: number | null
   bodyFatKg: number | null
   muscleKg: number | null
 }

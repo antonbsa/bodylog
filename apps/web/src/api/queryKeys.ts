@@ -13,6 +13,8 @@ export const queryKeys = {
   trends: ["measurements", "trends"] as const,
   previousMeasurement: (date: string) =>
     ["measurements", "previous", date] as const,
+  // Seeded at app start and replaced by each profile update, never refetched on its own.
+  sessionUser: ["session-user"] as const,
 }
 
 /** Refreshes everything derived from stored measurements after a write. */

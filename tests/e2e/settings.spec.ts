@@ -448,3 +448,91 @@ test("a toast sits above the tab bar without shifting the layout", async ({
 
   expect(pillBox && barBox && pillBox.y + pillBox.height <= barBox.y).toBe(true)
 })
+
+async function mockProfile(
+  page: Page,
+  user: Partial<typeof signedInSession.user>,
+) {
+  const sessionUser = { ...signedInSession.user, ...user }
+  const updates: unknown[] = []
+
+  await page.route("**/api/auth/session", (route) =>
+    json(route, { user: sessionUser }),
+  )
+  await page.route("**/api/me", (route) => {
+    const update = route.request().postDataJSON() as Record<string, unknown>
+
+    updates.push(update)
+    Object.assign(sessionUser, update)
+
+    return json(route, { user: sessionUser })
+  })
+
+  return updates
+}
+
+const heightRow = (page: Page) => page.getByRole("button", { name: /^Altura/ })
+const heightDialog = (page: Page) =>
+  page.getByRole("dialog", { name: "Altura" })
+
+test("a missing height is flagged, and saving one updates the row", async ({
+  page,
+}) => {
+  await mockApi(page)
+  const updates = await mockProfile(page, { heightCm: null })
+
+  await page.goto("/ajustes")
+  await expect(heightRow(page)).toContainText("Não informada")
+  await expect(heightRow(page)).toContainText(
+    "Informe sua altura para calcular o IMC.",
+  )
+
+  await heightRow(page).click()
+  await heightDialog(page).getByLabel("Altura").pressSequentially("172")
+  await heightDialog(page).getByRole("button", { name: "Salvar" }).click()
+
+  await expect(heightDialog(page)).toBeHidden()
+  await expect(toast(page)).toHaveText("Altura salva")
+  await expect(heightRow(page)).toContainText("172 cm")
+  await expect(heightRow(page)).not.toContainText("Informe sua altura")
+  expect(updates).toEqual([{ heightCm: 172 }])
+})
+
+test("an out-of-range height shows the limits and sends nothing", async ({
+  page,
+}) => {
+  await mockApi(page)
+  const updates = await mockProfile(page, { heightCm: 180 })
+
+  await page.goto("/ajustes")
+  await expect(heightRow(page)).toContainText("180 cm")
+  await heightRow(page).click()
+
+  const field = heightDialog(page).getByLabel("Altura")
+
+  await expect(field).toHaveValue("180")
+  await field.press("Backspace")
+  await field.press("Backspace")
+  await heightDialog(page).getByRole("button", { name: "Salvar" }).click()
+
+  await expect(heightDialog(page)).toContainText(
+    "Use um valor entre 50 e 250 cm.",
+  )
+  await heightDialog(page).getByRole("button", { name: "Cancelar" }).click()
+  await expect(heightRow(page)).toContainText("180 cm")
+  expect(updates).toEqual([])
+})
+
+test("app start sends the device zone when it differs from the stored one", async ({
+  page,
+}) => {
+  await mockApi(page)
+  const updates = await mockProfile(page, { timeZone: "Pacific/Kiritimati" })
+  const deviceZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+  await page.goto("/ajustes")
+
+  // The app renders a screen only after the sync settles.
+  await expect(heightRow(page)).toBeVisible()
+  expect(updates).toEqual([{ timeZone: deviceZone }])
+})

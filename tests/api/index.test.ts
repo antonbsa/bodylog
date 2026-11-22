@@ -33,15 +33,7 @@ describe("api base", () => {
   })
 
   it("does not emit the old api identity header", async () => {
-    const response = await app.request(
-      "/api/auth/session",
-      {},
-      {
-        ...env,
-        USER_HEIGHT_CM: "168",
-        USER_TIME_ZONE: "America/Sao_Paulo",
-      },
-    )
+    const response = await app.request("/api/auth/session", {}, env)
 
     expect(response.headers.get("x-bodylog-api")).toBeNull()
   })

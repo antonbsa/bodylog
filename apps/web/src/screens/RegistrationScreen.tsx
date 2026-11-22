@@ -148,9 +148,10 @@ export function RegistrationScreen() {
   const isBusy = isLoading || isSubmitting || isDeleting
   const errors = validateForm(form)
   const previous = data?.previous ?? null
-  const heightCm = isEditing ? (data?.heightCm ?? null) : null
-  const showDerived = heightCm !== null
-  const derived = heightCm === null ? null : deriveFromForm(form, heightCm)
+  const showDerived = isEditing
+  const derived = isEditing
+    ? deriveFromForm(form, data?.heightCm ?? null)
+    : null
 
   function visibleError(key: NumericFieldKey): string {
     return touched[key] || showAllErrors ? (errors[key] ?? "") : ""

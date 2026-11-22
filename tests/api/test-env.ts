@@ -27,17 +27,19 @@ export function createTestEnv(overrides: Record<string, string> = {}) {
     DB: d1,
     GITHUB_CLIENT_ID: "test-client-id",
     GITHUB_CLIENT_SECRET: "test-client-secret",
-    USER_HEIGHT_CM: "168",
-    USER_TIME_ZONE: "America/Sao_Paulo",
     ...overrides,
   }
 
-  function createUser(id: string, displayName = id) {
+  function createUser(
+    id: string,
+    displayName = id,
+    options: { heightCm?: number | null } = {},
+  ) {
     sqlite
       .prepare(
-        "INSERT INTO users (id, display_name, email, created_at, updated_at) VALUES (?, ?, NULL, 't', 't')",
+        "INSERT INTO users (id, display_name, email, height_cm, created_at, updated_at) VALUES (?, ?, NULL, ?, 't', 't')",
       )
-      .run(id, displayName)
+      .run(id, displayName, options.heightCm ?? null)
 
     return id
   }
@@ -116,11 +118,15 @@ export const SIGNED_IN_USER_ID = "user-a"
 /** The cookie header every `createSignedInEnv` env accepts, since each one stores the same fixed session id. */
 export const SIGNED_IN_COOKIE = `${SESSION_COOKIE_NAME}=test-session`
 
-/** A test env with one signed-in user owning `rows`; requests authenticate with `SIGNED_IN_COOKIE`. */
+export const SIGNED_IN_HEIGHT_CM = 168
+
+/** A test env with one signed-in user, 168 cm tall, owning `rows`; requests authenticate with `SIGNED_IN_COOKIE`. */
 export function createSignedInEnv(rows: MeasurementSeed[] = []) {
   const testEnv = createTestEnv()
 
-  testEnv.createUser(SIGNED_IN_USER_ID)
+  testEnv.createUser(SIGNED_IN_USER_ID, SIGNED_IN_USER_ID, {
+    heightCm: SIGNED_IN_HEIGHT_CM,
+  })
   testEnv.createSession(SIGNED_IN_USER_ID, { sessionId: "test-session" })
 
   for (const row of rows) {

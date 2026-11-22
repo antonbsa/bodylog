@@ -10,7 +10,7 @@ type HistoryWeeksConfig = {
   /** Only measurements strictly before this date are listed. */
   before?: string
   currentDate: string
-  heightCm: number
+  heightCm: number | null
 }
 
 export type HistoryRepository = Pick<MeasurementRepository, "list">

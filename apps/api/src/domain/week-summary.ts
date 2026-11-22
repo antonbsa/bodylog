@@ -30,7 +30,7 @@ export const weeklyAverageMetricKeys = [
 
 type WeekSummaryOptions = {
   currentDate: string
-  heightCm: number
+  heightCm: number | null
   isCurrentWeek: boolean
 }
 
@@ -98,7 +98,7 @@ export class WeekSummary {
 
 function calculateWeeklyAverages(
   measurements: Measurement[],
-  heightCm: number,
+  heightCm: number | null,
 ): WeeklyAverages {
   const accumulators = createMetricAccumulators()
 
@@ -106,7 +106,7 @@ function calculateWeeklyAverages(
     const derivedValues = measurement.getDerivedValues(heightCm)
 
     accumulators.weightKg.values.push(measurement.weightKg)
-    accumulators.bmi.values.push(derivedValues.bmi)
+    addOptionalValue(accumulators.bmi, derivedValues.bmi)
     addOptionalValue(
       accumulators.bodyFatPercentage,
       measurement.bodyFatPercentage,

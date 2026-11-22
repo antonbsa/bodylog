@@ -1,11 +1,11 @@
 import { Hono } from "hono"
 
-import { getUserHeightCm, getUserTimeZone } from "../../config"
 import { MeasurementRepository } from "../../db/repositories/measurements"
 import {
   createValidationError,
   isDateOnly,
 } from "../../http/request-validation"
+import { getUserSettings } from "../../http/user-settings"
 import type { AppEnv } from "../../types"
 import { getCurrentDateOnly } from "../dashboard/weekly-dashboard-service"
 import { getHistoryWeeks } from "./history-service"
@@ -20,10 +20,11 @@ historyRoutes.get("/weeks", async (c) => {
   }
 
   const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
+  const { heightCm, timeZone } = await getUserSettings(c)
   const page = await getHistoryWeeks(repository, {
     before,
-    currentDate: getCurrentDateOnly(getUserTimeZone(c.env)),
-    heightCm: getUserHeightCm(c.env),
+    currentDate: getCurrentDateOnly(timeZone),
+    heightCm,
   })
 
   return c.json(page)

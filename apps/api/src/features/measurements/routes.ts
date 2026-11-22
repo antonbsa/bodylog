@@ -1,6 +1,5 @@
 import { Hono } from "hono"
 
-import { getUserHeightCm } from "../../config"
 import { MeasurementRepository } from "../../db/repositories/measurements"
 import {
   createNotFoundError,
@@ -9,6 +8,8 @@ import {
   parseMeasurementInput,
   parseMeasurementListQuery,
 } from "../../http/request-validation"
+import { getUserSettings } from "../../http/user-settings"
+import type { MeasurementLookup } from "../../../../../types/measurements"
 import type { AppEnv } from "../../types"
 
 export const measurementRoutes = new Hono<AppEnv>()
@@ -23,7 +24,7 @@ measurementRoutes.get("/", async (c) => {
 
   const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
   const measurements = await repository.list(listQuery.query)
-  const heightCm = getUserHeightCm(c.env)
+  const { heightCm } = await getUserSettings(c)
 
   return c.json({
     items: measurements.map((measurement) => ({
@@ -49,8 +50,8 @@ measurementRoutes.get("/by-date/:date", async (c) => {
 
   return c.json({
     item: measurement,
-    heightCm: getUserHeightCm(c.env),
-  })
+    heightCm: (await getUserSettings(c)).heightCm,
+  } satisfies MeasurementLookup)
 })
 
 measurementRoutes.put("/by-date/:date", async (c) => {

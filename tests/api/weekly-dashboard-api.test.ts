@@ -87,7 +87,7 @@ describe("weekly dashboard api", () => {
     })
   })
 
-  it("uses the configured timezone when deriving the current dashboard date", async () => {
+  it("derives the current date in America/Sao_Paulo for a user with no stored zone", async () => {
     vi.setSystemTime(new Date("2026-06-15T01:30:00.000Z"))
 
     expect(getCurrentDateOnly("America/Sao_Paulo")).toBe("2026-06-14")

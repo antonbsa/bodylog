@@ -19,7 +19,13 @@ export const test = base.extend<{ unmockedApi: void }>({
   ],
 })
 
-/** The `GET /api/auth/session` body for a signed-in user. */
+/** The `GET /api/auth/session` body for a signed-in user, stored in the zone the browser reports so the app sends no zone sync. */
 export const signedInSession: SessionResponse = {
-  user: { displayName: "Ana", email: "ana@example.com", id: "user-1" },
+  user: {
+    displayName: "Ana",
+    email: "ana@example.com",
+    heightCm: 180,
+    id: "user-1",
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  },
 }

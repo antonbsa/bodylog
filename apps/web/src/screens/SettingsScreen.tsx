@@ -3,7 +3,8 @@ import { useQueryClient } from "@tanstack/react-query"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { PageTitle } from "./components/PageTitle"
-import { invalidateMeasurementData } from "../api/queryKeys"
+import { updateProfile } from "../api/auth"
+import { invalidateMeasurementData, queryKeys } from "../api/queryKeys"
 import {
   exportMeasurementsCsv,
   importMeasurementsCsv,
@@ -12,7 +13,9 @@ import {
 import type { CsvImportPreview } from "../../../../types/measurements"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
 import { CsvFormatDialog } from "./components/CsvFormatDialog"
+import { HeightDialog } from "./components/HeightDialog"
 import { ImportPreviewDialog } from "./components/ImportPreviewDialog"
+import { useSessionUser } from "../hooks/useSessionUser"
 import { useToast } from "../hooks/useToast"
 import {
   getThemePreference,
@@ -21,6 +24,7 @@ import {
   type ThemePreference,
 } from "../theme"
 import { formatImportResultMessage } from "../utils/csv-import-summary"
+import { formatHeight } from "../utils/height"
 
 const THEME_OPTIONS: Array<{ label: string; value: ThemePreference }> = [
   { label: "Sistema", value: "system" },
@@ -35,6 +39,9 @@ type SettingsScreenProps = {
 export function SettingsScreen({ onLogout }: SettingsScreenProps) {
   const queryClient = useQueryClient()
   const toast = useToast()
+  const user = useSessionUser().data ?? null
+  const [isHeightDialogOpen, setIsHeightDialogOpen] = useState(false)
+  const [isSavingHeight, setIsSavingHeight] = useState(false)
   const themePreference = useSyncExternalStore(
     subscribeToTheme,
     getThemePreference,
@@ -49,6 +56,27 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const importFileInputRef = useRef<HTMLInputElement | null>(null)
+
+  function handleSaveHeight(heightCm: number) {
+    setIsSavingHeight(true)
+
+    updateProfile({ heightCm })
+      .then(async (updatedUser) => {
+        queryClient.setQueryData(queryKeys.sessionUser, updatedUser)
+        // BMI on every screen comes from the height.
+        await invalidateMeasurementData(queryClient)
+        setIsHeightDialogOpen(false)
+        toast.showSuccess("Altura salva")
+      })
+      .catch((error: unknown) => toast.showError(formatApiErrorMessage(error)))
+      .finally(() => setIsSavingHeight(false))
+  }
+
+  function handleHeightDialogOpenChange(open: boolean) {
+    if (!isSavingHeight) {
+      setIsHeightDialogOpen(open)
+    }
+  }
 
   function handleExportCsv() {
     setIsExporting(true)
@@ -149,6 +177,24 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
         </div>
         <button
           className="set-row"
+          disabled={user === null}
+          onClick={() => setIsHeightDialogOpen(true)}
+          type="button"
+        >
+          <span className="set-label">
+            Altura
+            {user?.heightCm === null ? (
+              <span className="set-note">
+                Informe sua altura para calcular o IMC.
+              </span>
+            ) : null}
+          </span>
+          <span className="set-value">
+            {user ? formatHeight(user.heightCm) : "—"}
+          </span>
+        </button>
+        <button
+          className="set-row"
           disabled={isExporting}
           onClick={handleExportCsv}
           type="button"
@@ -181,6 +227,14 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           Sair
         </button>
       </div>
+
+      <HeightDialog
+        heightCm={user?.heightCm ?? null}
+        isSaving={isSavingHeight}
+        onOpenChange={handleHeightDialogOpenChange}
+        onSave={handleSaveHeight}
+        open={isHeightDialogOpen}
+      />
 
       <ImportPreviewDialog
         isImporting={isImporting}

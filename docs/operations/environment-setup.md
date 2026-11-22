@@ -48,18 +48,11 @@ The API's `dev` script passes `--local-upstream localhost:5173`, so the Worker s
 
 ## Non-Secret Variables
 
-Set in `apps/api/wrangler.toml`, at the top level and again under `[env.production]`:
+Height and time zone are per user, stored on `users` and set from Ajustes and the device (`0046-per-user-height-and-device-time-zone.md`), so the Worker has no variable for them.
 
-```txt
-USER_HEIGHT_CM=168
-USER_TIME_ZONE=America/Sao_Paulo
-```
-
-- `USER_HEIGHT_CM` is the height in centimeters for BMI, shared by every account for now; the API converts it to meters before applying the formula (`0025-use-user-height-environment-variable.md`).
-- `USER_TIME_ZONE` is the IANA time zone for dashboard date and week boundaries, shared by every account for now (`0027-use-user-time-zone-environment-variable.md`).
 - `DEV_LOGIN_ENABLED="true"` turns on `POST /api/auth/dev-login`. Only `.env.development` sets it; `wrangler.toml` leaves it out of every environment, so preview and production answer that route with 404.
 
-Neither is a secret, so neither goes through `wrangler secret put`.
+It is not a secret, so it never goes through `wrangler secret put`.
 
 ## GitHub Repository Secrets
 
