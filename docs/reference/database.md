@@ -1,6 +1,6 @@
 # Database
 
-The D1 (SQLite) schema: what each table holds, how the tables relate, which unique keys the write rules depend on, and the lifecycle of each status column. What a measurement means (fields, limits, derived values, weekly rules, CSV) is in [Measurements](measurements.md); why SQL stays behind repositories is in the [architecture overview](../architecture/overview.md#database). Column types, defaults and indexes live in the migrations (`infra/migrations/`), which are the schema's source of truth; they aren't repeated here, so they can't drift from it.
+The D1 (SQLite) schema: what each table holds, how the tables relate, which unique keys the write rules depend on, and the lifecycle of each status column. What a measurement means (fields, limits, derived values, weekly rules, CSV) is in [Measurements](measurements.md); why SQL stays behind repositories is in the [architecture overview](../architecture/overview.md#database). The [diagram](#diagram) lists every column with its type, checked against the migrations by `tests/api/database-doc.test.ts`; defaults and indexes live only in the migrations (`infra/migrations/`), the schema's source of truth.
 
 ## Conventions
 
@@ -12,7 +12,7 @@ The D1 (SQLite) schema: what each table holds, how the tables relate, which uniq
 
 ## Diagram
 
-The diagram shows each table's keys, not every column.
+The diagram lists every column, with its SQL type and `nullable` when it accepts null; `tests/api/database-doc.test.ts` fails when it and the migrated schema disagree.
 
 ```mermaid
 erDiagram
@@ -23,25 +23,38 @@ erDiagram
     users {
         text id PK
         text display_name
-        text email
+        text email "nullable"
+        text created_at
+        text updated_at
     }
     user_identities {
         text provider PK
         text provider_user_id PK
         text user_id FK
-        text email
+        text email "nullable"
+        text created_at
     }
     sessions {
         text id_hash PK
         text user_id FK
         text expires_at
         text max_expires_at
+        text created_at
     }
     measurements {
         text id PK
         text user_id FK, UK
         text date UK
         real weight_kg
+        real body_fat_percentage "nullable"
+        real muscle_percentage "nullable"
+        integer resting_metabolism_kcal "nullable"
+        real waist_cm "nullable"
+        real sleep_hours "nullable"
+        integer disposition "nullable"
+        text notes "nullable"
+        text created_at
+        text updated_at
     }
 ```
 
