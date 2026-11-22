@@ -31,6 +31,7 @@ type ListMeasurementsOptions = {
   from?: string
   limit?: number
   offset?: number
+  order?: "asc" | "desc"
   to?: string
 }
 
@@ -276,7 +277,7 @@ export class MeasurementRepository {
           SELECT ${measurementColumns}
           FROM measurements
           ${whereSql}
-          ORDER BY date DESC
+          ORDER BY date ${options.order === "asc" ? "ASC" : "DESC"}
           ${limitSql}
         `,
       )

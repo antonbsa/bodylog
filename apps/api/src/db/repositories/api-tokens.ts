@@ -109,6 +109,22 @@ export class ApiTokenRepository {
   }
 }
 
+/** Marks the token with this hash as used now and returns its owner, or null when no token matches (unknown or revoked). */
+export async function recordApiTokenUse(
+  db: D1Database,
+  tokenHash: string,
+  usedAt: Date,
+): Promise<string | null> {
+  const row = await db
+    .prepare(
+      "UPDATE api_tokens SET last_used_at = ? WHERE token_hash = ? RETURNING user_id",
+    )
+    .bind(usedAt.toISOString(), tokenHash)
+    .first<{ user_id: string }>()
+
+  return row?.user_id ?? null
+}
+
 function mapApiTokenRow(row: ApiTokenRow): ApiTokenSummary {
   return {
     createdAt: row.created_at,

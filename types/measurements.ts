@@ -68,3 +68,16 @@ export type CsvImportResult = {
   skippedInvalid: number
   updated: number
 }
+
+/** One item of `GET /api/collector/measurements`; `date` is the key, since there is one measurement per day per user. */
+export type CollectorMeasurement = Omit<Measurement, "id"> & {
+  derived: MeasurementDerivedValues
+}
+
+/** Response of `GET /api/collector/measurements`, read by external clients with a personal API token. */
+export type CollectorMeasurementsResponse = {
+  count: number
+  filters: { from: string | null; to: string | null }
+  heightCm: number | null
+  items: CollectorMeasurement[]
+}
