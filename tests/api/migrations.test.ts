@@ -5,16 +5,52 @@ import { describe, expect, it } from "vitest"
 const migrationsDir = new URL("../../infra/migrations/", import.meta.url)
 
 function readMigration(prefix: string): string {
-  const file = readdirSync(migrationsDir).find((name) =>
+  const files = readdirSync(migrationsDir).filter((name) =>
     name.startsWith(prefix),
   )
 
-  if (!file) {
+  if (files.length === 0) {
     throw new Error(`Missing migration ${prefix}`)
   }
 
-  return readFileSync(new URL(file, migrationsDir), "utf8")
+  if (files.length > 1) {
+    throw new Error(`Ambiguous migration ${prefix}: ${files.join(", ")}`)
+  }
+
+  return readFileSync(new URL(files[0], migrationsDir), "utf8")
 }
+
+// Index-prefixed files predate the timestamp rule and keep their names (ADR 0045)
+const legacyPrefixes = ["0001", "0002", "0003"]
+
+describe("migration filenames", () => {
+  const files = readdirSync(migrationsDir).filter((name) =>
+    name.endsWith(".sql"),
+  )
+  const prefixOf = (name: string) => name.split("_")[0]
+
+  it("are snake_case with a numeric prefix", () => {
+    expect(files.filter((name) => !/^\d+_[a-z0-9_]+\.sql$/.test(name))).toEqual(
+      [],
+    )
+  })
+
+  it("never share a prefix", () => {
+    const prefixes = files.map(prefixOf)
+
+    expect(prefixes.filter((p, i) => prefixes.indexOf(p) !== i)).toEqual([])
+  })
+
+  it("use a 14-digit UTC timestamp unless legacy", () => {
+    expect(
+      files.filter(
+        (name) =>
+          !legacyPrefixes.includes(prefixOf(name)) &&
+          !/^\d{14}$/.test(prefixOf(name)),
+      ),
+    ).toEqual([])
+  })
+})
 
 describe("migrations", () => {
   it("adds the new nullable columns on a fresh database", () => {
