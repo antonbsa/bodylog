@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react"
+import { useRef, useState, type FormEvent } from "react"
 import { Check } from "@phosphor-icons/react/dist/csr/Check"
 import { Copy } from "@phosphor-icons/react/dist/csr/Copy"
 import { Dialog, Flex } from "@radix-ui/themes"
@@ -12,6 +12,10 @@ import {
 import { Button } from "../../components/Button"
 import { createApiToken } from "../../api/api-tokens"
 import { queryKeys } from "../../api/queryKeys"
+
+const COPIED_FEEDBACK_MS = 2500
+// Keep in agreement with the `.token-copied` opacity transition in settings.css.
+const COPIED_FADE_MS = 300
 
 type CreateApiTokenDialogProps = {
   existingNames: string[]
@@ -32,6 +36,8 @@ export function CreateApiTokenDialog({
   const [createdToken, setCreatedToken] = useState<string | null>(null)
   const [copyStatus, setCopyStatus] = useState<"copied" | "failed" | null>(null)
   const [isCopiedByIcon, setIsCopiedByIcon] = useState(false)
+  const [isFading, setIsFading] = useState(false)
+  const copiedTimeout = useRef<number | undefined>(undefined)
   const normalizedName = normalizeApiTokenName(name)
   const isDuplicateName =
     normalizedName !== null && existingNames.includes(normalizedName)
@@ -45,11 +51,13 @@ export function CreateApiTokenDialog({
     }
 
     if (!nextOpen) {
+      window.clearTimeout(copiedTimeout.current)
       setName("")
       setError(null)
       setCreatedToken(null)
       setCopyStatus(null)
       setIsCopiedByIcon(false)
+      setIsFading(false)
     }
 
     onOpenChange(nextOpen)
@@ -82,17 +90,30 @@ export function CreateApiTokenDialog({
       .finally(() => setIsCreating(false))
   }
 
-  /** Resolves to whether the token reached the clipboard. */
-  function copyToken(token: string) {
+  /** Copies the token; with `fromIcon`, the icon also turns into a check until the feedback fades. */
+  function copyToken(token: string, fromIcon = false) {
+    window.clearTimeout(copiedTimeout.current)
+
     // Can fail after the request (e.g. Safari drops the click's activation), so the copy button stays.
-    return navigator.clipboard.writeText(token).then(
+    navigator.clipboard.writeText(token).then(
       () => {
         setCopyStatus("copied")
-        return true
+        setIsCopiedByIcon(fromIcon)
+        setIsFading(false)
+        copiedTimeout.current = window.setTimeout(() => {
+          setIsCopiedByIcon(false)
+          setIsFading(true)
+          // Cleared after the fade so a later copy changes the text and is announced again.
+          copiedTimeout.current = window.setTimeout(() => {
+            setCopyStatus(null)
+            setIsFading(false)
+          }, COPIED_FADE_MS)
+        }, COPIED_FEEDBACK_MS)
       },
       () => {
         setCopyStatus("failed")
-        return false
+        setIsCopiedByIcon(false)
+        setIsFading(false)
       },
     )
   }
@@ -123,7 +144,7 @@ export function CreateApiTokenDialog({
               <button
                 aria-label="Copiar token"
                 className="token-copy"
-                onClick={() => copyToken(createdToken).then(setIsCopiedByIcon)}
+                onClick={() => copyToken(createdToken, true)}
                 type="button"
               >
                 {isCopiedByIcon ? (
@@ -134,16 +155,20 @@ export function CreateApiTokenDialog({
               </button>
             </div>
             {/* Feedback stays inside the dialog: the modal hides the page's toasts from screen readers. */}
-            <p
-              className={
-                copyStatus === "failed" ? "form-error" : "token-copied"
-              }
-              role="status"
-            >
-              {copyStatus === "copied" && "Token copiado."}
-              {copyStatus === "failed" &&
-                "Não foi possível copiar. Toque no ícone ou selecione o token."}
-            </p>
+            <div className="token-message">
+              <p
+                className={
+                  copyStatus === "failed"
+                    ? "form-error"
+                    : `token-copied${isFading ? " is-fading" : ""}`
+                }
+                role="status"
+              >
+                {copyStatus === "copied" && "Token copiado."}
+                {copyStatus === "failed" &&
+                  "Não foi possível copiar. Toque no ícone."}
+              </p>
+            </div>
             <Flex className="dialog-actions" direction="column" gap="2" mt="4">
               <Dialog.Close>
                 <Button fullWidth type="button">
@@ -173,11 +198,13 @@ export function CreateApiTokenDialog({
               placeholder="Ex.: Agente de IA"
               value={name}
             />
-            {nameError && (
-              <p className="form-error" id="token-name-error" role="alert">
-                {nameError}
-              </p>
-            )}
+            <div className="token-message">
+              {nameError && (
+                <p className="form-error" id="token-name-error" role="alert">
+                  {nameError}
+                </p>
+              )}
+            </div>
             <Flex className="dialog-actions" direction="column" gap="2" mt="4">
               <Button
                 disabled={isCreating || isDuplicateName}

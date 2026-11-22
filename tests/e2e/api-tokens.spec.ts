@@ -87,10 +87,16 @@ test("creating a token shows it once, already copied, and the list shows only it
     NEW_TOKEN,
   )
 
+  const done = dialog.getByRole("button", { name: "Concluir" })
+  const doneTop = (await done.boundingBox())?.y
+
   await expect(dialog.getByRole("status")).toHaveText("Token copiado.")
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
     NEW_TOKEN,
   )
+  // The confirmation fades after a few seconds.
+  await expect(dialog.getByRole("status")).toBeEmpty()
+  expect((await done.boundingBox())?.y).toBe(doneTop)
 
   await page.evaluate(() => navigator.clipboard.writeText(""))
   await dialog.getByRole("button", { name: "Copiar token" }).click()
@@ -98,7 +104,7 @@ test("creating a token shows it once, already copied, and the list shows only it
     .poll(() => page.evaluate(() => navigator.clipboard.readText()))
     .toBe(NEW_TOKEN)
 
-  await dialog.getByRole("button", { name: "Concluir" }).click()
+  await done.click()
   await expect(dialog).toBeHidden()
   await expect(tokenList(page)).toHaveText([/Agente.*•••• x9Qk.*Nunca usado/])
   await expect(page.getByText(NEW_TOKEN)).toHaveCount(0)
@@ -120,11 +126,18 @@ test("a name the user already has is flagged while typing and blocks creation", 
   const dialog = page.getByRole("dialog")
   const submit = dialog.getByRole("button", { name: "Criar token" })
 
+  await dialog.evaluate((element) =>
+    Promise.all(element.getAnimations().map((animation) => animation.finished)),
+  )
+  const submitTop = (await submit.boundingBox())?.y
+
   await dialog.getByLabel("Nome").fill(" Agente ")
   await expect(dialog.getByRole("alert")).toHaveText(
     "Já existe um token com esse nome.",
   )
   await expect(submit).toBeDisabled()
+  // The message has reserved room, so it doesn't push the buttons down.
+  expect((await submit.boundingBox())?.y).toBe(submitTop)
 
   await dialog.getByLabel("Nome").fill("Agente 2")
   await expect(dialog.getByRole("alert")).toHaveCount(0)

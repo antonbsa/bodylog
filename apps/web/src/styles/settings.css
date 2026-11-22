@@ -405,10 +405,6 @@
   outline-offset: 1px;
 }
 
-.token-dialog .form-error {
-  margin-top: 8px;
-}
-
 .token-warning {
   margin: 8px 0 0;
   color: var(--fg-2);
@@ -416,13 +412,31 @@
   line-height: 1.45;
 }
 
-.token-copied {
-  margin: 8px 0 0;
-  color: var(--fg-2);
+/* Holds one line even when empty, so a message never moves the buttons below it. */
+.token-message {
+  min-height: 20px;
+  margin-top: 8px;
   font-size: 14px;
+  line-height: 20px;
 }
 
-.token-copied:empty,
-.token-dialog .form-error:empty {
-  display: none;
+.token-message p {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.token-copied {
+  color: var(--fg-2);
+  transition: opacity 300ms ease;
+}
+
+.token-copied.is-fading {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .token-copied {
+    transition: none;
+  }
 }
