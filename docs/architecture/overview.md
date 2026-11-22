@@ -106,7 +106,7 @@ apps/api/src/
   types.ts              API-only bindings and input types
   features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv)
   db/repositories/      D1 access, one file per table
-  http/                 cross-feature HTTP helpers (request validation, session guard, the user's height and zone)
+  http/                 cross-feature HTTP helpers (request validation, session guard, the user's height and zone, secret generation and hashing)
   domain/               API domain objects (Measurement, week range, week summary)
 ```
 

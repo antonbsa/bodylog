@@ -2,6 +2,7 @@ import type { Context } from "hono"
 import { deleteCookie, getCookie, setCookie } from "hono/cookie"
 
 import { SessionRepository } from "../../db/repositories/sessions"
+import { createOpaqueSecret, hashSecret } from "../../http/credentials"
 import type { AppEnv } from "../../types"
 
 export const SESSION_COOKIE_NAME = "bodylog_session"
@@ -23,26 +24,6 @@ export function getCookieSecurityOptions(requestUrl: string) {
   } as const
 }
 
-export async function hashSessionId(sessionId: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(sessionId),
-  )
-
-  return [...new Uint8Array(digest)]
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("")
-}
-
-function createSessionId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(32))
-
-  return btoa(String.fromCharCode(...bytes))
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replace(/=+$/, "")
-}
-
 function setSessionCookie(
   c: Context<AppEnv>,
   sessionId: string,
@@ -61,18 +42,18 @@ export async function startSession(c: Context<AppEnv>, userId: string) {
   const now = new Date()
   const sessions = new SessionRepository(c.env.DB)
   const previousSessionId = getCookie(c, SESSION_COOKIE_NAME)
-  const sessionId = createSessionId()
+  const sessionId = createOpaqueSecret()
   const expiresAt = new Date(now.getTime() + SESSION_TTL_MS)
 
   if (previousSessionId) {
-    await sessions.delete(await hashSessionId(previousSessionId))
+    await sessions.delete(await hashSecret(previousSessionId))
   }
 
   await sessions.deleteExpired(now.toISOString())
   await sessions.create({
     createdAt: now.toISOString(),
     expiresAt: expiresAt.toISOString(),
-    idHash: await hashSessionId(sessionId),
+    idHash: await hashSecret(sessionId),
     maxExpiresAt: new Date(
       now.getTime() + SESSION_MAX_LIFETIME_MS,
     ).toISOString(),
@@ -93,7 +74,7 @@ export async function resolveSession(
 
   const now = new Date()
   const sessions = new SessionRepository(c.env.DB)
-  const session = await sessions.getByIdHash(await hashSessionId(sessionId))
+  const session = await sessions.getByIdHash(await hashSecret(sessionId))
 
   if (!session) {
     return null
@@ -131,7 +112,7 @@ export async function endSession(c: Context<AppEnv>) {
   const sessionId = getCookie(c, SESSION_COOKIE_NAME)
 
   if (sessionId) {
-    await new SessionRepository(c.env.DB).delete(await hashSessionId(sessionId))
+    await new SessionRepository(c.env.DB).delete(await hashSecret(sessionId))
   }
 
   deleteCookie(c, SESSION_COOKIE_NAME, {
