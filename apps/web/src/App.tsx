@@ -71,19 +71,15 @@ export function App() {
     setAuthState("unauthenticated")
   }
 
-  if (authState === "checking") {
-    return (
-      <main className="app-shell auth-check">
-        <p>Carregando...</p>
-      </main>
-    )
-  }
-
   return (
     <Routes>
       <Route
         element={
-          authState === "authenticated" ? (
+          authState === "checking" ? (
+            <main className="app-shell auth-check">
+              <p>Carregando...</p>
+            </main>
+          ) : authState === "authenticated" ? (
             <Outlet />
           ) : (
             <LoginScreen onLoginSuccess={() => hydrateSession()} />

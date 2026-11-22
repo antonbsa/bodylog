@@ -22,7 +22,11 @@ export const googleAuthRoutes = createOAuthRoutes({
 
     return {
       displayName: name || email || "Google",
-      email: claims.email_verified === true ? email : null,
+      // Google has sent `email_verified` as both a boolean and the string "true".
+      email:
+        claims.email_verified === true || claims.email_verified === "true"
+          ? email
+          : null,
       provider: "google",
       providerUserId: claims.sub,
     }

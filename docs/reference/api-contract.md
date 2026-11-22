@@ -44,7 +44,7 @@ Starts the GitHub sign-in. Sets a 10-minute `bodylog_github_oauth` cookie on `Pa
 
 GitHub's redirect target. Clears the flow cookie in every case.
 
-- **Success:** creates the GitHub identity on the first sign-in, joined to an existing user by verified email ([Account linking](#account-linking)) or with a new user, or refreshes the display name (`name`, else `login`) and the email (the primary one when verified, else `null`) on later ones. Sets the session cookie and answers 200 with an HTML page that redirects to `/`.
+- **Success:** creates the GitHub identity on the first sign-in, joined to an existing user by verified email ([Account linking](#account-linking)) or with a new user, or refreshes the display name (`name`, else `login`) and the email (the primary one when verified; an unverified one keeps the user's current email) on later ones. Sets the session cookie and answers 200 with an HTML page that redirects to `/`.
 - **Failure:** sets no session and answers 302 to the login screen with an error code:
 
 | Redirect           | When                                                          |

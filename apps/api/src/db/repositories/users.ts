@@ -91,10 +91,11 @@ export class UserRepository {
       .first<{ user_id: string }>()
 
     if (existing) {
+      // A linked user keeps its email when this identity has no verified one; another identity may still verify it.
       await this.db.batch([
         this.db
           .prepare(
-            "UPDATE users SET display_name = ?, email = ?, updated_at = ? WHERE id = ?",
+            "UPDATE users SET display_name = ?, email = COALESCE(?, email), updated_at = ? WHERE id = ?",
           )
           .bind(
             profile.displayName,

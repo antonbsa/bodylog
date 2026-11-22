@@ -10,7 +10,7 @@ type Env = ReturnType<typeof createTestEnv>["env"]
 type GoogleClaims = {
   sub?: string
   email?: string
-  email_verified?: boolean
+  email_verified?: boolean | string
   name?: string
 }
 type GitHubProfile = { id: number; email: string; verified: boolean }
@@ -325,6 +325,32 @@ describe("account linking by verified email", () => {
     await signIn(env, "google")
 
     expect(sqlite.prepare("SELECT id FROM users").all()).toHaveLength(2)
+  })
+
+  it('links when Google sends email_verified as the string "true"', async () => {
+    const { env, sqlite } = createTestEnv()
+
+    stubProviders({ google: { email_verified: "true" } })
+    await signIn(env, "github")
+    await signIn(env, "google")
+
+    expect(sqlite.prepare("SELECT id FROM users").all()).toHaveLength(1)
+  })
+
+  it("keeps the user's email when a linked identity signs in without a verified one", async () => {
+    const { env, sqlite } = createTestEnv()
+
+    stubProviders()
+    await signIn(env, "github")
+    await signIn(env, "google")
+    stubProviders({
+      github: { email: "mona@example.com", id: 4242, verified: false },
+    })
+    await signIn(env, "github")
+
+    expect(sqlite.prepare("SELECT email FROM users").all()).toEqual([
+      { email: "mona@example.com" },
+    ])
   })
 
   it("creates a separate account for an unverified GitHub email", async () => {

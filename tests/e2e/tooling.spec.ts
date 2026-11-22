@@ -129,6 +129,17 @@ test("a signed-in user also reaches the privacy policy", async ({ page }) => {
   ).toBeVisible()
 })
 
+test("the privacy policy renders while the session check is still pending", async ({
+  page,
+}) => {
+  await page.route("**/api/auth/session", () => {})
+  await page.goto("/privacidade")
+
+  await expect(
+    page.getByRole("heading", { name: "Política de privacidade" }),
+  ).toBeVisible()
+})
+
 test("unknown routes show the not-found screen", async ({ page }) => {
   await mockSession(page, false)
   await page.goto("/rota-inexistente")

@@ -132,7 +132,7 @@ export function createOAuthRoutes(provider: OAuthProvider) {
         getRedirectUri(c.req.url),
         codeVerifier,
       )
-      // GitHub answers a bad code with 200 and an `error` body; this throws on the missing access_token.
+      // A provider may answer a bad code with 200 and an `error` body (GitHub does); this throws on the missing access_token.
       const tokens = await oauth.processAuthorizationCodeResponse(
         provider.authorizationServer,
         client,
