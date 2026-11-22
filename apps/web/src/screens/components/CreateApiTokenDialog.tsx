@@ -1,4 +1,6 @@
 import { useState, type FormEvent } from "react"
+import { Check } from "@phosphor-icons/react/dist/csr/Check"
+import { Copy } from "@phosphor-icons/react/dist/csr/Copy"
 import { Dialog, Flex } from "@radix-ui/themes"
 import { useQueryClient } from "@tanstack/react-query"
 
@@ -16,7 +18,7 @@ type CreateApiTokenDialogProps = {
   open: boolean
 }
 
-/** Asks for a name, then shows the new token once, since the API never returns it again. */
+/** Asks for a name, then shows the new token once, already copied, since the API never returns it again. */
 export function CreateApiTokenDialog({
   onOpenChange,
   open,
@@ -59,6 +61,7 @@ export function CreateApiTokenDialog({
     createApiToken(normalizedName)
       .then(async (created) => {
         setCreatedToken(created.token)
+        copyToken(created.token)
         await queryClient.invalidateQueries({ queryKey: queryKeys.apiTokens })
       })
       .catch((createError: unknown) =>
@@ -67,13 +70,10 @@ export function CreateApiTokenDialog({
       .finally(() => setIsCreating(false))
   }
 
-  function handleCopy() {
-    if (!createdToken) {
-      return
-    }
-
+  function copyToken(token: string) {
+    // Can fail after the request (e.g. Safari drops the click's activation), so the copy button stays.
     navigator.clipboard
-      .writeText(createdToken)
+      .writeText(token)
       .then(() => setCopyStatus("copied"))
       .catch(() => setCopyStatus("failed"))
   }
@@ -91,15 +91,29 @@ export function CreateApiTokenDialog({
             <p className="token-warning">
               Copie o token agora. Ele não será mostrado novamente.
             </p>
-            <textarea
-              aria-label="Token"
-              className="token-value"
-              onFocus={(event) => event.target.select()}
-              readOnly
-              rows={2}
-              spellCheck={false}
-              value={createdToken}
-            />
+            <div className="token-value-field">
+              <textarea
+                aria-label="Token"
+                className="token-value"
+                onFocus={(event) => event.target.select()}
+                readOnly
+                rows={2}
+                spellCheck={false}
+                value={createdToken}
+              />
+              <button
+                aria-label="Copiar token"
+                className="token-copy"
+                onClick={() => copyToken(createdToken)}
+                type="button"
+              >
+                {copyStatus === "copied" ? (
+                  <Check aria-hidden size={20} />
+                ) : (
+                  <Copy aria-hidden size={20} />
+                )}
+              </button>
+            </div>
             {/* Feedback stays inside the dialog: the modal hides the page's toasts from screen readers. */}
             <p
               className={
@@ -109,14 +123,11 @@ export function CreateApiTokenDialog({
             >
               {copyStatus === "copied" && "Token copiado."}
               {copyStatus === "failed" &&
-                "Não foi possível copiar. Selecione o token e copie manualmente."}
+                "Não foi possível copiar. Toque no ícone ou selecione o token."}
             </p>
             <Flex className="dialog-actions" direction="column" gap="2" mt="4">
-              <Button fullWidth onClick={handleCopy} type="button">
-                Copiar token
-              </Button>
               <Dialog.Close>
-                <Button fullWidth type="button" variant="secondary">
+                <Button fullWidth type="button">
                   Concluir
                 </Button>
               </Dialog.Close>

@@ -75,7 +75,7 @@ async function mockTokensApi(page: Page, initial: ApiTokenSummary[] = []) {
 const tokenList = (page: Page) =>
   page.getByRole("region", { name: "Tokens de API" }).getByRole("listitem")
 
-test("creating a token shows it once with a copy button, and the list shows only its last four", async ({
+test("creating a token shows it once, already copied, and the list shows only its last four", async ({
   context,
   page,
 }) => {
@@ -97,13 +97,20 @@ test("creating a token shows it once with a copy button, and the list shows only
 
   await expect(dialog.getByRole("heading")).toHaveText("Token criado")
   await expect(dialog).toContainText("Ele não será mostrado novamente.")
-  await expect(dialog.getByLabel("Token")).toHaveValue(NEW_TOKEN)
+  await expect(dialog.getByLabel("Token", { exact: true })).toHaveValue(
+    NEW_TOKEN,
+  )
 
-  await dialog.getByRole("button", { name: "Copiar token" }).click()
   await expect(dialog.getByRole("status")).toHaveText("Token copiado.")
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
     NEW_TOKEN,
   )
+
+  await page.evaluate(() => navigator.clipboard.writeText(""))
+  await dialog.getByRole("button", { name: "Copiar token" }).click()
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toBe(NEW_TOKEN)
 
   await dialog.getByRole("button", { name: "Concluir" }).click()
   await expect(dialog).toBeHidden()
@@ -113,7 +120,7 @@ test("creating a token shows it once with a copy button, and the list shows only
   // Reopening starts a fresh form, never the token shown before.
   await page.getByRole("button", { name: "Criar token" }).click()
   await expect(dialog.getByLabel("Nome")).toHaveValue("")
-  await expect(dialog.getByLabel("Token")).toHaveCount(0)
+  await expect(dialog.getByLabel("Token", { exact: true })).toHaveCount(0)
 })
 
 test("a duplicate name shows the API's message in the dialog", async ({

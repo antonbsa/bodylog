@@ -368,11 +368,41 @@
   color: var(--fg-3);
 }
 
-.token-value {
+.token-value-field {
+  position: relative;
   margin-top: 12px;
+}
+
+.token-value {
+  padding-right: 52px;
   font-family: var(--font-mono);
   word-break: break-all;
   resize: none;
+}
+
+.token-copy {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--fg-2);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.token-copy:hover {
+  color: var(--fg);
+}
+
+.token-copy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .token-dialog .form-error {
