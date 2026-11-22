@@ -62,7 +62,7 @@ const VALIDATION_ERROR_DETAILS: Record<ValidationErrorCode, ErrorDetails> = {
     message: "Nome do token inválido.",
   },
   INVALID_DATE: {
-    action: "Use uma data no formato YYYY-MM-DD.",
+    action: "Use uma data real do calendário no formato YYYY-MM-DD.",
     message: "Data inválida.",
   },
   INVALID_MEASUREMENT_ID: {
@@ -288,8 +288,21 @@ export function parseMeasurementListQuery(
   }
 }
 
+/** Whether the value is a real calendar date in `YYYY-MM-DD`. */
 export function isDateOnly(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false
+  }
+
+  const [year, month, day] = value.split("-").map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day))
+
+  // Date.UTC rolls impossible dates over (Feb 31 becomes Mar 3), so compare the parts back
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  )
 }
 
 function parseOptionalNonNegativeInteger(
