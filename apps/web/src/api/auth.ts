@@ -4,6 +4,11 @@ import {
   parseApiError,
   throwApiError,
 } from "../../../../infra/errors"
+import type {
+  SessionResponse,
+  SessionUser,
+  UpdateProfileRequest,
+} from "../../../../types/auth"
 import { api } from "./client"
 
 type LoginResult =
@@ -15,14 +20,36 @@ type LoginResult =
       ok: false
     }
 
-export async function checkSession(): Promise<boolean> {
+/** The signed-in user, or null when there is no live session or the request fails. */
+export async function getSessionUser(): Promise<SessionUser | null> {
   try {
     const response = await api("/api/auth/session", { method: "GET" })
 
     return response.ok
+      ? ((await response.json()) as SessionResponse).user
+      : null
   } catch {
-    return false
+    return null
   }
+}
+
+export async function updateProfile(
+  update: UpdateProfileRequest,
+): Promise<SessionUser> {
+  const response = await api("/api/me", {
+    body: JSON.stringify(update),
+    headers: { "content-type": "application/json" },
+    method: "PATCH",
+  })
+
+  if (!response.ok) {
+    await throwApiError(response, {
+      action: "Verifique sua conexão e tente novamente.",
+      message: "Não foi possível salvar o perfil.",
+    })
+  }
+
+  return ((await response.json()) as SessionResponse).user
 }
 
 /** Signs in as the local seed user; the API answers 404 outside `npm run dev`. */

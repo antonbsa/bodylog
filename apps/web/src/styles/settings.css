@@ -1,4 +1,4 @@
-/* Ajustes: one card with the theme selector, CSV actions and logout. */
+/* Ajustes: one card with the theme selector, profile rows, CSV actions and logout. */
 .set-block {
   padding: 4px 0 16px;
 }
@@ -41,6 +41,25 @@
 
 .set-row.danger {
   color: var(--danger);
+}
+
+.set-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 16px 8px 0;
+}
+
+.set-note {
+  color: var(--fg-2);
+  font-size: 14px;
+}
+
+.set-value {
+  color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* Import row: the button keeps the row's tap area and the info button opens the format help. */

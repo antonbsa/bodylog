@@ -176,10 +176,10 @@ export function buildMeasurementInput(
   }
 }
 
-/** Derived values from the current form; null while the weight is missing or invalid. */
+/** Derived values from the current form; null while the weight is missing or invalid, and BMI null while the height is unset. */
 export function deriveFromForm(
   values: FormValues,
-  heightCm: number,
+  heightCm: number | null,
 ): MeasurementDerivedValues | null {
   if (validateField("weightKg", values) !== "") {
     return null
