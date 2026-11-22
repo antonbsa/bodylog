@@ -1,4 +1,4 @@
-/* Ajustes: one card with the theme selector, profile rows, CSV actions and logout. */
+/* Ajustes: one card with the theme selector, profile rows, CSV actions and logout, then the API tokens card. */
 .set-block {
   padding: 4px 0 16px;
 }
@@ -269,4 +269,130 @@
   overflow-wrap: anywhere;
   color: var(--fg-2);
   text-align: right;
+}
+
+/* Tokens de API: a second card under its section title, one row per token with a trailing revoke action. */
+.tokens-intro,
+.tokens-note {
+  margin: 0;
+  padding: 4px 0 12px;
+  color: var(--fg-2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.tokens-note:last-child {
+  padding-bottom: 4px;
+}
+
+.token-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.token-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.token-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.token-text strong {
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.token-details {
+  color: var(--fg-2);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.token-revoke {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  font-family: inherit;
+  font-size: 15px;
+}
+
+.token-list + .tokens-note,
+.tokens-intro + .token-create,
+.token-list + .token-create {
+  border-top: 1px solid var(--line);
+}
+
+.token-list + .tokens-note {
+  padding-top: 12px;
+}
+
+.token-create {
+  color: var(--accent);
+}
+
+.token-label {
+  display: block;
+  margin: 12px 0 8px;
+  color: var(--fg-2);
+  font-size: 14px;
+}
+
+.token-input,
+.token-value {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--fg);
+}
+
+.token-input::placeholder {
+  color: var(--fg-3);
+}
+
+.token-value {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  word-break: break-all;
+  resize: none;
+}
+
+.token-dialog .form-error {
+  margin-top: 8px;
+}
+
+.token-warning {
+  margin: 8px 0 0;
+  color: var(--fg-2);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.token-copied {
+  margin: 8px 0 0;
+  color: var(--fg-2);
+  font-size: 14px;
+}
+
+.token-copied:empty,
+.token-dialog .form-error:empty {
+  display: none;
 }

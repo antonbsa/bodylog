@@ -22,6 +22,7 @@ async function mockApi(page: Page) {
     json(route, signedInSession),
   )
   await page.route("**/api/auth/logout", (route) => json(route, { ok: true }))
+  await page.route("**/api/tokens", (route) => json(route, { items: [] }))
   await page.route("**/api/dashboard/weekly", (route) => {
     const week = {
       averages: {},

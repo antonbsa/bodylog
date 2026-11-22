@@ -16,6 +16,10 @@ _Avoid_: login, provider account (in code)
 
 _Avoid_: token (that's the cookie's value, not the session)
 
+**Personal API token**: A named secret a User creates in Ajustes for an external client or agent, shown once at creation and stored only as a hash. A User holds at most three; revoking one deletes it. It never manages tokens, so creating and revoking always need a Session.
+
+_Avoid_: API key, access token, session token
+
 ## Measurements
 
 **Measurement**: The readings recorded for one date: weight (required), and optionally body fat %, muscle %, resting metabolism, waist, sleep hours, disposition (1–5) and notes. Each User has at most one per date; selecting a date with a Measurement edits it.
