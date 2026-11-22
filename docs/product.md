@@ -117,6 +117,14 @@ The authenticated app has four screens behind a bottom tab bar (Início, Histór
 6. The system shows an import summary.
 7. Início and Histórico reflect imported records.
 
+### Manage Personal API Tokens
+
+1. The user opens "Tokens de API" in Ajustes, which lists each token's name, last four characters, creation date and last use.
+2. The user creates a token by giving it a name, unique among their tokens and at most 50 characters; a name already in use is flagged while typing and blocks creation.
+3. The system shows the token once, copies it to the clipboard, and warns that it won't be shown again; a copy button stays in case the automatic copy fails.
+4. A user who already has three tokens sees a message to revoke one before creating another.
+5. The user revokes a token after a confirmation, and the system deletes it.
+
 ## Functional Requirements
 
 ### FR-001 — Log a Daily Measurement

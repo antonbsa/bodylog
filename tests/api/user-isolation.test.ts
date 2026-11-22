@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { app } from "../../apps/api/src/app"
+import type {
+  ApiTokenListResponse,
+  CreateApiTokenResponse,
+} from "../../types/api-tokens"
 import type { WeeklyDashboard } from "../../types/dashboard"
 import type { HistoryWeeksPage } from "../../types/history"
 import type { TrendsResponse } from "../../types/trends"
@@ -176,5 +180,37 @@ describe("per-user data", () => {
       ["2026-06-08", 90],
       ["2026-06-09", 91],
     ])
+  })
+
+  it("lists and revokes only the caller's API tokens", async () => {
+    const { ana, bia, request, sqlite } = setup()
+    const create = async (cookie: string, name: string) =>
+      (await (
+        await request(cookie, "/api/tokens", {
+          body: JSON.stringify({ name }),
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        })
+      ).json()) as CreateApiTokenResponse
+    const listNames = async (cookie: string) =>
+      (
+        (await (
+          await request(cookie, "/api/tokens")
+        ).json()) as ApiTokenListResponse
+      ).items.map((item) => item.name)
+    const anaToken = await create(ana, "Agente")
+
+    await create(bia, "Planilha")
+
+    expect(await listNames(ana)).toEqual(["Agente"])
+    expect(await listNames(bia)).toEqual(["Planilha"])
+    expect(
+      (
+        await request(bia, `/api/tokens/${anaToken.item.id}`, {
+          method: "DELETE",
+        })
+      ).status,
+    ).toBe(404)
+    expect(sqlite.prepare("SELECT id FROM api_tokens").all()).toHaveLength(2)
   })
 })

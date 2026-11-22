@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query"
 
 // Every measurement query shares the "measurements" prefix so one invalidation covers lists and by-date lookups.
 export const queryKeys = {
+  apiTokens: ["api-tokens"] as const,
   dashboard: ["dashboard"] as const,
   historyWeeks: ["measurements", "history-weeks"] as const,
   measurementByDate: (date: string) =>

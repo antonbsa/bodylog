@@ -11,6 +11,7 @@ import {
   previewMeasurementsCsv,
 } from "../api/measurements"
 import type { CsvImportPreview } from "../../../../types/measurements"
+import { ApiTokensSection } from "./components/ApiTokensSection"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
 import { CsvFormatDialog } from "./components/CsvFormatDialog"
 import { HeightDialog } from "./components/HeightDialog"
@@ -227,6 +228,8 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           Sair
         </button>
       </div>
+
+      <ApiTokensSection />
 
       <HeightDialog
         heightCm={user?.heightCm ?? null}
