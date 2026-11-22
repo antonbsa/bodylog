@@ -154,3 +154,24 @@ describe("migration 0003", () => {
     expect(() => db.exec(identity)).toThrow(/UNIQUE|PRIMARY KEY/)
   })
 })
+
+describe("migration 20261122013813", () => {
+  it("keeps existing users and reads their height and time zone as null", () => {
+    const db = new DatabaseSync(":memory:")
+
+    db.exec(readMigration("0001"))
+    db.exec(readMigration("0002"))
+    db.exec(readMigration("0003"))
+    db.exec(
+      `INSERT INTO users (id, display_name, created_at, updated_at)
+       VALUES ('a', 'A', 't', 't')`,
+    )
+    db.exec(readMigration("20261122013813"))
+
+    expect(db.prepare("SELECT * FROM users").get()).toMatchObject({
+      id: "a",
+      height_cm: null,
+      time_zone: null,
+    })
+  })
+})

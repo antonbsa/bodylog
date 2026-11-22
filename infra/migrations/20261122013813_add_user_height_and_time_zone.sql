@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN height_cm REAL;
+ALTER TABLE users ADD COLUMN time_zone TEXT;

@@ -1,14 +1,15 @@
 ---
-status: Accepted
+status: Superseded
 area: platform
 supersedes: ["0024"]
+superseded-by: ["0046"]
 ---
 
 # 0025 — Use User Height Environment Variable
 
 ## Status
 
-Accepted
+Superseded by [0046](0046-per-user-height-and-device-time-zone.md).
 
 ## Context
 

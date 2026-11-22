@@ -38,6 +38,16 @@ describe("local seed SQL", () => {
     ])
   })
 
+  it("gives the dev user it creates a height, so seeded BMI shows", () => {
+    const { sqlite } = createSqliteD1()
+
+    sqlite.exec(seedSql)
+
+    expect(sqlite.prepare("SELECT height_cm FROM users").all()).toEqual([
+      { height_cm: 180 },
+    ])
+  })
+
   it("attaches the rows to a dev user that dev-login already created", () => {
     const { sqlite } = createSqliteD1()
 

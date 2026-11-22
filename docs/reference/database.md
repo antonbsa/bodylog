@@ -26,6 +26,8 @@ erDiagram
         text email "nullable"
         text created_at
         text updated_at
+        real height_cm "nullable"
+        text time_zone "nullable"
     }
     user_identities {
         text provider PK
@@ -62,12 +64,12 @@ erDiagram
 
 ## Tables
 
-| Table             | One row per                     | Holds                                                                                                                                                                 |
-| ----------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `users`           | account                         | The display name and the email (nullable), refreshed from the provider on every sign-in; the email is set only when the provider verified it.                         |
-| `user_identities` | provider account that signed in | Which user a provider account maps to, with the email the provider reported. A user can have one identity per provider.                                               |
-| `sessions`        | signed-in browser               | The SHA-256 (hex) of the cookie's random id, never the id itself, plus the expiry and the hard limit on renewal ([auth](../architecture/overview.md#authentication)). |
-| `measurements`    | user and date                   | One day's body metrics: weight plus the optional metrics and notes described in [Measurements](measurements.md#fields).                                               |
+| Table             | One row per                     | Holds                                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`           | account                         | The display name and the email (nullable), refreshed from the provider on every sign-in; the email is set only when the provider verified it. The height in cm (null until set in Ajustes, BMI is null meanwhile) and the IANA time zone the device last reported (null until the first sync, read as `America/Sao_Paulo`) ([ADR 0046](../decisions/0046-per-user-height-and-device-time-zone.md)). |
+| `user_identities` | provider account that signed in | Which user a provider account maps to, with the email the provider reported. A user can have one identity per provider.                                                                                                                                                                                                                                                                             |
+| `sessions`        | signed-in browser               | The SHA-256 (hex) of the cookie's random id, never the id itself, plus the expiry and the hard limit on renewal ([auth](../architecture/overview.md#authentication)).                                                                                                                                                                                                                               |
+| `measurements`    | user and date                   | One day's body metrics: weight plus the optional metrics and notes described in [Measurements](measurements.md#fields).                                                                                                                                                                                                                                                                             |
 
 ## Unique Keys
 

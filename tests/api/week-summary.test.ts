@@ -4,7 +4,7 @@ import { Measurement } from "../../apps/api/src/domain/measurement"
 import { getWeekRange } from "../../apps/api/src/domain/week-range"
 import { WeekSummary } from "../../apps/api/src/domain/week-summary"
 
-const USER_HEIGHT_CM = 168
+const HEIGHT_CM = 168
 
 describe("WeekSummary", () => {
   it("ignores missing days and missing values per metric when averaging", () => {
@@ -26,7 +26,7 @@ describe("WeekSummary", () => {
 
     const summary = WeekSummary.forRange(measurements, range, {
       currentDate: "2026-06-10",
-      heightCm: USER_HEIGHT_CM,
+      heightCm: HEIGHT_CM,
       isCurrentWeek: true,
     })
 
@@ -65,7 +65,7 @@ describe("WeekSummary", () => {
       getWeekRange("2026-06-10"),
       {
         currentDate: "2026-06-10",
-        heightCm: USER_HEIGHT_CM,
+        heightCm: HEIGHT_CM,
         isCurrentWeek: true,
       },
     )
@@ -83,7 +83,7 @@ describe("WeekSummary", () => {
       getWeekRange("2026-06-08"),
       {
         currentDate: "2026-06-10",
-        heightCm: USER_HEIGHT_CM,
+        heightCm: HEIGHT_CM,
         isCurrentWeek: true,
       },
     )
@@ -103,7 +103,7 @@ describe("WeekSummary", () => {
       getWeekRange("2026-06-10"),
       {
         currentDate: "2026-06-10",
-        heightCm: USER_HEIGHT_CM,
+        heightCm: HEIGHT_CM,
         isCurrentWeek: true,
       },
     )
@@ -117,7 +117,7 @@ describe("WeekSummary", () => {
 
     const summary = WeekSummary.forRange([], range, {
       currentDate: "2026-06-15",
-      heightCm: USER_HEIGHT_CM,
+      heightCm: HEIGHT_CM,
       isCurrentWeek: true,
     })
 

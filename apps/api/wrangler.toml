@@ -4,10 +4,6 @@ name = "bodylog-dev"
 main = "src/index.ts"
 compatibility_date = "2026-05-25"
 
-[vars]
-USER_HEIGHT_CM = "168"
-USER_TIME_ZONE = "America/Sao_Paulo"
-
 # Placeholder id so an accidental `--remote` without `--env` can't reach deployed data.
 [[d1_databases]]
 binding = "DB"
@@ -17,10 +13,6 @@ migrations_dir = "../../infra/migrations"
 
 [env.production]
 name = "bodylog"
-
-[env.production.vars]
-USER_HEIGHT_CM = "168"
-USER_TIME_ZONE = "America/Sao_Paulo"
 
 [env.production.observability]
 enabled = true
@@ -39,10 +31,6 @@ run_worker_first = ["/api/*"]
 
 [env.preview]
 name = "bodylog-preview"
-
-[env.preview.vars]
-USER_HEIGHT_CM = "168"
-USER_TIME_ZONE = "America/Sao_Paulo"
 
 [env.preview.observability]
 enabled = true

@@ -20,33 +20,3 @@ export function isDevLoginEnabled(
 ): boolean {
   return env.DEV_LOGIN_ENABLED === "true"
 }
-
-export function getUserHeightCm(
-  env: Pick<AppBindings, "USER_HEIGHT_CM">,
-): number {
-  const heightCm = Number(env.USER_HEIGHT_CM)
-
-  if (!Number.isFinite(heightCm) || heightCm <= 0) {
-    throw new Error("USER_HEIGHT_CM must be a positive number in centimeters")
-  }
-
-  return heightCm
-}
-
-export function getUserTimeZone(
-  env: Pick<AppBindings, "USER_TIME_ZONE">,
-): string {
-  if (!env.USER_TIME_ZONE) {
-    throw new Error("USER_TIME_ZONE must be configured")
-  }
-
-  try {
-    new Intl.DateTimeFormat("en-US", {
-      timeZone: env.USER_TIME_ZONE,
-    }).format()
-  } catch {
-    throw new Error("USER_TIME_ZONE must be a valid IANA time zone")
-  }
-
-  return env.USER_TIME_ZONE
-}

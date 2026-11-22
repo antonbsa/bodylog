@@ -17,12 +17,25 @@ export const MEASUREMENT_LIMITS = {
   disposition: { integer: true, max: 5, min: 1 },
 } as const satisfies Record<string, MeasurementLimit>
 
+/** The user's height in Ajustes, limited like the measurement fields. */
+export const HEIGHT_CM_LIMIT = {
+  integer: true,
+  max: 250,
+  min: 50,
+} as const satisfies MeasurementLimit
+
+export function isWithinHeightLimit(heightCm: number): boolean {
+  return isWithinLimit(HEIGHT_CM_LIMIT, heightCm)
+}
+
 export function isWithinMeasurementLimit(
   field: keyof typeof MEASUREMENT_LIMITS,
   value: number,
 ): boolean {
-  const limit: MeasurementLimit = MEASUREMENT_LIMITS[field]
+  return isWithinLimit(MEASUREMENT_LIMITS[field], value)
+}
 
+function isWithinLimit(limit: MeasurementLimit, value: number): boolean {
   return (
     value >= limit.min &&
     value <= limit.max &&
@@ -38,7 +51,8 @@ export function normalizeNotes(value: string): string | null {
 }
 
 export type DerivedMeasurementValues = {
-  bmi: number
+  /** Null while the user has no height set. */
+  bmi: number | null
   bodyFatKg: number | null
   muscleKg: number | null
 }
@@ -52,12 +66,11 @@ export type DerivedValuesInput = {
 /** Pure so the web form can recompute derived values live while typing. */
 export function calculateDerivedValues(
   measurement: DerivedValuesInput,
-  heightCm: number,
+  heightCm: number | null,
 ): DerivedMeasurementValues {
-  const heightM = heightCm / 100
-
   return {
-    bmi: roundToTwoDecimals(measurement.weightKg / (heightM * heightM)),
+    bmi:
+      heightCm === null ? null : calculateBmi(measurement.weightKg, heightCm),
     bodyFatKg:
       measurement.bodyFatPercentage === null
         ? null
@@ -71,4 +84,10 @@ export function calculateDerivedValues(
             (measurement.weightKg * measurement.musclePercentage) / 100,
           ),
   }
+}
+
+function calculateBmi(weightKg: number, heightCm: number): number {
+  const heightM = heightCm / 100
+
+  return roundToTwoDecimals(weightKg / (heightM * heightM))
 }

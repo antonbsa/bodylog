@@ -5,7 +5,7 @@ import { WeekSummary } from "../../domain/week-summary"
 
 type WeeklyDashboardConfig = {
   currentDate: string
-  heightCm: number
+  heightCm: number | null
 }
 
 export type WeeklyDashboardRepository = Pick<MeasurementRepository, "list">

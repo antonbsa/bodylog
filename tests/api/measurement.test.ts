@@ -6,7 +6,7 @@ import {
   normalizeNotes,
 } from "../../domain/measurement"
 
-const USER_HEIGHT_CM = 168
+const HEIGHT_CM = 168
 
 describe("Measurement", () => {
   it("computes BMI from the configured height in centimeters", () => {
@@ -16,7 +16,7 @@ describe("Measurement", () => {
       musclePercentage: null,
     })
 
-    expect(measurement.getDerivedValues(USER_HEIGHT_CM).bmi).toBe(25.83)
+    expect(measurement.getDerivedValues(HEIGHT_CM).bmi).toBe(25.83)
   })
 
   it("computes body fat mass and muscle mass when percentages are present", () => {
@@ -26,7 +26,7 @@ describe("Measurement", () => {
       musclePercentage: 43.72,
     })
 
-    expect(measurement.getDerivedValues(USER_HEIGHT_CM)).toEqual({
+    expect(measurement.getDerivedValues(HEIGHT_CM)).toEqual({
       bmi: 25.83,
       bodyFatKg: 10.54,
       muscleKg: 31.87,
@@ -40,7 +40,7 @@ describe("Measurement", () => {
       musclePercentage: null,
     })
 
-    expect(measurement.getDerivedValues(USER_HEIGHT_CM)).toEqual({
+    expect(measurement.getDerivedValues(HEIGHT_CM)).toEqual({
       bmi: 25.83,
       bodyFatKg: null,
       muscleKg: null,

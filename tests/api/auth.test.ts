@@ -55,7 +55,13 @@ describe("auth session", () => {
 
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({
-      user: { displayName: "Ana", email: "ana@example.com", id: "u1" },
+      user: {
+        displayName: "Ana",
+        email: "ana@example.com",
+        heightCm: null,
+        id: "u1",
+        timeZone: null,
+      },
     })
   })
 
@@ -251,7 +257,13 @@ describe("dev login", () => {
 
     expect(first.status).toBe(200)
     expect(firstBody).toEqual({
-      user: { displayName: "Dev", email: null, id: expect.any(String) },
+      user: {
+        displayName: "Dev",
+        email: null,
+        heightCm: null,
+        id: expect.any(String),
+        timeZone: null,
+      },
     })
     expect(await second.json()).toEqual(firstBody)
     expect(sqlite.prepare("SELECT * FROM user_identities").all()).toEqual([

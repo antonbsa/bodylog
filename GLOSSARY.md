@@ -22,13 +22,13 @@ _Avoid_: token (that's the cookie's value, not the session)
 
 _Avoid_: entry, record (in UI copy), weigh-in
 
-**Derived values**: Values calculated from a Measurement and never stored: BMI (from weight and the configured height), body fat kg and muscle kg (from weight and the matching percentage, when present).
+**Derived values**: Values calculated from a Measurement and never stored: BMI (from weight and the user's height; none while it is unset), body fat kg and muscle kg (from weight and the matching percentage, when present).
 
 _Avoid_: computed fields, metrics (when meaning only these)
 
 ## Weeks
 
-**Week**: Monday to Sunday in the user's configured time zone. Its averages use only the days that have a Measurement, and each metric ignores days where it is missing.
+**Week**: Monday to Sunday in the user's time zone, which follows their device (`America/Sao_Paulo` until it first reports one). Its averages use only the days that have a Measurement, and each metric ignores days where it is missing.
 
 _Avoid_: last 7 days, rolling week
 
