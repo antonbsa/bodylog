@@ -27,7 +27,7 @@ function summary(id: string, name: string): ApiTokenSummary {
   }
 }
 
-/** A stateful `/api/tokens` mock that applies the API's limit and name rules. */
+/** A stateful `/api/tokens` mock, so creating and revoking update the list. */
 async function mockTokensApi(page: Page, initial: ApiTokenSummary[] = []) {
   const tokens = [...initial]
 
@@ -40,20 +40,6 @@ async function mockTokensApi(page: Page, initial: ApiTokenSummary[] = []) {
     }
 
     const { name } = route.request().postDataJSON() as { name: string }
-
-    if (tokens.some((token) => token.name === name)) {
-      return json(
-        route,
-        {
-          action: "Escolha outro nome para o token.",
-          message: "Já existe um token com esse nome.",
-          name: "ValidationError",
-          statusCode: 400,
-        },
-        400,
-      )
-    }
-
     const item = { ...summary(`t${tokens.length + 1}`, name), lastFour: "x9Qk" }
 
     tokens.push(item)
@@ -123,7 +109,7 @@ test("creating a token shows it once, already copied, and the list shows only it
   await expect(dialog.getByLabel("Token", { exact: true })).toHaveCount(0)
 })
 
-test("a duplicate name shows the API's message in the dialog", async ({
+test("a name the user already has is flagged while typing and blocks creation", async ({
   page,
 }) => {
   await mockTokensApi(page, [summary("t1", "Agente")])
@@ -132,13 +118,17 @@ test("a duplicate name shows the API's message in the dialog", async ({
   await page.getByRole("button", { name: "Criar token" }).click()
 
   const dialog = page.getByRole("dialog")
+  const submit = dialog.getByRole("button", { name: "Criar token" })
 
-  await dialog.getByLabel("Nome").fill("Agente")
-  await dialog.getByRole("button", { name: "Criar token" }).click()
-
+  await dialog.getByLabel("Nome").fill(" Agente ")
   await expect(dialog.getByRole("alert")).toHaveText(
-    "Já existe um token com esse nome. Escolha outro nome para o token.",
+    "Já existe um token com esse nome.",
   )
+  await expect(submit).toBeDisabled()
+
+  await dialog.getByLabel("Nome").fill("Agente 2")
+  await expect(dialog.getByRole("alert")).toHaveCount(0)
+  await expect(submit).toBeEnabled()
 })
 
 test("at three tokens creation is replaced by a message until one is revoked", async ({

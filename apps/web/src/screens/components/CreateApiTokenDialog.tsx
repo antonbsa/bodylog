@@ -14,12 +14,14 @@ import { createApiToken } from "../../api/api-tokens"
 import { queryKeys } from "../../api/queryKeys"
 
 type CreateApiTokenDialogProps = {
+  existingNames: string[]
   onOpenChange: (open: boolean) => void
   open: boolean
 }
 
 /** Asks for a name, then shows the new token once, already copied, since the API never returns it again. */
 export function CreateApiTokenDialog({
+  existingNames,
   onOpenChange,
   open,
 }: CreateApiTokenDialogProps) {
@@ -29,6 +31,13 @@ export function CreateApiTokenDialog({
   const [isCreating, setIsCreating] = useState(false)
   const [createdToken, setCreatedToken] = useState<string | null>(null)
   const [copyStatus, setCopyStatus] = useState<"copied" | "failed" | null>(null)
+  const [isCopiedByIcon, setIsCopiedByIcon] = useState(false)
+  const normalizedName = normalizeApiTokenName(name)
+  const isDuplicateName =
+    normalizedName !== null && existingNames.includes(normalizedName)
+  const nameError = isDuplicateName
+    ? "Já existe um token com esse nome."
+    : error
 
   function handleOpenChange(nextOpen: boolean) {
     if (isCreating) {
@@ -40,6 +49,7 @@ export function CreateApiTokenDialog({
       setError(null)
       setCreatedToken(null)
       setCopyStatus(null)
+      setIsCopiedByIcon(false)
     }
 
     onOpenChange(nextOpen)
@@ -48,7 +58,9 @@ export function CreateApiTokenDialog({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const normalizedName = normalizeApiTokenName(name)
+    if (isDuplicateName) {
+      return
+    }
 
     if (normalizedName === null) {
       setError("Informe um nome para o token.")
@@ -70,12 +82,19 @@ export function CreateApiTokenDialog({
       .finally(() => setIsCreating(false))
   }
 
+  /** Resolves to whether the token reached the clipboard. */
   function copyToken(token: string) {
     // Can fail after the request (e.g. Safari drops the click's activation), so the copy button stays.
-    navigator.clipboard
-      .writeText(token)
-      .then(() => setCopyStatus("copied"))
-      .catch(() => setCopyStatus("failed"))
+    return navigator.clipboard.writeText(token).then(
+      () => {
+        setCopyStatus("copied")
+        return true
+      },
+      () => {
+        setCopyStatus("failed")
+        return false
+      },
+    )
   }
 
   return (
@@ -104,10 +123,10 @@ export function CreateApiTokenDialog({
               <button
                 aria-label="Copiar token"
                 className="token-copy"
-                onClick={() => copyToken(createdToken)}
+                onClick={() => copyToken(createdToken).then(setIsCopiedByIcon)}
                 type="button"
               >
-                {copyStatus === "copied" ? (
+                {isCopiedByIcon ? (
                   <Check aria-hidden size={20} />
                 ) : (
                   <Copy aria-hidden size={20} />
@@ -140,24 +159,31 @@ export function CreateApiTokenDialog({
               Nome
             </label>
             <input
-              aria-describedby={error ? "token-name-error" : undefined}
-              aria-invalid={error ? true : undefined}
+              aria-describedby={nameError ? "token-name-error" : undefined}
+              aria-invalid={nameError ? true : undefined}
               autoComplete="off"
               className="token-input"
               disabled={isCreating}
               id="token-name"
               maxLength={API_TOKEN_NAME_MAX_LENGTH}
-              onChange={(event) => setName(event.target.value)}
+              onChange={(event) => {
+                setName(event.target.value)
+                setError(null)
+              }}
               placeholder="Ex.: Agente de IA"
               value={name}
             />
-            {error && (
+            {nameError && (
               <p className="form-error" id="token-name-error" role="alert">
-                {error}
+                {nameError}
               </p>
             )}
             <Flex className="dialog-actions" direction="column" gap="2" mt="4">
-              <Button disabled={isCreating} fullWidth type="submit">
+              <Button
+                disabled={isCreating || isDuplicateName}
+                fullWidth
+                type="submit"
+              >
                 {isCreating ? "Criando..." : "Criar token"}
               </Button>
               <Dialog.Close>

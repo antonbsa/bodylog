@@ -104,6 +104,7 @@ export function ApiTokensSection() {
       </section>
 
       <CreateApiTokenDialog
+        existingNames={tokens.map((token) => token.name)}
         onOpenChange={setIsCreateOpen}
         open={isCreateOpen}
       />

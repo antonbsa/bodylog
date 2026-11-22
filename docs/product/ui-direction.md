@@ -113,7 +113,7 @@ Hard limits that block saving: weight 20–300 kg, fat and muscle 1–80%, metab
 
 One card with: Tema (segmented Sistema, Claro, Escuro), "Altura" (the value, or "Não informada" with "Informe sua altura para calcular o IMC." below the label; tapping opens a dialog to edit it), "Exportar CSV", "Importar CSV" (opens the file picker) and a danger "Sair". Status feedback uses toasts (for example "CSV exportado", "24 medidas importadas"), not in-flow callouts.
 
-Below it, a "Tokens de API" section title and a second card: a one-line explanation, one row per token (name, then "•••• last four · Criado em · Último uso" in secondary text, and a trailing danger "Revogar" that asks for confirmation), and a "Criar token" row, replaced by a note at three tokens. "Criar token" opens a dialog that asks for the name and then shows the token once in a monospace box, already copied, with a trailing copy icon that turns into a check; feedback in that dialog stays inline, since the modal hides toasts from screen readers.
+Below it, a "Tokens de API" section title and a second card: a one-line explanation, one row per token (name, then "•••• last four · Criado em · Último uso" in secondary text, and a trailing danger "Revogar" that asks for confirmation), and a "Criar token" row, replaced by a note at three tokens. "Criar token" opens a dialog that asks for the name and then shows the token once in a monospace box, already copied, with a trailing copy icon that turns into a check only when the user taps it; feedback in that dialog stays inline, since the modal hides toasts from screen readers.
 
 ## Variation display
 
