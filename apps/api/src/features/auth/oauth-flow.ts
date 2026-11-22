@@ -30,10 +30,27 @@ export type OAuthProvider = {
 
 /** The callback page sets the cookie on a 200 and redirects client-side: WebKit drops a Set-Cookie on a redirect ending a cross-site chain. */
 function signedInPage(): string {
+  // Mirrors the web app's "Carregando..." auth check (colors from apps/web/src/styles/tokens.css) so the hand-off doesn't flash.
   return `<!doctype html>
 <html lang="pt-BR">
-<head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/"><title>BodyLog</title></head>
-<body><p><a href="/">Continuar para o BodyLog</a></p></body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="refresh" content="0;url=/">
+<title>BodyLog</title>
+<script>try{var t=localStorage.getItem("bodylog-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+<style>
+:root{--bg:#f4f4f1;--fg-2:#5c5c57;--accent:#0969da;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111111;--fg-2:#a6a6a6;--accent:#58a6ff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111111;--fg-2:#a6a6a6;--accent:#58a6ff;color-scheme:dark}
+html,body{height:100%;margin:0}
+body{display:grid;place-items:center;align-content:center;gap:12px;background:var(--bg);color:var(--fg-2);font:16px/1.5 "Geist",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+p{margin:0}
+a{color:var(--accent);opacity:0;animation:show 0s 3s forwards}
+@keyframes show{to{opacity:1}}
+</style>
+</head>
+<body><p>Carregando...</p><a href="/">Continuar para o BodyLog</a></body>
 </html>`
 }
 
