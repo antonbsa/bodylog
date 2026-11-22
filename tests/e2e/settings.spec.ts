@@ -523,21 +523,6 @@ test("an out-of-range height shows the limits and sends nothing", async ({
   expect(updates).toEqual([])
 })
 
-test("Ajustes shows the stored time zone read-only", async ({ page }) => {
-  await mockApi(page)
-  await mockProfile(page, {})
-
-  await page.goto("/ajustes")
-
-  const deviceZone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const row = page.getByText("Fuso horário").locator("..")
-
-  await expect(row).toContainText(deviceZone)
-  await expect(page.getByRole("button", { name: /Fuso horário/ })).toHaveCount(
-    0,
-  )
-})
-
 test("app start sends the device zone when it differs from the stored one", async ({
   page,
 }) => {
@@ -547,8 +532,7 @@ test("app start sends the device zone when it differs from the stored one", asyn
 
   await page.goto("/ajustes")
 
-  await expect(page.getByText("Fuso horário").locator("..")).toContainText(
-    deviceZone,
-  )
+  // The app renders a screen only after the sync settles.
+  await expect(heightRow(page)).toBeVisible()
   expect(updates).toEqual([{ timeZone: deviceZone }])
 })

@@ -111,7 +111,7 @@ Hard limits that block saving: weight 20–300 kg, fat and muscle 1–80%, metab
 
 ### Ajustes
 
-One card with: Tema (segmented Sistema, Claro, Escuro), "Altura" (the value, or "Não informada" with "Informe sua altura para calcular o IMC." below the label; tapping opens a dialog to edit it), a read-only "Fuso horário" with the device's IANA zone, "Exportar CSV", "Importar CSV" (opens the file picker) and a danger "Sair". Status feedback uses toasts (for example "CSV exportado", "24 medidas importadas"), not in-flow callouts.
+One card with: Tema (segmented Sistema, Claro, Escuro), "Altura" (the value, or "Não informada" with "Informe sua altura para calcular o IMC." below the label; tapping opens a dialog to edit it), "Exportar CSV", "Importar CSV" (opens the file picker) and a danger "Sair". Status feedback uses toasts (for example "CSV exportado", "24 medidas importadas"), not in-flow callouts.
 
 ## Variation display
 

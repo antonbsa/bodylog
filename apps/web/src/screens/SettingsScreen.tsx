@@ -193,10 +193,6 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
             {user ? formatHeight(user.heightCm) : "—"}
           </span>
         </button>
-        <div className="set-row">
-          <span>Fuso horário</span>
-          <span className="set-value">{user?.timeZone ?? "—"}</span>
-        </div>
         <button
           className="set-row"
           disabled={isExporting}
