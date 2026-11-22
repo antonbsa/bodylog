@@ -10,6 +10,7 @@ interface Column {
   type: string
   pk: boolean
   fk: boolean
+  uk: boolean
   nullable: boolean
 }
 
@@ -46,6 +47,24 @@ function schemaTables(db: DatabaseSync): Record<string, Column[]> {
           }[]
         ).map((fk) => fk.from),
       )
+      const ukColumns = new Set(
+        (
+          db.prepare(`PRAGMA index_list(${name})`).all() as {
+            name: string
+            unique: number
+            origin: string
+          }[]
+        )
+          // Primary keys are drawn as PK, so only UNIQUE constraints and indexes count as UK
+          .filter((index) => index.unique === 1 && index.origin !== "pk")
+          .flatMap((index) =>
+            (
+              db.prepare(`PRAGMA index_info(${index.name})`).all() as {
+                name: string
+              }[]
+            ).map((column) => column.name),
+          ),
+      )
       const columns = (
         db.prepare(`PRAGMA table_info(${name})`).all() as {
           name: string
@@ -58,6 +77,7 @@ function schemaTables(db: DatabaseSync): Record<string, Column[]> {
         type: column.type.toLowerCase(),
         pk: column.pk > 0,
         fk: fkColumns.has(column.name),
+        uk: ukColumns.has(column.name),
         // A TEXT primary key can report notnull = 0, but it is never null in practice
         nullable: column.notnull === 0 && column.pk === 0,
       }))
@@ -97,6 +117,7 @@ function docTables(): Record<string, Column[]> {
           type,
           pk: /\bPK\b/.test(keys),
           fk: /\bFK\b/.test(keys),
+          uk: /\bUK\b/.test(keys),
           nullable: comment.includes("nullable"),
         }
       })
