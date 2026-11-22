@@ -1,10 +1,6 @@
 import { Hono } from "hono"
 
-import { ValidationError } from "../../../../../infra/errors"
-import {
-  MAX_API_TOKENS_PER_USER,
-  normalizeApiTokenName,
-} from "../../../../../domain/api-token"
+import { MAX_API_TOKENS_PER_USER } from "../../../../../domain/api-token"
 import type {
   ApiTokenListResponse,
   CreateApiTokenResponse,
@@ -12,8 +8,10 @@ import type {
 import { ApiTokenRepository } from "../../db/repositories/api-tokens"
 import { createOpaqueSecret, hashSecret } from "../../http/credentials"
 import {
+  createApiTokenLimitError,
   createNotFoundError,
   createValidationError,
+  parseApiTokenName,
 } from "../../http/request-validation"
 import type { AppEnv } from "../../types"
 
@@ -31,12 +29,7 @@ apiTokenRoutes.get("/", async (c) => {
 
 apiTokenRoutes.post("/", async (c) => {
   const body: unknown = await c.req.json().catch(() => null)
-  const rawName =
-    typeof body === "object" && body !== null && "name" in body
-      ? body.name
-      : undefined
-  const name =
-    typeof rawName === "string" ? normalizeApiTokenName(rawName) : null
+  const name = parseApiTokenName(body)
 
   if (name === null) {
     throw createValidationError("INVALID_API_TOKEN_NAME")
@@ -51,10 +44,7 @@ apiTokenRoutes.post("/", async (c) => {
 
   if (!result.created) {
     throw result.reason === "limit-reached"
-      ? new ValidationError({
-          action: "Revogue um token para criar outro.",
-          message: `Você já tem ${MAX_API_TOKENS_PER_USER} tokens.`,
-        })
+      ? createApiTokenLimitError(MAX_API_TOKENS_PER_USER)
       : createValidationError("DUPLICATE_API_TOKEN_NAME")
   }
 

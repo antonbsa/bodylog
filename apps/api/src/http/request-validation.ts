@@ -1,5 +1,8 @@
 import { NotFoundError, ValidationError } from "../../../../infra/errors"
-import { API_TOKEN_NAME_MAX_LENGTH } from "../../../../domain/api-token"
+import {
+  API_TOKEN_NAME_MAX_LENGTH,
+  normalizeApiTokenName,
+} from "../../../../domain/api-token"
 import {
   isWithinHeightLimit,
   isWithinMeasurementLimit,
@@ -119,6 +122,20 @@ export function createCsvInvalidRowsError(
         ? "O arquivo tem 1 linha inválida. Nenhuma medida foi importada."
         : `O arquivo tem ${invalidRows} linhas inválidas. Nenhuma medida foi importada.`,
   })
+}
+
+export function createApiTokenLimitError(maxTokens: number): ValidationError {
+  return new ValidationError({
+    action: "Revogue um token para criar outro.",
+    message: `Você já tem ${maxTokens} tokens.`,
+  })
+}
+
+/** The normalized `name` of a `POST /api/tokens` body, or null when it is missing or invalid. */
+export function parseApiTokenName(body: unknown): string | null {
+  return isRecord(body) && typeof body.name === "string"
+    ? normalizeApiTokenName(body.name)
+    : null
 }
 
 export function parseMeasurementInput(body: unknown): MeasurementInputResult {

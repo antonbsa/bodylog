@@ -2,6 +2,7 @@ import { throwApiError } from "../../../../infra/errors"
 import type {
   ApiTokenListResponse,
   ApiTokenSummary,
+  CreateApiTokenRequest,
   CreateApiTokenResponse,
 } from "../../../../types/api-tokens"
 import { api } from "./client"
@@ -23,7 +24,7 @@ export async function createApiToken(
   name: string,
 ): Promise<CreateApiTokenResponse> {
   const response = await api("/api/tokens", {
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name } satisfies CreateApiTokenRequest),
     headers: { "content-type": "application/json" },
     method: "POST",
   })

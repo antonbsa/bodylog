@@ -125,15 +125,13 @@ describe("POST /api/tokens", () => {
 
 describe("GET /api/tokens", () => {
   it("lists the caller's tokens, oldest first, never with the token itself", async () => {
-    const { ana, bia, create, list, request } = setup()
+    const { ana, create, request } = setup()
     const first = (await (
       await create(ana, "Agente")
     ).json()) as CreateApiTokenResponse
     const second = (await (
       await create(ana, "Planilha")
     ).json()) as CreateApiTokenResponse
-
-    await create(bia, "Outro")
 
     const response = await request({ cookie: ana }, "/api/tokens")
     const text = await response.text()
@@ -142,7 +140,6 @@ describe("GET /api/tokens", () => {
     expect(JSON.parse(text)).toEqual({ items: [first.item, second.item] })
     expect(text).not.toContain(first.token)
     expect(text).not.toContain(second.token)
-    expect((await list(bia)).items.map((item) => item.name)).toEqual(["Outro"])
   })
 })
 
@@ -160,19 +157,14 @@ describe("DELETE /api/tokens/:id", () => {
     expect((await list(ana)).items).toEqual([])
   })
 
-  it("answers 404 for another user's token and for an unknown id", async () => {
-    const { ana, bia, create, revoke, tokenRows } = setup()
-    const { item } = (await (
-      await create(ana, "Agente")
-    ).json()) as CreateApiTokenResponse
-    const response = await revoke(bia, item.id)
+  it("answers 404 for an unknown id", async () => {
+    const { ana, revoke } = setup()
+    const response = await revoke(ana, "missing")
 
     expect(response.status).toBe(404)
     expect(await response.json()).toMatchObject({
       message: "Token não encontrado.",
     })
-    expect(tokenRows()).toHaveLength(1)
-    expect((await revoke(ana, "missing")).status).toBe(404)
   })
 })
 

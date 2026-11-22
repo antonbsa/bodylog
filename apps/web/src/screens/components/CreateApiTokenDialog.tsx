@@ -8,7 +8,7 @@ import {
   normalizeApiTokenName,
 } from "../../../../../domain/api-token"
 import { Button } from "../../components/Button"
-import { createApiToken } from "../../api/tokens"
+import { createApiToken } from "../../api/api-tokens"
 import { queryKeys } from "../../api/queryKeys"
 
 type CreateApiTokenDialogProps = {
