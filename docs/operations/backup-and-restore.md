@@ -50,10 +50,10 @@ For a deleted database or a lost account.
 
 ### Rehearsal Into Preview
 
-Every few months, and after changing the backup process, rehearse the restore against the preview environment (`--env preview` in `apps/api/wrangler.toml`), whose data is disposable. Follow steps 1, 2, 5 and 6 above, replacing steps 3 and 4 with:
+Every few months, and after changing the backup process, rehearse the restore against the preview environment (`--env preview` in `apps/api/wrangler.toml`), whose data is disposable. Follow steps 1, 2, 5 and 6 above, replacing steps 3 and 4 with the commands below. The reset drops every app table, child tables before `users` because D1 enforces foreign keys:
 
 ```sh
-npx wrangler d1 execute DB --remote --env preview --command "DROP TABLE IF EXISTS measurements; DROP TABLE IF EXISTS d1_migrations"
+npx wrangler d1 execute DB --remote --env preview --command "DROP TABLE IF EXISTS api_tokens; DROP TABLE IF EXISTS sessions; DROP TABLE IF EXISTS user_identities; DROP TABLE IF EXISTS measurements; DROP TABLE IF EXISTS users; DROP TABLE IF EXISTS d1_migrations"
 npx wrangler d1 execute DB --remote --env preview --file=dump.sql
 npx wrangler d1 execute DB --remote --env preview --command "SELECT COUNT(*) AS count, MAX(date) AS latest FROM measurements"
 ```
