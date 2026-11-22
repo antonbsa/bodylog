@@ -52,6 +52,7 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0025 — Use User Height Environment Variable](0025-use-user-height-environment-variable.md) · Accepted · supersedes 0024
 - [0027 — Use User Time Zone Environment Variable](0027-use-user-time-zone-environment-variable.md) · Accepted
 - [0044 — Multi-user Accounts with OAuth Sign-in](0044-multi-user-accounts-with-oauth-sign-in.md) · Accepted · amends 0007, 0041
+- [0045 — Timestamp-Prefixed D1 Migrations](0045-timestamp-prefixed-d1-migrations.md) · Accepted
 
 ### Web
 
