@@ -80,7 +80,7 @@ export class UserRepository {
     return row ? mapUserRow(row) : null
   }
 
-  /** Returns the identity's user with its display name and email refreshed, creating both on first sign-in. */
+  /** Returns the identity's user with its display name and email refreshed; a new identity joins the user owning its verified email, or creates one. */
   async upsertFromProfile(profile: ProviderProfile): Promise<User> {
     const timestamp = this.now().toISOString()
     const existing = await this.db
@@ -91,10 +91,11 @@ export class UserRepository {
       .first<{ user_id: string }>()
 
     if (existing) {
+      // A linked user keeps its email when this identity has no verified one; another identity may still verify it.
       await this.db.batch([
         this.db
           .prepare(
-            "UPDATE users SET display_name = ?, email = ?, updated_at = ? WHERE id = ?",
+            "UPDATE users SET display_name = ?, email = COALESCE(?, email), updated_at = ? WHERE id = ?",
           )
           .bind(
             profile.displayName,
@@ -118,6 +119,47 @@ export class UserRepository {
       return user
     }
 
+    const insertIdentity = (userId: string) =>
+      this.db
+        .prepare(
+          "INSERT INTO user_identities (provider, provider_user_id, user_id, email, created_at) VALUES (?, ?, ?, ?, ?)",
+        )
+        .bind(
+          profile.provider,
+          profile.providerUserId,
+          userId,
+          profile.email,
+          timestamp,
+        )
+    // Identity emails are stored only when verified, so a match here is always verified on both sides (ADR 0044).
+    const linked = profile.email
+      ? await this.db
+          .prepare(
+            "SELECT user_id FROM user_identities WHERE email = ? COLLATE NOCASE AND user_id NOT IN (SELECT user_id FROM user_identities WHERE provider = ?) ORDER BY created_at LIMIT 1",
+          )
+          .bind(profile.email, profile.provider)
+          .first<{ user_id: string }>()
+      : null
+
+    if (linked) {
+      await this.db.batch([
+        this.db
+          .prepare(
+            "UPDATE users SET display_name = ?, email = ?, updated_at = ? WHERE id = ?",
+          )
+          .bind(profile.displayName, profile.email, timestamp, linked.user_id),
+        insertIdentity(linked.user_id),
+      ])
+
+      const user = await this.getById(linked.user_id)
+
+      if (!user) {
+        throw new Error(`User ${linked.user_id} vanished during sign-in`)
+      }
+
+      return user
+    }
+
     const id = this.createId()
 
     await this.db.batch([
@@ -126,17 +168,7 @@ export class UserRepository {
           "INSERT INTO users (id, display_name, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
         )
         .bind(id, profile.displayName, profile.email, timestamp, timestamp),
-      this.db
-        .prepare(
-          "INSERT INTO user_identities (provider, provider_user_id, user_id, email, created_at) VALUES (?, ?, ?, ?, ?)",
-        )
-        .bind(
-          profile.provider,
-          profile.providerUserId,
-          id,
-          profile.email,
-          timestamp,
-        ),
+      insertIdentity(id),
     ])
 
     return {

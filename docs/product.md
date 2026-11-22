@@ -23,7 +23,7 @@ Build a personal, mobile-first interface for daily body metrics logging and week
 - compare the current partial week against the previous full week;
 - import existing historical data from CSV;
 - export records to CSV for backup;
-- sign in with a GitHub account and keep a private history of their own.
+- sign in with a GitHub or Google account and keep a private history of their own.
 
 ### Constraints
 
@@ -50,11 +50,11 @@ The authenticated app has four screens behind a bottom tab bar (Início, Histór
 ### Log In
 
 1. The user opens the app.
-2. If not signed in, the login screen is displayed.
-3. The user taps "Entrar com GitHub" and authorizes BodyLog on GitHub.
-4. The first sign-in creates the account; later ones return to it.
+2. If not signed in, the login screen is displayed, with a link to the privacy policy (`/privacidade`), which opens signed in or not.
+3. The user taps "Entrar com GitHub" or "Entrar com Google" and authorizes BodyLog on the provider.
+4. The first sign-in creates the account, unless the provider's verified email already belongs to an account, which it opens; later ones return to it.
 5. The user lands on Início.
-6. If the user cancels on GitHub or the sign-in fails, the login screen shows a message for that case.
+6. If the user cancels on the provider or the sign-in fails, the login screen shows a message for that case.
 
 ### Read the Week on Início
 
@@ -292,16 +292,17 @@ The system must allow the user to import historical measurements from a CSV file
 
 ### FR-011 — Accounts and Sign-in
 
-The system must give each person their own account, signed in with GitHub (`0044-multi-user-accounts-with-oauth-sign-in.md`).
+The system must give each person their own account, signed in with GitHub or Google (`0044-multi-user-accounts-with-oauth-sign-in.md`).
 
 #### Acceptance Criteria
 
-- The first GitHub sign-in creates an account (open sign-up); a later sign-in returns to the same account.
+- The first sign-in creates an account (open sign-up); a later sign-in returns to the same account.
+- Signing in with the other provider using the same verified email opens the same account; an unverified email always creates a separate one.
 - Each account sees and edits only its own measurements, on every screen, in the CSV export and through the import; two accounts can record the same date.
 - Sessions are stored on the server: they last 30 days, renew while in use and end at most 180 days after sign-in.
 - All data routes require a session.
 - Logout ends the session on the server, so a copied cookie stops working.
-- Cancelling on GitHub or a failed sign-in returns to the login screen with a message.
+- Cancelling on the provider or a failed sign-in returns to the login screen with a message.
 
 ---
 
@@ -393,7 +394,7 @@ The data access layer should be isolated enough to support a future migration fr
 
 ### Authentication
 
-- Sign-in with GitHub only, with open sign-up on the first sign-in (`0044-multi-user-accounts-with-oauth-sign-in.md`).
+- Sign-in with GitHub or Google, linked by verified email, with open sign-up on the first sign-in (`0044-multi-user-accounts-with-oauth-sign-in.md`).
 - Server-side sessions; data routes protected; logout available.
 
 ### Deployment

@@ -312,6 +312,15 @@ input:disabled {
   line-height: 1.4;
 }
 
+.login-footer {
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+}
+
+.login-footer a {
+  color: var(--accent);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

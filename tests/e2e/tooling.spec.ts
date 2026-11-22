@@ -85,7 +85,9 @@ async function mockMeasurementList(page: Page) {
   })
 }
 
-test("login screen renders first with the GitHub sign-in", async ({ page }) => {
+test("login screen renders first with the GitHub and Google sign-ins", async ({
+  page,
+}) => {
   await mockSession(page, false)
   await page.goto("/")
 
@@ -93,6 +95,49 @@ test("login screen renders first with the GitHub sign-in", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: "Entrar com GitHub" }),
   ).toHaveAttribute("href", "/api/auth/github")
+  await expect(
+    page.getByRole("link", { name: "Entrar com Google" }),
+  ).toHaveAttribute("href", "/api/auth/google")
+})
+
+test("the login screen links to a privacy policy that opens without signing in", async ({
+  page,
+}) => {
+  await mockSession(page, false)
+  await page.goto("/")
+
+  await page.getByRole("link", { name: "Política de privacidade" }).click()
+
+  await expect(page).toHaveURL("/privacidade")
+  await expect(
+    page.getByRole("heading", { name: "Política de privacidade" }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("link", { name: "antonbsa.dev@gmail.com" }),
+  ).toHaveAttribute("href", "mailto:antonbsa.dev@gmail.com")
+
+  await page.getByRole("link", { name: "Voltar ao BodyLog" }).click()
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+})
+
+test("a signed-in user also reaches the privacy policy", async ({ page }) => {
+  await mockSession(page, true)
+  await page.goto("/privacidade")
+
+  await expect(
+    page.getByRole("heading", { name: "Política de privacidade" }),
+  ).toBeVisible()
+})
+
+test("the privacy policy renders while the session check is still pending", async ({
+  page,
+}) => {
+  await page.route("**/api/auth/session", () => {})
+  await page.goto("/privacidade")
+
+  await expect(
+    page.getByRole("heading", { name: "Política de privacidade" }),
+  ).toBeVisible()
 })
 
 test("unknown routes show the not-found screen", async ({ page }) => {
@@ -109,15 +154,12 @@ test("unknown routes show the not-found screen", async ({ page }) => {
 })
 
 for (const [code, message] of [
-  ["declined", "Você cancelou o login no GitHub. Tente de novo quando quiser."],
+  ["declined", "Você cancelou o login. Tente de novo quando quiser."],
   [
     "state",
     "O login expirou ou foi aberto em outra janela. Tente entrar de novo.",
   ],
-  [
-    "failed",
-    "Não foi possível entrar com o GitHub. Tente novamente em instantes.",
-  ],
+  ["failed", "Não foi possível entrar. Tente novamente em instantes."],
 ]) {
   test(`login screen explains a ${code} sign-in and clears it from the address`, async ({
     page,

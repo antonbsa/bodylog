@@ -8,6 +8,7 @@ import { HistoryScreen } from "./screens/HistoryScreen"
 import { HomeScreen } from "./screens/HomeScreen"
 import { LoginScreen } from "./screens/LoginScreen"
 import { NotFoundScreen } from "./screens/NotFoundScreen"
+import { PrivacyScreen } from "./screens/PrivacyScreen"
 import { RegistrationScreen } from "./screens/RegistrationScreen"
 import { SettingsScreen } from "./screens/SettingsScreen"
 import { TabLayout } from "./screens/TabLayout"
@@ -70,19 +71,15 @@ export function App() {
     setAuthState("unauthenticated")
   }
 
-  if (authState === "checking") {
-    return (
-      <main className="app-shell auth-check">
-        <p>Carregando...</p>
-      </main>
-    )
-  }
-
   return (
     <Routes>
       <Route
         element={
-          authState === "authenticated" ? (
+          authState === "checking" ? (
+            <main className="app-shell auth-check">
+              <p>Carregando...</p>
+            </main>
+          ) : authState === "authenticated" ? (
             <Outlet />
           ) : (
             <LoginScreen onLoginSuccess={() => hydrateSession()} />
@@ -100,6 +97,7 @@ export function App() {
         </Route>
         <Route path="registro" element={<RegistrationScreen />} />
       </Route>
+      <Route path="privacidade" element={<PrivacyScreen />} />
       <Route path="*" element={<NotFoundScreen />} />
     </Routes>
   )

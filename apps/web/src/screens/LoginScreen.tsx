@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
 import { GithubLogo } from "@phosphor-icons/react/dist/csr/GithubLogo"
+import { GoogleLogo } from "@phosphor-icons/react/dist/csr/GoogleLogo"
+import { Link } from "react-router"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { Button } from "../components/Button"
@@ -66,6 +68,13 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             </a>
           </Button>
 
+          <Button asChild>
+            <a href="/api/auth/google">
+              <GoogleLogo aria-hidden size={18} weight="bold" />
+              Entrar com Google
+            </a>
+          </Button>
+
           {import.meta.env.DEV ? (
             <Button
               disabled={isSubmitting}
@@ -77,6 +86,10 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             </Button>
           ) : null}
         </div>
+
+        <p className="login-footer">
+          <Link to="/privacidade">Política de privacidade</Link>
+        </p>
       </section>
     </main>
   )

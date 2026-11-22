@@ -17,6 +17,7 @@ import "./styles/history.css"
 import "./styles/trends.css"
 import "./styles/calendar.css"
 import "./styles/settings.css"
+import "./styles/privacy.css"
 import "./styles/toast.css"
 
 // iOS Safari ignores user-scalable=no for pinch, so cancel its gesture events.

@@ -8,7 +8,7 @@ Logs each account's daily bioimpedance scale readings and shows how each week co
 
 _Avoid_: owner, member, profile (for the account itself)
 
-**Identity**: A provider account (GitHub, later Google) that signs in as a User, unique by provider and the provider's user id. A User can have more than one.
+**Identity**: A provider account (GitHub or Google) that signs in as a User, unique by provider and the provider's user id. A User can have more than one.
 
 _Avoid_: login, provider account (in code)
 

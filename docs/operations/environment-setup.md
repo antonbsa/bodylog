@@ -6,7 +6,7 @@ What a BodyLog environment is made of on Cloudflare and how it is configured. Th
 
 - One Worker with Hono that serves the API under `/api/*` and the built web app through Workers Static Assets.
 - One D1 database bound to that Worker as `DB`.
-- Worker secrets for the environment's GitHub OAuth App ([Secrets](secrets.md)).
+- Worker secrets for the environment's GitHub OAuth App and Google OAuth client ([Secrets](secrets.md)).
 
 BodyLog is meant to run within the Cloudflare free plan for personal use, so the implementation avoids unnecessary queries, frequent full scans on large tables, repeated dashboard calls, polling and heavy processing inside the Worker.
 
@@ -31,7 +31,7 @@ Locally, the Vite dev server on `http://localhost:5173` proxies `/api` requests 
 
 `[env.production.assets]` uses `not_found_handling = "single-page-application"` so client routes such as `/historico` get `index.html`, and `run_worker_first = ["/api/*"]` so every API request, including unknown ones, reaches the Worker and gets a JSON response. `apps/web/public/_headers` is copied into `dist/` and applied by Workers Static Assets, which keeps `Cache-Control: no-cache` on `/` and `/index.html`.
 
-The web app and the API share one origin, so the session cookie is first-party: `HttpOnly`, `SameSite=Lax` and `Secure` (except on `localhost`). There is no CORS handling and no API base URL. The GitHub `redirect_uri` is derived from the request origin, so each environment's OAuth App only needs its callback URL to match; there is no var for it.
+The web app and the API share one origin, so the session cookie is first-party: `HttpOnly`, `SameSite=Lax` and `Secure` (except on `localhost`). There is no CORS handling and no API base URL. Each provider's `redirect_uri` is derived from the request origin, so each environment's OAuth clients only need its callback URLs to match; there is no var for it.
 
 ## Local GitHub Sign-in
 
@@ -41,6 +41,8 @@ Locally, **Entrar como dev** covers day-to-day work ([Run locally](../guides/run
 GITHUB_CLIENT_ID="..."
 GITHUB_CLIENT_SECRET="..."
 ```
+
+For Google, add `http://localhost:5173/api/auth/google/callback` as an **Authorized redirect URI** of an OAuth client and set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` the same way.
 
 `wrangler dev` loads `.env.local` after `.env.development`, so these replace the placeholders. Without them, **Entrar com GitHub** reaches GitHub with a placeholder client id and GitHub rejects it.
 

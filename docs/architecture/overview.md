@@ -70,9 +70,10 @@ Routes, handled client-side by `react-router`:
 /tendencias        Tendências (tab)
 /ajustes           Ajustes (tab; theme, CSV export/import, logout)
 /registro?data=YYYY-MM-DD   registration, outside the tab layout, no bar
+/privacidade       privacy policy, public: renders signed in or not
 ```
 
-The tab screens share a full-height flex layout: a scrolling content area above a bottom tab bar that sits in the layout flow (not fixed), with a central button that opens `/registro` for today (`0033-use-bottom-navigation.md`, [UI direction](../product/ui-direction.md)). Unauthenticated visits show the login screen without the bar, and unknown paths show the not-found screen. The registration route is a full-screen form outside the tab layout: a sticky header with the date bar, a form that scrolls with the document (so iOS scrolls focused fields natively) and a fixed footer that is hidden while the iOS keyboard is open (detected from the visual viewport height). Numeric fields use a right-to-left digit mask, and validation limits, notes normalization and derived values come from `domain/measurement.ts` at the repo root, so the web form and the API share them. Tab switches and opening or closing `/registro` replace the history entry (decided in `apps/web/src/hooks/useTabNavigate.ts`) because the iOS edge swipe follows history; Cancelar returns to the origin path kept in location state. Server data goes through TanStack Query (one client in `main.tsx`, keys in `apps/web/src/api/queryKeys.ts`), so screens show cached data while refetching and Registro prefetches the adjacent days; see `0037-use-tanstack-query-for-server-state.md`.
+The tab screens share a full-height flex layout: a scrolling content area above a bottom tab bar that sits in the layout flow (not fixed), with a central button that opens `/registro` for today (`0033-use-bottom-navigation.md`, [UI direction](../product/ui-direction.md)). Unauthenticated visits show the login screen without the bar, except `/privacidade`, which the login screen links to and Google's consent screen requires as a public page; unknown paths show the not-found screen. The registration route is a full-screen form outside the tab layout: a sticky header with the date bar, a form that scrolls with the document (so iOS scrolls focused fields natively) and a fixed footer that is hidden while the iOS keyboard is open (detected from the visual viewport height). Numeric fields use a right-to-left digit mask, and validation limits, notes normalization and derived values come from `domain/measurement.ts` at the repo root, so the web form and the API share them. Tab switches and opening or closing `/registro` replace the history entry (decided in `apps/web/src/hooks/useTabNavigate.ts`) because the iOS edge swipe follows history; Cancelar returns to the origin path kept in location state. Server data goes through TanStack Query (one client in `main.tsx`, keys in `apps/web/src/api/queryKeys.ts`), so screens show cached data while refetching and Registro prefetches the adjacent days; see `0037-use-tanstack-query-for-server-state.md`.
 
 Deep links rely on the Worker's static assets serving `index.html` for unknown non-API paths (`not_found_handling = "single-page-application"` in `apps/api/wrangler.toml`).
 
@@ -102,7 +103,7 @@ Colors are CSS custom properties in `apps/web/src/styles/tokens.css`. The theme 
 apps/api/src/
   index.ts              wrangler main; re-exports the app
   app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
-  config.ts             env-derived settings (GitHub OAuth client, dev login flag)
+  config.ts             env-derived settings (GitHub and Google OAuth clients, dev login flag)
   types.ts              API-only bindings and input types
   features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens)
   db/repositories/      D1 access, one file per table
@@ -156,9 +157,10 @@ Handle persistence:
 
 ## Authentication
 
-Accounts sign in with GitHub OAuth; the full decision is `0044-multi-user-accounts-with-oauth-sign-in.md`.
+Accounts sign in with GitHub or Google OAuth; the full decision is `0044-multi-user-accounts-with-oauth-sign-in.md`.
 
-- `features/auth/github.ts` runs the authorization code flow with PKCE through `oauth4webapi`. `GET /api/auth/github` keeps `state` and `code_verifier` in a short-lived cookie scoped to `/api/auth/github` and redirects to GitHub; the callback validates them, exchanges the code, reads `/user` and `/user/emails`, and creates or refreshes the user and its identity in `users` and `user_identities`.
+- `features/auth/oauth-flow.ts` runs the authorization code flow with PKCE through `oauth4webapi` for each provider. `GET /api/auth/<provider>` keeps `state` and `code_verifier` in a short-lived cookie scoped to that path and redirects to the provider; the callback validates them, exchanges the code, reads the profile, and creates or refreshes the user and its identity in `users` and `user_identities`. `github.ts` reads the profile from `/user` and `/user/emails`, `google.ts` from the ID token.
+- `UserRepository.upsertFromProfile` links a new identity to the user that already has an identity with the same verified email, and otherwise creates a user.
 - The callback sets the session cookie on a 200 page that redirects to `/` client-side, because WebKit drops a `Set-Cookie` on a redirect that ends a cross-site chain. Failures redirect to `/?error=<code>` without a session.
 - `features/auth/session.ts` keeps sessions in D1: the `bodylog_session` cookie holds a random id, `sessions` stores its SHA-256, and `requireSession` resolves it to the user id, renewing it in its last week and deleting it once expired. Each new sign-in sweeps expired rows.
 - Every measurement query goes through `MeasurementRepository`, which is built for one user id and filters each statement by it.
@@ -208,7 +210,7 @@ Mitigation:
 
 ### Sign-up Abuse
 
-Sign-up is open to any GitHub account, with no rate limit. Every account starts empty and sees only its own rows, so abuse costs storage, not privacy.
+Sign-up is open to any GitHub or Google account, with no rate limit. Every account starts empty and sees only its own rows, so abuse costs storage, not privacy.
 
 ## Cross-Cutting Concerns
 
