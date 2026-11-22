@@ -521,3 +521,79 @@ The `file` field plus an optional `skipInvalid=true` form field.
 #### Response 400
 
 Returned for a file-level error, or when the file has invalid rows and `skipInvalid` is not `true` (nothing is written).
+
+## Personal API Tokens
+
+Tokens an external client or agent uses instead of a browser session. These routes need the session cookie like every data route; a token in `Authorization: Bearer` doesn't authorize them, so a token never manages tokens. Each route sees only the caller's tokens, and another user's token id answers the same 404 as an unknown one.
+
+A token is `bl_` followed by 32 random bytes in base64url (46 characters). The API stores only its SHA-256 and its last four characters, and returns the token itself only in the `POST` response.
+
+### GET /api/tokens
+
+Lists the caller's tokens, oldest first.
+
+#### Response 200
+
+```json
+{
+  "items": [
+    {
+      "id": "0b5c5d0e-2f4e-4a51-9a34-7d1b0c2f9e11",
+      "name": "Agente",
+      "lastFour": "x9Qk",
+      "createdAt": "2026-11-21T12:00:00.000Z",
+      "lastUsedAt": null
+    }
+  ]
+}
+```
+
+### POST /api/tokens
+
+Creates a token.
+
+#### Request
+
+```json
+{ "name": "Agente" }
+```
+
+#### Rules
+
+- `name` is required, trimmed, at most 50 characters, and unique among the caller's tokens.
+- A user holds at most 3 tokens; creating another needs a revoke first.
+
+#### Response 201
+
+```json
+{
+  "item": {
+    "id": "0b5c5d0e-2f4e-4a51-9a34-7d1b0c2f9e11",
+    "name": "Agente",
+    "lastFour": "x9Qk",
+    "createdAt": "2026-11-21T12:00:00.000Z",
+    "lastUsedAt": null
+  },
+  "token": "bl_3q2-7wJm0aK8Zr5yT1uVnB4cD6eF9gH0iJ2kL4mx9Qk"
+}
+```
+
+#### Response 400
+
+A `ValidationError` whose `message` is "Nome do token inválido." (missing, blank or too long), "Já existe um token com esse nome." or "Você já tem 3 tokens." (action "Revogue um token para criar outro.").
+
+### DELETE /api/tokens/:id
+
+Revokes a token by deleting it.
+
+#### Response 200
+
+```json
+{
+  "ok": true
+}
+```
+
+#### Response 404
+
+A `NotFoundError` with `message` "Token não encontrado.".

@@ -4,10 +4,10 @@ The D1 (SQLite) schema: what each table holds, how the tables relate, which uniq
 
 ## Conventions
 
-- **Ids** are random UUIDs in text columns (`crypto.randomUUID()` in the repositories). `user_identities` is keyed by the provider's own account id instead, and `sessions` by a hash of the cookie's id.
+- **Ids** are random UUIDs in text columns (`crypto.randomUUID()` in the repositories). `user_identities` is keyed by the provider's own account id instead, and `sessions` by a hash of the cookie's id. `api_tokens` has a UUID id and stores a hash of the token, like `sessions`.
 - **Timestamps** are ISO 8601 UTC strings in `*_at` text columns, so comparing them as text compares them in time; dates (`measurements.date`) are `YYYY-MM-DD`.
-- **Every row belongs to a user.** Each table references `users(id)` with `ON DELETE CASCADE`, so deleting a user deletes their identities, sessions and measurements ([ADR 0044](../decisions/0044-multi-user-accounts-with-oauth-sign-in.md)). Every measurement query filters by `user_id`.
-- **Rows are hard-deleted.** No table has a soft-delete column: a deleted measurement, an ended session or an expired one is removed.
+- **Every row belongs to a user.** Each table references `users(id)` with `ON DELETE CASCADE`, so deleting a user deletes their identities, sessions, measurements and API tokens ([ADR 0044](../decisions/0044-multi-user-accounts-with-oauth-sign-in.md)). Every measurement and API token query filters by `user_id`.
+- **Rows are hard-deleted.** No table has a soft-delete column: a deleted measurement, an ended or expired session and a revoked API token are removed.
 - **Enumerations are checked in TypeScript, not by the database.** `user_identities.provider` is plain text with no `CHECK` constraint; its values are listed under [Lifecycles](#lifecycles).
 
 ## Diagram
@@ -19,6 +19,7 @@ erDiagram
     users ||--o{ user_identities : "signs in through"
     users ||--o{ sessions : "holds"
     users ||--o{ measurements : "records"
+    users ||--o{ api_tokens : "creates"
 
     users {
         text id PK
@@ -58,9 +59,18 @@ erDiagram
         text created_at
         text updated_at
     }
+    api_tokens {
+        text id PK
+        text user_id FK, UK
+        text name UK
+        text token_hash UK
+        text last_four
+        text created_at
+        text last_used_at "nullable"
+    }
 ```
 
-`UK` marks a column that is part of a unique key; several `UK` columns in one table form one composite key, listed under [Unique Keys](#unique-keys).
+`UK` marks a column that is part of a unique key; the keys, including composite ones, are listed under [Unique Keys](#unique-keys).
 
 ## Tables
 
@@ -70,6 +80,7 @@ erDiagram
 | `user_identities` | provider account that signed in | Which user a provider account maps to, with the email the provider reported. A user can have one identity per provider.                                                                                                                                                                                                                                                                             |
 | `sessions`        | signed-in browser               | The SHA-256 (hex) of the cookie's random id, never the id itself, plus the expiry and the hard limit on renewal ([auth](../architecture/overview.md#authentication)).                                                                                                                                                                                                                               |
 | `measurements`    | user and date                   | One day's body metrics: weight plus the optional metrics and notes described in [Measurements](measurements.md#fields).                                                                                                                                                                                                                                                                             |
+| `api_tokens`      | personal API token              | The user's name for the token, the SHA-256 (hex) of the token and its last four characters, never the token itself, and when it was created and last used.                                                                                                                                                                                                                                          |
 
 ## Unique Keys
 
@@ -79,6 +90,8 @@ The write rules lean on these keys: a write that would duplicate one updates the
 | ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
 | `user_identities` | `provider, provider_user_id` (primary key) | A provider account maps to one user; signing in again finds it and refreshes the profile.               |
 | `measurements`    | `user_id, date`                            | One measurement per date per user; saving a date that has one edits it, and CSV import upserts by date. |
+| `api_tokens`      | `user_id, name`                            | A user's token names are unique; creating a token with a name the user already has is rejected.         |
+| `api_tokens`      | `token_hash`                               | A token resolves to exactly one row, and so to one user.                                                |
 
 ## Lifecycles
 

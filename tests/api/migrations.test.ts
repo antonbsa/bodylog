@@ -175,3 +175,49 @@ describe("migration 20261122013813", () => {
     })
   })
 })
+
+describe("api_tokens migration", () => {
+  function migratedDb() {
+    const db = new DatabaseSync(":memory:")
+
+    for (const prefix of [
+      "0001",
+      "0002",
+      "0003",
+      "20261122013813",
+      "20261122034008",
+    ]) {
+      db.exec(readMigration(prefix))
+    }
+
+    db.exec(
+      `INSERT INTO users (id, display_name, created_at, updated_at)
+       VALUES ('a', 'A', 't', 't'), ('b', 'B', 't', 't')`,
+    )
+
+    return db
+  }
+
+  const insert = (id: string, userId: string, name: string, hash = id) =>
+    `INSERT INTO api_tokens (id, user_id, name, token_hash, last_four, created_at)
+     VALUES ('${id}', '${userId}', '${name}', '${hash}', 'abcd', 't')`
+
+  it("keeps names unique per user and hashes unique overall", () => {
+    const db = migratedDb()
+
+    db.exec(insert("a1", "a", "Agente"))
+    db.exec(insert("b1", "b", "Agente"))
+
+    expect(() => db.exec(insert("a2", "a", "Agente"))).toThrow(/UNIQUE/)
+    expect(() => db.exec(insert("a3", "a", "Outro", "a1"))).toThrow(/UNIQUE/)
+  })
+
+  it("deletes a user's tokens with the user", () => {
+    const db = migratedDb()
+
+    db.exec(insert("a1", "a", "Agente"))
+    db.exec("DELETE FROM users WHERE id = 'a'")
+
+    expect(db.prepare("SELECT * FROM api_tokens").all()).toEqual([])
+  })
+})

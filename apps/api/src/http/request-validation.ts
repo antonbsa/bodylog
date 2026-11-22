@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from "../../../../infra/errors"
+import { API_TOKEN_NAME_MAX_LENGTH } from "../../../../domain/api-token"
 import {
   isWithinHeightLimit,
   isWithinMeasurementLimit,
@@ -38,15 +39,25 @@ type MeasurementListQueryResult =
     }
 
 type ValidationErrorCode =
+  | "DUPLICATE_API_TOKEN_NAME"
+  | "INVALID_API_TOKEN_NAME"
   | "INVALID_DATE"
   | "INVALID_MEASUREMENT_ID"
   | "INVALID_MEASUREMENT_INPUT"
   | "INVALID_MEASUREMENTS_QUERY"
   | "INVALID_PROFILE_INPUT"
 
-type NotFoundErrorCode = "MEASUREMENT_NOT_FOUND"
+type NotFoundErrorCode = "API_TOKEN_NOT_FOUND" | "MEASUREMENT_NOT_FOUND"
 
 const VALIDATION_ERROR_DETAILS: Record<ValidationErrorCode, ErrorDetails> = {
+  DUPLICATE_API_TOKEN_NAME: {
+    action: "Escolha outro nome para o token.",
+    message: "Já existe um token com esse nome.",
+  },
+  INVALID_API_TOKEN_NAME: {
+    action: `Use um nome de 1 a ${API_TOKEN_NAME_MAX_LENGTH} caracteres.`,
+    message: "Nome do token inválido.",
+  },
   INVALID_DATE: {
     action: "Use uma data no formato YYYY-MM-DD.",
     message: "Data inválida.",
@@ -71,6 +82,10 @@ const VALIDATION_ERROR_DETAILS: Record<ValidationErrorCode, ErrorDetails> = {
 }
 
 const NOT_FOUND_ERROR_DETAILS: Record<NotFoundErrorCode, ErrorDetails> = {
+  API_TOKEN_NOT_FOUND: {
+    action: "Atualize a lista de tokens e tente novamente.",
+    message: "Token não encontrado.",
+  },
   MEASUREMENT_NOT_FOUND: {
     action: "Atualize o histórico e tente novamente.",
     message: "Medida não encontrada.",

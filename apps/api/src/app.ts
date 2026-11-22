@@ -5,6 +5,7 @@ import {
   InternalServerError,
   NotFoundError,
 } from "../../../infra/errors"
+import { apiTokenRoutes } from "./features/api-tokens/routes"
 import { authRoutes } from "./features/auth/routes"
 import { csvExportRoutes, csvImportRoutes } from "./features/csv/routes"
 import { dashboardRoutes } from "./features/dashboard/routes"
@@ -55,6 +56,7 @@ for (const [prefix, routes] of [
   ["/export", csvExportRoutes],
   ["/import", csvImportRoutes],
   ["/me", meRoutes],
+  ["/tokens", apiTokenRoutes],
 ] as const) {
   protectedApi.use(`${prefix}/*`, requireSession)
   protectedApi.route(prefix, routes)

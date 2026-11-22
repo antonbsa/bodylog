@@ -104,7 +104,7 @@ apps/api/src/
   app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
   config.ts             env-derived settings (GitHub OAuth client, dev login flag)
   types.ts              API-only bindings and input types
-  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv)
+  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens)
   db/repositories/      D1 access, one file per table
   http/                 cross-feature HTTP helpers (request validation, session guard, the user's height and zone, secret generation and hashing)
   domain/               API domain objects (Measurement, week range, week summary)
