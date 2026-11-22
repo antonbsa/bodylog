@@ -299,7 +299,7 @@ The system must give each person their own account, signed in with GitHub (`0044
 - The first GitHub sign-in creates an account (open sign-up); a later sign-in returns to the same account.
 - Each account sees and edits only its own measurements, on every screen, in the CSV export and through the import; two accounts can record the same date.
 - Sessions are stored on the server: they last 30 days, renew while in use and end at most 180 days after sign-in.
-- All data routes require a session.
+- All data routes require a session, except the collector endpoint, which requires a personal API token (FR-014).
 - Logout ends the session on the server, so a copied cookie stops working.
 - Cancelling on GitHub or a failed sign-in returns to the login screen with a message.
 
@@ -331,6 +331,18 @@ The system must present the interface using the documented UI direction.
 - The history screen displays a "Nenhuma medida ainda." message with a "Registrar hoje" action when no records exist.
 - The UI includes loading, empty, error, disabled, and submitting states where applicable.
 - The UI avoids strong gradients, heavy glassmorphism, gamified fitness visuals, floating AI assistant patterns, and generic motivational copy.
+
+---
+
+### FR-014 — Read-only Collector Endpoint
+
+The system must let external clients and agents read a user's measurements as JSON with that user's personal API token (`0047-read-only-collector-endpoint-authorized-by-personal-tokens.md`).
+
+#### Acceptance Criteria
+
+- `GET /api/collector/measurements` returns the token owner's measurements with derived values, ordered by date ascending, optionally limited by an inclusive `from`/`to` date range.
+- Only a personal API token in `Authorization: Bearer` authorizes it; the session cookie does not, a revoked token stops working, and a token authorizes no other route.
+- Each authorized call updates the token's last use shown in Ajustes.
 
 ## Non-Functional Requirements
 
@@ -405,7 +417,7 @@ The data access layer should be isolated enough to support a future migration fr
 The app does not provide:
 
 - password or email sign-in, sharing data between accounts, or role-based access control;
-- Google Sheets integration or automatic sync;
+- Google Sheets integration or push sync to external services; a read-only pull of a user's measurements with a personal token is allowed (`0047-read-only-collector-endpoint-authorized-by-personal-tokens.md`);
 - offline-first behavior;
 - charts outside the Tendências screen and advanced chart features (`0030-allow-charts-in-trends.md`);
 - automatic recommendations, health diagnosis or body composition interpretation;

@@ -2,7 +2,7 @@
 
 ## Base Rules
 
-All data routes require a session (see [Auth](#auth)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404.
+All data routes require a session (see [Auth](#auth)), except `/api/collector/*`, which requires a personal API token instead (see [Collector](#collector)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404.
 
 ## Status
 
@@ -584,7 +584,7 @@ A `ValidationError` whose `message` is "Nome do token inválido." (missing, blan
 
 ### DELETE /api/tokens/:id
 
-Revokes a token by deleting it.
+Revokes a token by deleting it; the collector rejects it from the next request.
 
 #### Response 200
 
@@ -597,3 +597,58 @@ Revokes a token by deleting it.
 #### Response 404
 
 A `NotFoundError` with `message` "Token não encontrado.".
+
+## Collector
+
+### GET /api/collector/measurements
+
+Returns the token owner's measurements as JSON for external clients and agents (ADR 0047).
+
+#### Authentication
+
+`Authorization: Bearer <personal API token>` (scheme case-insensitive), with a token created in Ajustes (see [Personal API Tokens](#personal-api-tokens)). Each authorized call updates the token's `lastUsedAt`. The session cookie does not authorize this route, and the token authorizes no other route. A missing, malformed, unknown or revoked token returns an `UnauthorizedError` with status 401 and `message` "Token de API inválido ou ausente.".
+
+#### Optional query params
+
+```txt
+from=YYYY-MM-DD
+to=YYYY-MM-DD
+```
+
+#### Response 200
+
+```json
+{
+  "filters": { "from": "2026-06-01", "to": null },
+  "count": 1,
+  "heightCm": 180,
+  "items": [
+    {
+      "date": "2026-06-10",
+      "weightKg": 72.9,
+      "bodyFatPercentage": 14.46,
+      "musclePercentage": 43.72,
+      "restingMetabolismKcal": 1700,
+      "waistCm": 80.5,
+      "sleepHours": 7.5,
+      "disposition": 4,
+      "notes": "string or null",
+      "derived": {
+        "bmi": 22.5,
+        "bodyFatKg": 10.54,
+        "muscleKg": 31.87
+      },
+      "createdAt": "2026-06-10T12:00:00.000Z",
+      "updatedAt": "2026-06-10T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+#### Rules
+
+- `from` and `to` are inclusive and filter by measurement date; either can be omitted, and `filters` echoes them with `null` for an omitted one.
+- A malformed or impossible date (such as `2026-02-31`) returns a 400 `ValidationError`; `from` after `to` returns an empty list.
+- Returns every matching measurement of the token owner, ordered by date ascending, with no pagination.
+- Empty optional values are `null`; the internal `id` is not included, since `date` identifies a measurement.
+- `heightCm` is the user's height, or `null` while it isn't set, and then `derived.bmi` is `null`.
