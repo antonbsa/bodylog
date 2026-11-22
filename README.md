@@ -41,3 +41,7 @@ Open `http://localhost:5173` and tap **Entrar como dev** to sign in as the local
 - [All documentation](docs/README.md): guides, operations, reference, decisions and history
 
 Executable work is tracked as GitHub issues; conventions for coding agents live in [`AGENTS.md`](AGENTS.md).
+
+## License
+
+[MIT](LICENSE)
