@@ -11,7 +11,7 @@ GOOGLE_CLIENT_SECRET   the Google OAuth client's secret
 
 Each deployed environment has its own GitHub OAuth App, because an OAuth App accepts a single callback URL. Create it under GitHub **Settings → Developer settings → OAuth Apps → New OAuth App**, with the environment's URL as **Homepage URL** and `<that URL>/api/auth/github/callback` as **Authorization callback URL**, then generate a client secret.
 
-For Google, create an OAuth client of type **Web application** in the Google Cloud console (**APIs & Services → Credentials**), after configuring the consent screen with the `openid`, `email` and `profile` scopes. Unlike a GitHub OAuth App, one client accepts several **Authorized redirect URIs**, so it can list `<URL>/api/auth/google/callback` for each environment; separate clients per environment work too.
+For Google, create an OAuth client of type **Web application** in the Google Cloud console (**Google Auth Platform → Clients**), after configuring the consent screen with the `openid`, `email` and `profile` scopes. Publishing the production consent screen (**Audience → Publish app**) requires, under **Branding**, `https://bodylog.antonbsa.dev` as home page, `https://bodylog.antonbsa.dev/privacidade` as privacy policy and `antonbsa.dev` as authorized domain; a consent screen left in **Testing** admits only its listed test users. Unlike a GitHub OAuth App, one client accepts several **Authorized redirect URIs**, so it can list `<URL>/api/auth/google/callback` for each environment; separate clients per environment work too.
 
 ## Production
 

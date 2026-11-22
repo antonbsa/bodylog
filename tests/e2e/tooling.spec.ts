@@ -100,6 +100,35 @@ test("login screen renders first with the GitHub and Google sign-ins", async ({
   ).toHaveAttribute("href", "/api/auth/google")
 })
 
+test("the login screen links to a privacy policy that opens without signing in", async ({
+  page,
+}) => {
+  await mockSession(page, false)
+  await page.goto("/")
+
+  await page.getByRole("link", { name: "Política de privacidade" }).click()
+
+  await expect(page).toHaveURL("/privacidade")
+  await expect(
+    page.getByRole("heading", { name: "Política de privacidade" }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole("link", { name: "antonbsa.dev@gmail.com" }),
+  ).toHaveAttribute("href", "mailto:antonbsa.dev@gmail.com")
+
+  await page.getByRole("link", { name: "Voltar ao BodyLog" }).click()
+  await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible()
+})
+
+test("a signed-in user also reaches the privacy policy", async ({ page }) => {
+  await mockSession(page, true)
+  await page.goto("/privacidade")
+
+  await expect(
+    page.getByRole("heading", { name: "Política de privacidade" }),
+  ).toBeVisible()
+})
+
 test("unknown routes show the not-found screen", async ({ page }) => {
   await mockSession(page, false)
   await page.goto("/rota-inexistente")

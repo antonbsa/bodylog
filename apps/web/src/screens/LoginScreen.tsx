@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { GithubLogo } from "@phosphor-icons/react/dist/csr/GithubLogo"
 import { GoogleLogo } from "@phosphor-icons/react/dist/csr/GoogleLogo"
+import { Link } from "react-router"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { Button } from "../components/Button"
@@ -85,6 +86,10 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             </Button>
           ) : null}
         </div>
+
+        <p className="login-footer">
+          <Link to="/privacidade">Política de privacidade</Link>
+        </p>
       </section>
     </main>
   )

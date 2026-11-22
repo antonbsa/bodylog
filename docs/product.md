@@ -50,7 +50,7 @@ The authenticated app has four screens behind a bottom tab bar (Início, Histór
 ### Log In
 
 1. The user opens the app.
-2. If not signed in, the login screen is displayed.
+2. If not signed in, the login screen is displayed, with a link to the privacy policy (`/privacidade`), which opens signed in or not.
 3. The user taps "Entrar com GitHub" or "Entrar com Google" and authorizes BodyLog on the provider.
 4. The first sign-in creates the account, unless the provider's verified email already belongs to an account, which it opens; later ones return to it.
 5. The user lands on Início.
