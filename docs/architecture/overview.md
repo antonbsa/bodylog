@@ -105,13 +105,13 @@ apps/api/src/
   app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
   config.ts             env-derived settings (GitHub and Google OAuth clients, dev login flag)
   types.ts              API-only bindings and input types
-  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens)
+  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens, collector)
   db/repositories/      D1 access, one file per table
-  http/                 cross-feature HTTP helpers (request validation, session guard, the user's height and zone, secret generation and hashing)
+  http/                 cross-feature HTTP helpers (request validation, session and API token guards, the user's height and zone, secret generation and hashing)
   domain/               API domain objects (Measurement, week range, week summary)
 ```
 
-`app.ts` mounts `/api/auth/*` and `/api/health` as public routes. Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix and sets `c.var.userId`, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
+`app.ts` mounts `/api/auth/*` and `/api/health` as public routes, and `/api/collector/measurements` behind `requireApiToken`, which accepts only a personal API token in `Authorization: Bearer` and sets `c.var.userId` to its owner (ADR 0047). Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix and sets `c.var.userId`, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
 
 ## Database
 

@@ -7,6 +7,7 @@ import {
 } from "../../../infra/errors"
 import { apiTokenRoutes } from "./features/api-tokens/routes"
 import { authRoutes } from "./features/auth/routes"
+import { collectorRoutes } from "./features/collector/routes"
 import { csvExportRoutes, csvImportRoutes } from "./features/csv/routes"
 import { dashboardRoutes } from "./features/dashboard/routes"
 import { historyRoutes } from "./features/history/routes"
@@ -44,6 +45,8 @@ app.get("/api/health", (c) => {
 })
 
 app.route("/api/auth", authRoutes)
+
+app.route("/api/collector", collectorRoutes)
 
 // Guarding each prefix rather than /api/* keeps unknown /api paths a 404 instead of a 401.
 const protectedApi = new Hono<AppEnv>()

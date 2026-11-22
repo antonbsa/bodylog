@@ -34,7 +34,7 @@ export type UpdateMeasurementByDateInput = {
 export type AppEnv = {
   Bindings: AppBindings
   Variables: {
-    /** Set by `requireSession` for every protected route. */
+    /** Set by `requireSession`, or by `requireApiToken` on the collector. */
     userId: string
   }
 }

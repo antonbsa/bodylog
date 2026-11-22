@@ -5,8 +5,8 @@ Backend conventions for the Hono Worker on Cloudflare Workers + D1. The Worker a
 ## Source layout
 
 - The map is in [the architecture overview's "Source Layout"](../../docs/architecture/overview.md#source-layout). A new endpoint goes in `src/features/<name>/routes.ts` with that feature's services beside it; `app.ts` mounts it, and `index.ts` stays a re-export as the wrangler `main`.
-- Code two or more features use goes in `src/http/` (request validation, session guard) or `src/domain/`; rules the web app also runs go in root `domain/`, and wire shapes in root `types/` (root [AGENTS.md](../../AGENTS.md) "Engineering"). `src/types.ts` holds API-only bindings and inputs.
-- Only `/api/auth/*` and `/api/health` are public. Symptom: a new data router answers without a session cookie. Why it slips: mounting it with `app.route` directly works and its happy-path tests pass. Verify: add it to the `protectedApi` mount list in `app.ts` (which puts `requireSession` on its prefix) and test that a request without a cookie gets 401.
+- Code two or more features use goes in `src/http/` (request validation, session and API token guards) or `src/domain/`; rules the web app also runs go in root `domain/`, and wire shapes in root `types/` (root [AGENTS.md](../../AGENTS.md) "Engineering"). `src/types.ts` holds API-only bindings and inputs.
+- Only `/api/auth/*` and `/api/health` are public, and `/api/collector/*` takes a personal API token instead of the session (ADR 0047). Symptom: a new data router answers without a session cookie. Why it slips: mounting it with `app.route` directly works and its happy-path tests pass. Verify: add it to the `protectedApi` mount list in `app.ts` (which puts `requireSession` on its prefix) and test that a request without a cookie gets 401.
 
 ## Route handlers
 

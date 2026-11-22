@@ -70,7 +70,7 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 
 ## Product Rules
 
-- Multi-user, mobile-first, a body metrics tracker rather than a generic fitness app. Each account sees and edits only its own measurements, and every query on user data is scoped to the session's user (ADR 0044).
+- Multi-user, mobile-first, a body metrics tracker rather than a generic fitness app. Each account sees and edits only its own measurements, and every query on user data is scoped to the user the session or API token resolves to (ADR 0044).
 - One measurement per date per user. Selecting a date with a record loads it for editing; a date without one shows an empty form for creation. Only weight is required.
 - Weeks run Monday to Sunday. The current-week comparison is the partial current week vs the previous full week.
 - Percentage metric changes are shown in percentage points. A change may be labeled as increased, decreased or stable, never as good or bad, and the app gives no recommendations or health interpretation.

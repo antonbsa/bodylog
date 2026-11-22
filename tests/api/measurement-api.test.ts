@@ -146,6 +146,16 @@ describe("measurement api", () => {
     })
   })
 
+  it("rejects an impossible calendar date in the path with 400", async () => {
+    const response = await app.request(
+      "/api/measurements/by-date/2026-02-30",
+      { headers: { cookie: await createSessionCookieHeader() } },
+      createEnv(),
+    )
+
+    expect(response.status).toBe(400)
+  })
+
   it("rejects invalid measurement input", async () => {
     const env = createEnv()
     const response = await app.request(
