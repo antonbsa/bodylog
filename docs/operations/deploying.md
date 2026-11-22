@@ -55,7 +55,7 @@ The dry run lists the static assets and the `DB` binding.
 
 ## Applying a Migration
 
-Migrations are versioned under `infra/migrations/` (for example `0001_create_measurements.sql`), and the deploy workflows apply pending ones: preview on merge, production on release. To apply them to production by hand:
+Migrations are versioned under `infra/migrations/` (named `<YYYYMMDDHHMMSS>_<snake_case_name>.sql`, ADR 0045), and the deploy workflows apply pending ones: preview on merge, production on release. To apply them to production by hand:
 
 ```sh
 npm run db:migrate:remote

@@ -18,7 +18,7 @@ Migrations are hand-written SQL in `infra/migrations/`, named `<NNNN>_<name>.sql
 - **Timestamp names.** New migrations are named `<YYYYMMDDHHMMSS>_<snake_case_name>.sql` in UTC, produced with `date -u +%Y%m%d%H%M%S`. Wrangler sorts lexicographically, so the legacy files still apply first.
 - **Legacy files keep their names.** `0001`, `0002` and `0003` are never renamed, since renaming re-runs them in preview and production.
 - **A merged migration never changes name.** Before merging, a branch whose migration is older than the newest one on `main` re-stamps it with a fresh timestamp; this is safe because only that worktree's local D1 knows the name.
-- **A unit test enforces the naming.** Every `.sql` matches `^\d+_[a-z0-9_]+\.sql$`, no two files share a prefix, and every prefix outside the legacy list is a 14-digit timestamp.
+- **A unit test enforces the naming.** Every `.sql` matches `^\d+_[a-z0-9_]+\.sql$`, no two files share a prefix, and every prefix outside the legacy list is a 14-digit timestamp starting with `20`.
 
 ## Consequences
 

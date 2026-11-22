@@ -46,7 +46,7 @@ describe("migration filenames", () => {
       files.filter(
         (name) =>
           !legacyPrefixes.includes(prefixOf(name)) &&
-          !/^\d{14}$/.test(prefixOf(name)),
+          !/^20\d{12}$/.test(prefixOf(name)),
       ),
     ).toEqual([])
   })
