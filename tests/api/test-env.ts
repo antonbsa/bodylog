@@ -27,6 +27,8 @@ export function createTestEnv(overrides: Record<string, string> = {}) {
     DB: d1,
     GITHUB_CLIENT_ID: "test-client-id",
     GITHUB_CLIENT_SECRET: "test-client-secret",
+    GOOGLE_CLIENT_ID: "test-google-client-id",
+    GOOGLE_CLIENT_SECRET: "test-google-client-secret",
     ...overrides,
   }
 

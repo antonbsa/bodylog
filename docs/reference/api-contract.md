@@ -44,14 +44,26 @@ Starts the GitHub sign-in. Sets a 10-minute `bodylog_github_oauth` cookie on `Pa
 
 GitHub's redirect target. Clears the flow cookie in every case.
 
-- **Success:** creates the user and its GitHub identity on the first sign-in, or refreshes the display name (`name`, else `login`) and the email (the primary one when verified, else `null`) on later ones. Sets the session cookie and answers 200 with an HTML page that redirects to `/`.
+- **Success:** creates the GitHub identity on the first sign-in, joined to an existing user by verified email ([Account linking](#account-linking)) or with a new user, or refreshes the display name (`name`, else `login`) and the email (the primary one when verified, else `null`) on later ones. Sets the session cookie and answers 200 with an HTML page that redirects to `/`.
 - **Failure:** sets no session and answers 302 to the login screen with an error code:
 
 | Redirect           | When                                                          |
 | ------------------ | ------------------------------------------------------------- |
-| `/?error=declined` | The user cancelled on GitHub (`error=access_denied`).         |
+| `/?error=declined` | The user cancelled on the provider (`error=access_denied`).   |
 | `/?error=state`    | The flow cookie is missing or expired, or `state` mismatches. |
 | `/?error=failed`   | The code exchange or the profile lookup failed.               |
+
+### GET /api/auth/google
+
+Starts the Google sign-in like `GET /api/auth/github`: a 10-minute `bodylog_google_oauth` cookie on `Path=/api/auth/google`, then a 302 to `https://accounts.google.com/o/oauth2/v2/auth` with `client_id`, `redirect_uri` (`<origin>/api/auth/google/callback`), `response_type=code`, `scope=openid email profile`, `state` and an `S256` `code_challenge`.
+
+### GET /api/auth/google/callback
+
+Google's redirect target, with the same success page and failure redirects as the GitHub callback. The profile comes from the ID token: `sub` identifies the identity, the display name is `name` (else the email, else "Google"), and the email is kept only when `email_verified` is true. An ID token issued for another client, or a token response without one, lands on `/?error=failed`.
+
+### Account linking
+
+The first sign-in with an identity whose verified email matches an existing identity's email (case-insensitively) adds it to that identity's user, so GitHub and Google open the same account; a user already holding an identity from the same provider is skipped. An identity without a verified email always creates a new user. A returning identity keeps its user.
 
 ### POST /api/auth/dev-login
 

@@ -1,9 +1,6 @@
 const SIGN_IN_ERROR_MESSAGES = new Map([
-  ["declined", "Você cancelou o login no GitHub. Tente de novo quando quiser."],
-  [
-    "failed",
-    "Não foi possível entrar com o GitHub. Tente novamente em instantes.",
-  ],
+  ["declined", "Você cancelou o login. Tente de novo quando quiser."],
+  ["failed", "Não foi possível entrar. Tente novamente em instantes."],
   [
     "state",
     "O login expirou ou foi aberto em outra janela. Tente entrar de novo.",

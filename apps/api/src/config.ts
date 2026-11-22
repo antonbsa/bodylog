@@ -1,5 +1,20 @@
 import type { AppBindings } from "./types"
 
+export function getGoogleClient(
+  env: Pick<AppBindings, "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET">,
+): { clientId: string; clientSecret: string } {
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+    throw new Error(
+      "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be configured",
+    )
+  }
+
+  return {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
+  }
+}
+
 export function getGitHubClient(
   env: Pick<AppBindings, "GITHUB_CLIENT_ID" | "GITHUB_CLIENT_SECRET">,
 ): { clientId: string; clientSecret: string } {

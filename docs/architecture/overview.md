@@ -102,7 +102,7 @@ Colors are CSS custom properties in `apps/web/src/styles/tokens.css`. The theme 
 apps/api/src/
   index.ts              wrangler main; re-exports the app
   app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
-  config.ts             env-derived settings (GitHub OAuth client, dev login flag)
+  config.ts             env-derived settings (GitHub and Google OAuth clients, dev login flag)
   types.ts              API-only bindings and input types
   features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens)
   db/repositories/      D1 access, one file per table
@@ -156,9 +156,10 @@ Handle persistence:
 
 ## Authentication
 
-Accounts sign in with GitHub OAuth; the full decision is `0044-multi-user-accounts-with-oauth-sign-in.md`.
+Accounts sign in with GitHub or Google OAuth; the full decision is `0044-multi-user-accounts-with-oauth-sign-in.md`.
 
-- `features/auth/github.ts` runs the authorization code flow with PKCE through `oauth4webapi`. `GET /api/auth/github` keeps `state` and `code_verifier` in a short-lived cookie scoped to `/api/auth/github` and redirects to GitHub; the callback validates them, exchanges the code, reads `/user` and `/user/emails`, and creates or refreshes the user and its identity in `users` and `user_identities`.
+- `features/auth/oauth-flow.ts` runs the authorization code flow with PKCE through `oauth4webapi` for each provider. `GET /api/auth/<provider>` keeps `state` and `code_verifier` in a short-lived cookie scoped to that path and redirects to the provider; the callback validates them, exchanges the code, reads the profile, and creates or refreshes the user and its identity in `users` and `user_identities`. `github.ts` reads the profile from `/user` and `/user/emails`, `google.ts` from the ID token.
+- `UserRepository.upsertFromProfile` links a new identity to the user that already has an identity with the same verified email, and otherwise creates a user.
 - The callback sets the session cookie on a 200 page that redirects to `/` client-side, because WebKit drops a `Set-Cookie` on a redirect that ends a cross-site chain. Failures redirect to `/?error=<code>` without a session.
 - `features/auth/session.ts` keeps sessions in D1: the `bodylog_session` cookie holds a random id, `sessions` stores its SHA-256, and `requireSession` resolves it to the user id, renewing it in its last week and deleting it once expired. Each new sign-in sweeps expired rows.
 - Every measurement query goes through `MeasurementRepository`, which is built for one user id and filters each statement by it.
@@ -208,7 +209,7 @@ Mitigation:
 
 ### Sign-up Abuse
 
-Sign-up is open to any GitHub account, with no rate limit. Every account starts empty and sees only its own rows, so abuse costs storage, not privacy.
+Sign-up is open to any GitHub or Google account, with no rate limit. Every account starts empty and sees only its own rows, so abuse costs storage, not privacy.
 
 ## Cross-Cutting Concerns
 

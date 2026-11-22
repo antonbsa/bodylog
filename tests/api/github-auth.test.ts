@@ -111,6 +111,7 @@ describe("GET /api/auth/github", () => {
       code_challenge: expect.stringMatching(/^[\w-]{43}$/),
       code_challenge_method: "S256",
       redirect_uri: `${ORIGIN}/api/auth/github/callback`,
+      response_type: "code",
       scope: "read:user user:email",
       state: expect.any(String),
     })

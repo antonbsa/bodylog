@@ -7,11 +7,13 @@ import { UserRepository } from "../../db/repositories/users"
 import { requireSession } from "../../http/require-session"
 import type { AppEnv } from "../../types"
 import { githubAuthRoutes } from "./github"
+import { googleAuthRoutes } from "./google"
 import { endSession, startSession } from "./session"
 
 export const authRoutes = new Hono<AppEnv>()
 
 authRoutes.route("/github", githubAuthRoutes)
+authRoutes.route("/google", googleAuthRoutes)
 
 authRoutes.get("/session", requireSession, async (c) => {
   const user = await new UserRepository(c.env.DB).getById(c.get("userId"))

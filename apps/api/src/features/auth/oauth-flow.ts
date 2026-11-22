@@ -58,6 +58,7 @@ export function createOAuthRoutes(provider: OAuthProvider) {
       code_challenge: await oauth.calculatePKCECodeChallenge(codeVerifier),
       code_challenge_method: "S256",
       redirect_uri: getRedirectUri(c.req.url),
+      response_type: "code",
       scope: provider.scope,
       state,
     }).toString()

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { GithubLogo } from "@phosphor-icons/react/dist/csr/GithubLogo"
+import { GoogleLogo } from "@phosphor-icons/react/dist/csr/GoogleLogo"
 
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { Button } from "../components/Button"
@@ -63,6 +64,13 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             <a href="/api/auth/github">
               <GithubLogo aria-hidden size={18} weight="fill" />
               Entrar com GitHub
+            </a>
+          </Button>
+
+          <Button asChild>
+            <a href="/api/auth/google">
+              <GoogleLogo aria-hidden size={18} weight="bold" />
+              Entrar com Google
             </a>
           </Button>
 

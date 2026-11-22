@@ -53,6 +53,13 @@ process.exit(attempt.status)
 const secrets = (...names: string[]) =>
   JSON.stringify(names.map((name) => ({ name, type: "secret_text" })))
 
+const REQUIRED = [
+  "GITHUB_CLIENT_ID",
+  "GITHUB_CLIENT_SECRET",
+  "GOOGLE_CLIENT_ID",
+  "GOOGLE_CLIENT_SECRET",
+]
+
 describe("check-secrets", () => {
   it("passes when every required secret exists in the environment", () => {
     const result = runCheckSecrets(
@@ -60,7 +67,7 @@ describe("check-secrets", () => {
       [
         {
           status: 0,
-          stdout: secrets("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"),
+          stdout: secrets(...REQUIRED),
         },
       ],
     )
@@ -79,8 +86,23 @@ describe("check-secrets", () => {
 
     expect(result.status).toBe(1)
     expect(result.stderr).toContain(
-      "Missing required secret(s) for --env production: GITHUB_CLIENT_SECRET",
+      "Missing required secret(s) for --env production: GITHUB_CLIENT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET",
     )
+  })
+
+  it("fails a deploy without the Google secrets", () => {
+    const result = runCheckSecrets(
+      ["--env", "preview"],
+      [
+        {
+          status: 0,
+          stdout: secrets("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"),
+        },
+      ],
+    )
+
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain("GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET")
   })
 
   it("rejects an unknown environment without calling wrangler", () => {
@@ -97,7 +119,7 @@ describe("check-secrets", () => {
         { status: 1, stderr: "upstream connect error or disconnect/reset" },
         {
           status: 0,
-          stdout: secrets("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"),
+          stdout: secrets(...REQUIRED),
         },
       ],
     )

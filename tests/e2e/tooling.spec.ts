@@ -85,7 +85,9 @@ async function mockMeasurementList(page: Page) {
   })
 }
 
-test("login screen renders first with the GitHub sign-in", async ({ page }) => {
+test("login screen renders first with the GitHub and Google sign-ins", async ({
+  page,
+}) => {
   await mockSession(page, false)
   await page.goto("/")
 
@@ -93,6 +95,9 @@ test("login screen renders first with the GitHub sign-in", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: "Entrar com GitHub" }),
   ).toHaveAttribute("href", "/api/auth/github")
+  await expect(
+    page.getByRole("link", { name: "Entrar com Google" }),
+  ).toHaveAttribute("href", "/api/auth/google")
 })
 
 test("unknown routes show the not-found screen", async ({ page }) => {
@@ -109,15 +114,12 @@ test("unknown routes show the not-found screen", async ({ page }) => {
 })
 
 for (const [code, message] of [
-  ["declined", "Você cancelou o login no GitHub. Tente de novo quando quiser."],
+  ["declined", "Você cancelou o login. Tente de novo quando quiser."],
   [
     "state",
     "O login expirou ou foi aberto em outra janela. Tente entrar de novo.",
   ],
-  [
-    "failed",
-    "Não foi possível entrar com o GitHub. Tente novamente em instantes.",
-  ],
+  ["failed", "Não foi possível entrar. Tente novamente em instantes."],
 ]) {
   test(`login screen explains a ${code} sign-in and clears it from the address`, async ({
     page,

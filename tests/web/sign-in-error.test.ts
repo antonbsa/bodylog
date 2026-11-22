@@ -8,13 +8,13 @@ import {
 describe("getSignInErrorMessage", () => {
   it("maps each callback error code to its message", () => {
     expect(getSignInErrorMessage("?error=declined")).toBe(
-      "Você cancelou o login no GitHub. Tente de novo quando quiser.",
+      "Você cancelou o login. Tente de novo quando quiser.",
     )
     expect(getSignInErrorMessage("?error=state")).toBe(
       "O login expirou ou foi aberto em outra janela. Tente entrar de novo.",
     )
     expect(getSignInErrorMessage("?error=failed")).toBe(
-      "Não foi possível entrar com o GitHub. Tente novamente em instantes.",
+      "Não foi possível entrar. Tente novamente em instantes.",
     )
   })
 
