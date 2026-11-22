@@ -3,5 +3,10 @@
   "compilerOptions": {
     "types": ["@playwright/test", "node"]
   },
-  "include": ["./**/*.ts", "../../playwright.config.ts"]
+  "include": [
+    "./**/*.ts",
+    "../e2e-api/**/*.ts",
+    "../../playwright.config.ts",
+    "../../playwright.real-api.config.ts"
+  ]
 }

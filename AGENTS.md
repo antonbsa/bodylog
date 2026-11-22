@@ -81,7 +81,7 @@ Relative links and heading anchors in `README.md`, `GLOSSARY.md`, `docs/**` and 
 
 - Every behavior change ships with automated tests; a task that can't have them yet documents why and is validated by hand.
 - Test files live under root `tests/` (never in `src/`); tiers and how to run them are in [tests/AGENTS.md](tests/AGENTS.md).
-- CI runs lint, format, typecheck, build (`code-quality.yaml`), `test:unit` and `test:e2e` (`tests.yaml`) on every PR; on `main` they run inside `deploy-preview.yaml` (direct pushes only, since a merged PR already ran them) and `deploy-release.yaml`, gating each deploy.
+- CI runs lint, format, typecheck, build (`code-quality.yaml`), `test:unit`, `test:e2e` and `test:e2e:api` (`tests.yaml`) on every PR; on `main` they run inside `deploy-preview.yaml` (direct pushes only, since a merged PR already ran them) and `deploy-release.yaml`, gating each deploy.
 
 ## Tooling
 
