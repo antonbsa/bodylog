@@ -108,3 +108,11 @@ Example:
 ```txt
 This week has only 2 measurements, so the average may be less representative.
 ```
+
+## Email Sign-in (Magic Link or One-time Code)
+
+Sign in with an email link or code, for people without a GitHub or Google account.
+
+## Account Deletion
+
+Let a user delete their account and every measurement it holds.

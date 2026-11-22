@@ -1,269 +1,425 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { app } from "../../apps/api/src/app"
-import {
-  createSessionCookieValue,
-  isValidSessionCookieValue,
-  SESSION_COOKIE_NAME,
-} from "../../apps/api/src/features/auth/session"
+import { SESSION_COOKIE_NAME } from "../../apps/api/src/features/auth/session"
+import { createTestEnv } from "./test-env"
 
-const env = {
-  APP_PASSWORD: "correct-password",
-  DB: {
-    prepare(query: string) {
-      return {
-        bind() {
-          return this
-        },
-        async all<T>(): Promise<D1Result<T>> {
-          if (!query.includes("FROM measurements")) {
-            throw new Error(`Unsupported all query: ${query}`)
-          }
+const DAY_MS = 24 * 60 * 60 * 1000
+const NOW = new Date("2026-06-10T12:00:00.000Z")
 
-          return {
-            results: [],
-            success: true,
-            meta: {
-              changed_db: false,
-              changes: 0,
-              duration: 0,
-              last_row_id: 0,
-              rows_read: 0,
-              rows_written: 0,
-              size_after: 0,
-            },
-          } as D1Result<T>
-        },
-      }
-    },
-  } as unknown as D1Database,
-  SESSION_SECRET: "test-session-secret",
-  USER_HEIGHT_CM: "168",
-  USER_TIME_ZONE: "America/Sao_Paulo",
+const unauthorizedBody = {
+  action: "Entre novamente para continuar.",
+  message: "Sessão inválida ou expirada.",
+  name: "UnauthorizedError",
+  statusCode: 401,
 }
 
-describe("auth login", () => {
-  it("rejects an invalid password with a clear error", async () => {
+function sessionCookieFrom(response: Response): string | undefined {
+  return response.headers
+    .get("set-cookie")
+    ?.match(new RegExp(`${SESSION_COOKIE_NAME}=([^;]*)`))?.[1]
+}
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] })
+  vi.setSystemTime(NOW)
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+
+describe("auth session", () => {
+  it("rejects a request without a session cookie", async () => {
+    const { env } = createTestEnv()
+    const response = await app.request("/api/auth/session", {}, env)
+
+    expect(response.status).toBe(401)
+    expect(await response.json()).toEqual(unauthorizedBody)
+  })
+
+  it("returns the signed-in user", async () => {
+    const { createSession, env, sqlite } = createTestEnv()
+
+    sqlite
+      .prepare(
+        "INSERT INTO users (id, display_name, email, created_at, updated_at) VALUES ('u1', 'Ana', 'ana@example.com', 't', 't')",
+      )
+      .run()
+
     const response = await app.request(
-      "/api/auth/login",
-      {
-        body: JSON.stringify({ password: "wrong-password" }),
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-      },
+      "/api/auth/session",
+      { headers: { cookie: await createSession("u1") } },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      user: { displayName: "Ana", email: "ana@example.com", id: "u1" },
+    })
+  })
+
+  it("rejects an old signed cookie that matches no session row", async () => {
+    const { env } = createTestEnv()
+    const response = await app.request(
+      "/api/auth/session",
+      { headers: { cookie: `${SESSION_COOKIE_NAME}=1718000000000.signature` } },
       env,
     )
 
     expect(response.status).toBe(401)
-    expect(response.headers.get("set-cookie")).toBeNull()
-    expect(await response.json()).toEqual({
-      action: "Verifique a senha configurada e tente novamente.",
-      message: "Senha inválida.",
-      name: "UnauthorizedError",
-      statusCode: 401,
-    })
   })
 
-  it("creates a signed session cookie for a valid password", async () => {
+  it("deletes an expired session found on lookup and answers 401", async () => {
+    const { createSession, createUser, env, sqlite } = createTestEnv()
+
+    createUser("u1")
+    const cookie = await createSession("u1", {
+      expiresAt: new Date(NOW.getTime() - 1000),
+    })
     const response = await app.request(
-      "/api/auth/login",
-      {
-        body: JSON.stringify({ password: "correct-password" }),
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-      },
+      "/api/auth/session",
+      { headers: { cookie } },
+      env,
+    )
+
+    expect(response.status).toBe(401)
+    expect(sqlite.prepare("SELECT * FROM sessions").all()).toEqual([])
+  })
+
+  it("leaves a session with more than a week left untouched", async () => {
+    const { createSession, createUser, env } = createTestEnv()
+
+    createUser("u1")
+    const cookie = await createSession("u1", {
+      expiresAt: new Date(NOW.getTime() + 8 * DAY_MS),
+    })
+    const response = await app.request(
+      "/api/auth/session",
+      { headers: { cookie } },
       env,
     )
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
-      ok: true,
+    expect(response.headers.get("set-cookie")).toBeNull()
+  })
+
+  it("renews a session in its last week to 30 days from now and re-sends the cookie", async () => {
+    const { createSession, createUser, env, sqlite } = createTestEnv()
+
+    createUser("u1")
+    const cookie = await createSession("u1", {
+      expiresAt: new Date(NOW.getTime() + 6 * DAY_MS),
+      sessionId: "renew-me",
     })
+    const response = await app.request(
+      "/api/auth/session",
+      { headers: { cookie } },
+      env,
+    )
 
-    const setCookieHeader = response.headers.get("set-cookie")
+    expect(response.status).toBe(200)
+    expect(sessionCookieFrom(response)).toBe("renew-me")
+    expect(response.headers.get("set-cookie")).toContain(
+      `Max-Age=${30 * 24 * 60 * 60}`,
+    )
+    expect(sqlite.prepare("SELECT expires_at FROM sessions").get()).toEqual({
+      expires_at: new Date(NOW.getTime() + 30 * DAY_MS).toISOString(),
+    })
+  })
 
-    expect(setCookieHeader).toContain(`${SESSION_COOKIE_NAME}=`)
-    expect(setCookieHeader).toContain("HttpOnly")
-    expect(setCookieHeader).toContain("SameSite=Lax")
+  it("caps a renewal at 180 days from sign-in", async () => {
+    const { createSession, createUser, env, sqlite } = createTestEnv()
+    const maxExpiresAt = new Date(NOW.getTime() + 10 * DAY_MS)
 
-    const cookieValue = setCookieHeader?.match(
-      new RegExp(`${SESSION_COOKIE_NAME}=([^;]+)`),
-    )?.[1]
+    createUser("u1")
+    const cookie = await createSession("u1", {
+      expiresAt: new Date(NOW.getTime() + 2 * DAY_MS),
+      maxExpiresAt,
+    })
+    const response = await app.request(
+      "/api/auth/session",
+      { headers: { cookie } },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("set-cookie")).toContain(
+      `Max-Age=${10 * 24 * 60 * 60}`,
+    )
+    expect(sqlite.prepare("SELECT expires_at FROM sessions").get()).toEqual({
+      expires_at: maxExpiresAt.toISOString(),
+    })
+  })
+
+  it("ends a session at its cap without renewing it", async () => {
+    const { createSession, createUser, env } = createTestEnv()
+    const capped = new Date(NOW.getTime() + DAY_MS)
+
+    createUser("u1")
+    const cookie = await createSession("u1", {
+      expiresAt: capped,
+      maxExpiresAt: capped,
+    })
+    const response = await app.request(
+      "/api/auth/session",
+      { headers: { cookie } },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("set-cookie")).toBeNull()
+
+    vi.setSystemTime(new Date(capped.getTime() + 1000))
 
     expect(
-      await isValidSessionCookieValue(cookieValue, env.SESSION_SECRET),
-    ).toBe(true)
-  })
-
-  it("marks the session cookie Secure and SameSite=Lax outside localhost", async () => {
-    const response = await app.request(
-      "https://bodylog.antonbsa.dev/api/auth/login",
-      {
-        body: JSON.stringify({ password: "correct-password" }),
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-      },
-      env,
-    )
-
-    expect(response.status).toBe(200)
-
-    const setCookieHeader = response.headers.get("set-cookie")
-
-    expect(setCookieHeader).toContain(`${SESSION_COOKIE_NAME}=`)
-    expect(setCookieHeader).toContain("HttpOnly")
-    expect(setCookieHeader).toContain("Secure")
-    expect(setCookieHeader).toContain("SameSite=Lax")
-  })
-
-  it("leaves the session cookie non-Secure on localhost", async () => {
-    const response = await app.request(
-      "http://localhost:8787/api/auth/login",
-      {
-        body: JSON.stringify({ password: "correct-password" }),
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-      },
-      env,
-    )
-
-    const setCookieHeader = response.headers.get("set-cookie")
-
-    expect(setCookieHeader).toContain("SameSite=Lax")
-    expect(setCookieHeader).not.toContain("Secure")
+      (await app.request("/api/auth/session", { headers: { cookie } }, env))
+        .status,
+    ).toBe(401)
   })
 })
 
 describe("auth logout", () => {
-  it("clears the session cookie", async () => {
+  it("deletes the session row, so replaying the old cookie answers 401", async () => {
+    const { env, signIn, sqlite } = createTestEnv()
+    const cookie = await signIn()
     const response = await app.request(
       "/api/auth/logout",
-      {
-        method: "POST",
-      },
+      { headers: { cookie }, method: "POST" },
       env,
     )
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
-      ok: true,
-    })
+    expect(await response.json()).toEqual({ ok: true })
+    expect(response.headers.get("set-cookie")).toContain("Max-Age=0")
+    expect(sqlite.prepare("SELECT * FROM sessions").all()).toEqual([])
 
-    const setCookieHeader = response.headers.get("set-cookie")
+    const replay = await app.request(
+      "/api/measurements",
+      { headers: { cookie } },
+      env,
+    )
 
-    expect(setCookieHeader).toContain(`${SESSION_COOKIE_NAME}=`)
-    expect(setCookieHeader).toContain("Max-Age=0")
-    expect(setCookieHeader).toContain("HttpOnly")
-    expect(setCookieHeader).toContain("SameSite=Lax")
+    expect(replay.status).toBe(401)
+  })
+
+  it("clears the cookie even without a session", async () => {
+    const { env } = createTestEnv()
+    const response = await app.request(
+      "/api/auth/logout",
+      { method: "POST" },
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("set-cookie")).toContain(
+      `${SESSION_COOKIE_NAME}=;`,
+    )
   })
 })
 
-describe("auth session", () => {
-  it("rejects requests without a valid session", async () => {
-    const response = await app.request("/api/auth/session", {}, env)
+describe("dev login", () => {
+  it("answers 404 when DEV_LOGIN_ENABLED is not true", async () => {
+    for (const flag of [undefined, "false", "1"]) {
+      const { env } = createTestEnv(
+        flag === undefined ? {} : { DEV_LOGIN_ENABLED: flag },
+      )
+      const response = await app.request(
+        "/api/auth/dev-login",
+        { method: "POST" },
+        env,
+      )
 
-    expect(response.status).toBe(401)
-    expect(await response.json()).toEqual({
-      action: "Entre novamente para continuar.",
-      message: "Sessão inválida ou expirada.",
-      name: "UnauthorizedError",
-      statusCode: 401,
-    })
+      expect(response.status).toBe(404)
+      expect(response.headers.get("set-cookie")).toBeNull()
+    }
   })
 
-  it("confirms requests with a valid session", async () => {
-    const sessionCookieValue = await createSessionCookieValue(
-      env.SESSION_SECRET,
+  it("signs in as the dev seed user, created once and reused", async () => {
+    const { env, sqlite } = createTestEnv({ DEV_LOGIN_ENABLED: "true" })
+    const first = await app.request(
+      "/api/auth/dev-login",
+      { method: "POST" },
+      env,
     )
-    const response = await app.request(
+    const second = await app.request(
+      "/api/auth/dev-login",
+      { method: "POST" },
+      env,
+    )
+    const firstBody = (await first.json()) as { user: { id: string } }
+
+    expect(first.status).toBe(200)
+    expect(firstBody).toEqual({
+      user: { displayName: "Dev", email: null, id: expect.any(String) },
+    })
+    expect(await second.json()).toEqual(firstBody)
+    expect(sqlite.prepare("SELECT * FROM user_identities").all()).toEqual([
+      expect.objectContaining({
+        provider: "dev",
+        provider_user_id: "dev",
+        user_id: firstBody.user.id,
+      }),
+    ])
+
+    const session = await app.request(
       "/api/auth/session",
       {
         headers: {
-          cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}`,
+          cookie: `${SESSION_COOKIE_NAME}=${sessionCookieFrom(first)}`,
         },
       },
       env,
     )
 
-    expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
-      authenticated: true,
+    expect(await session.json()).toEqual(firstBody)
+  })
+
+  it("ends the session the browser already had when it signs in again", async () => {
+    const { env, sqlite } = createTestEnv({ DEV_LOGIN_ENABLED: "true" })
+    const first = await app.request(
+      "/api/auth/dev-login",
+      { method: "POST" },
+      env,
+    )
+    const oldCookie = `${SESSION_COOKIE_NAME}=${sessionCookieFrom(first)}`
+
+    await app.request(
+      "/api/auth/dev-login",
+      { headers: { cookie: oldCookie }, method: "POST" },
+      env,
+    )
+
+    expect(sqlite.prepare("SELECT * FROM sessions").all()).toHaveLength(1)
+    expect(
+      (
+        await app.request(
+          "/api/auth/session",
+          { headers: { cookie: oldCookie } },
+          env,
+        )
+      ).status,
+    ).toBe(401)
+  })
+
+  it("stores only the hash of the session id", async () => {
+    const { env, sqlite } = createTestEnv({ DEV_LOGIN_ENABLED: "true" })
+    const response = await app.request(
+      "/api/auth/dev-login",
+      { method: "POST" },
+      env,
+    )
+    const sessionId = sessionCookieFrom(response)
+    const row = sqlite.prepare("SELECT * FROM sessions").get() as Record<
+      string,
+      string
+    >
+
+    expect(sessionId).toMatch(/^[\w-]{43}$/)
+    expect(row.id_hash).toMatch(/^[0-9a-f]{64}$/)
+    expect(row.id_hash).not.toContain(sessionId)
+    expect(row.expires_at).toBe(
+      new Date(NOW.getTime() + 30 * DAY_MS).toISOString(),
+    )
+    expect(row.max_expires_at).toBe(
+      new Date(NOW.getTime() + 180 * DAY_MS).toISOString(),
+    )
+  })
+
+  it("deletes expired sessions on each new sign-in", async () => {
+    const { createSession, createUser, env, sqlite } = createTestEnv({
+      DEV_LOGIN_ENABLED: "true",
     })
+
+    createUser("other")
+    await createSession("other", { expiresAt: new Date(NOW.getTime() - 1) })
+    await createSession("other")
+
+    await app.request("/api/auth/dev-login", { method: "POST" }, env)
+
+    expect(
+      sqlite.prepare("SELECT user_id FROM sessions ORDER BY user_id").all(),
+    ).toHaveLength(2)
+    expect(
+      sqlite
+        .prepare("SELECT COUNT(*) AS count FROM sessions WHERE expires_at <= ?")
+        .get(NOW.toISOString()),
+    ).toEqual({ count: 0 })
+  })
+})
+
+describe("session cookie attributes", () => {
+  it("is HttpOnly, Secure and SameSite=Lax outside localhost", async () => {
+    const { env } = createTestEnv({ DEV_LOGIN_ENABLED: "true" })
+    const response = await app.request(
+      "https://bodylog.example/api/auth/dev-login",
+      { method: "POST" },
+      env,
+    )
+    const setCookie = response.headers.get("set-cookie")
+
+    expect(setCookie).toContain("HttpOnly")
+    expect(setCookie).toContain("Secure")
+    expect(setCookie).toContain("SameSite=Lax")
+    expect(setCookie).toContain("Path=/")
+  })
+
+  it("drops Secure on localhost", async () => {
+    const { env } = createTestEnv({ DEV_LOGIN_ENABLED: "true" })
+    const response = await app.request(
+      "http://localhost:8787/api/auth/dev-login",
+      { method: "POST" },
+      env,
+    )
+
+    expect(response.headers.get("set-cookie")).not.toContain("Secure")
   })
 })
 
 describe("protected api routes", () => {
-  const protectedRoutes = [
-    "/api/measurements",
-    "/api/measurements/by-date/2026-06-11",
-    "/api/dashboard/weekly",
-    "/api/export/csv",
-    "/api/import/csv",
+  const protectedRoutes: Array<[string, string]> = [
+    ["GET", "/api/measurements"],
+    ["GET", "/api/measurements/by-date/2026-06-11"],
+    ["PUT", "/api/measurements/by-date/2026-06-11"],
+    ["DELETE", "/api/measurements/some-id"],
+    ["GET", "/api/dashboard/weekly"],
+    ["GET", "/api/history/weeks"],
+    ["GET", "/api/trends"],
+    ["GET", "/api/export/csv"],
+    ["POST", "/api/import/csv"],
+    ["POST", "/api/import/csv/preview"],
   ]
 
-  it("rejects unauthenticated data-route requests", async () => {
-    for (const path of protectedRoutes) {
-      const response = await app.request(path, {}, env)
+  it("answers 401 without a session", async () => {
+    const { env } = createTestEnv()
 
-      expect(response.status).toBe(401)
-      expect(await response.json()).toEqual({
-        action: "Entre novamente para continuar.",
-        message: "Sessão inválida ou expirada.",
-        name: "UnauthorizedError",
-        statusCode: 401,
-      })
+    for (const [method, path] of protectedRoutes) {
+      const response = await app.request(path, { method }, env)
+
+      expect(response.status, `${method} ${path}`).toBe(401)
+      expect(await response.json()).toEqual(unauthorizedBody)
     }
   })
 
-  it("rejects data-route requests with an invalid session cookie", async () => {
-    const response = await app.request(
-      "/api/measurements",
-      {
-        headers: {
-          cookie: `${SESSION_COOKIE_NAME}=invalid-session`,
-        },
-      },
-      env,
-    )
+  it("answers 401 for a session whose row was deleted", async () => {
+    const { env, signIn, sqlite } = createTestEnv()
+    const cookie = await signIn()
 
-    expect(response.status).toBe(401)
-    expect(await response.json()).toEqual({
-      action: "Entre novamente para continuar.",
-      message: "Sessão inválida ou expirada.",
-      name: "UnauthorizedError",
-      statusCode: 401,
-    })
+    sqlite.prepare("DELETE FROM sessions").run()
+
+    for (const [method, path] of protectedRoutes) {
+      const response = await app.request(
+        path,
+        { headers: { cookie }, method },
+        env,
+      )
+
+      expect(response.status, `${method} ${path}`).toBe(401)
+    }
   })
 
-  it("allows authenticated data-route requests to continue to route handlers", async () => {
-    const sessionCookieValue = await createSessionCookieValue(
-      env.SESSION_SECRET,
-    )
-    const response = await app.request(
-      "/api/measurements",
-      {
-        headers: {
-          cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}`,
-        },
-      },
-      env,
-    )
-
-    expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({
-      items: [],
-    })
-  })
-
-  it("keeps public api routes accessible without a session", async () => {
+  it("keeps the health route public", async () => {
+    const { env } = createTestEnv()
     const response = await app.request("/api/health", {}, env)
 
     expect(response.status).toBe(200)
@@ -272,13 +428,10 @@ describe("protected api routes", () => {
 
 describe("api cors", () => {
   it("emits no CORS headers, since the web app shares the API origin", async () => {
+    const { env } = createTestEnv()
     const response = await app.request(
       "/api/auth/session",
-      {
-        headers: {
-          origin: "http://localhost:5173",
-        },
-      },
+      { headers: { origin: "http://localhost:5173" } },
       env,
     )
 

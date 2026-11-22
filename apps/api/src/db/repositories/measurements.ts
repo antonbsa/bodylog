@@ -59,12 +59,14 @@ const importableFieldColumns = [
   ["notes", "notes"],
 ] as const
 
+/** Every query is scoped to the one user the repository is built for. */
 export class MeasurementRepository {
   private readonly createId: () => string
   private readonly now: () => Date
 
   constructor(
     private readonly db: D1Database,
+    private readonly userId: string,
     options: MeasurementRepositoryOptions = {},
   ) {
     this.createId = options.createId ?? (() => crypto.randomUUID())
@@ -93,6 +95,7 @@ export class MeasurementRepository {
         `
           INSERT INTO measurements (
             id,
+            user_id,
             date,
             weight_kg,
             body_fat_percentage,
@@ -105,11 +108,12 @@ export class MeasurementRepository {
             created_at,
             updated_at
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .bind(
         measurement.id,
+        this.userId,
         measurement.date,
         measurement.weightKg,
         measurement.bodyFatPercentage,
@@ -145,7 +149,7 @@ export class MeasurementRepository {
             disposition = ?,
             notes = ?,
             updated_at = ?
-          WHERE date = ?
+          WHERE user_id = ? AND date = ?
         `,
       )
       .bind(
@@ -158,6 +162,7 @@ export class MeasurementRepository {
         input.disposition ?? null,
         input.notes ?? null,
         this.currentTimestamp(),
+        this.userId,
         date,
       )
       .run()
@@ -171,10 +176,10 @@ export class MeasurementRepository {
         `
           SELECT ${measurementColumns}
           FROM measurements
-          WHERE date = ?
+          WHERE user_id = ? AND date = ?
         `,
       )
-      .bind(date)
+      .bind(this.userId, date)
       .first<MeasurementRow>()
 
     return row ? mapMeasurementRow(row) : null
@@ -182,7 +187,8 @@ export class MeasurementRepository {
 
   async listDates(): Promise<string[]> {
     const result = await this.db
-      .prepare("SELECT date FROM measurements")
+      .prepare("SELECT date FROM measurements WHERE user_id = ?")
+      .bind(this.userId)
       .all<{ date: string }>()
 
     return result.results.map((row) => row.date)
@@ -211,14 +217,15 @@ export class MeasurementRepository {
     return this.db
       .prepare(
         `
-          INSERT INTO measurements (id, date, ${columns.join(", ")}, created_at, updated_at)
-          VALUES (${new Array(columns.length + 4).fill("?").join(", ")})
-          ON CONFLICT(date) DO UPDATE SET
+          INSERT INTO measurements (id, user_id, date, ${columns.join(", ")}, created_at, updated_at)
+          VALUES (${new Array(columns.length + 5).fill("?").join(", ")})
+          ON CONFLICT(user_id, date) DO UPDATE SET
             ${updatedColumns.map((column) => `${column} = excluded.${column}`).join(",\n            ")}
         `,
       )
       .bind(
         this.createId(),
+        this.userId,
         row.date,
         ...values,
         row.createdAt ?? row.updatedAt,
@@ -227,8 +234,8 @@ export class MeasurementRepository {
   }
 
   async list(options: ListMeasurementsOptions = {}): Promise<Measurement[]> {
-    const whereClauses: string[] = []
-    const bindings: Array<number | string> = []
+    const whereClauses = ["user_id = ?"]
+    const bindings: Array<number | string> = [this.userId]
 
     if (options.from) {
       whereClauses.push("date >= ?")
@@ -245,8 +252,7 @@ export class MeasurementRepository {
       bindings.push(options.before)
     }
 
-    const whereSql =
-      whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : ""
+    const whereSql = `WHERE ${whereClauses.join(" AND ")}`
     const limitSql =
       options.limit === undefined
         ? options.offset === undefined
@@ -285,10 +291,10 @@ export class MeasurementRepository {
       .prepare(
         `
           DELETE FROM measurements
-          WHERE id = ?
+          WHERE id = ? AND user_id = ?
         `,
       )
-      .bind(id)
+      .bind(id, this.userId)
       .run()
 
     return (result.meta.changes ?? 0) > 0

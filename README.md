@@ -14,12 +14,12 @@ BodyLog replaces a spreadsheet: log the morning's scale readings in a few taps o
 
 ## Features
 
-- One measurement per date: weight is the only required field; body fat %, muscle %, resting metabolism, waist, sleep, disposition and notes are optional. Picking a date with a record opens it for editing.
+- One measurement per date per account: weight is the only required field; body fat %, muscle %, resting metabolism, waist, sleep, disposition and notes are optional. Picking a date with a record opens it for editing.
 - BMI, body fat kg and muscle kg derived from each reading.
 - The partial current week compared with the previous full week (Monday to Sunday), with neutral up/down/stable variations and percentage metrics in percentage points; no health advice or judgment.
 - History grouped by week, one trend chart at a time, light and dark themes.
 - CSV import from the old spreadsheet and CSV export for backup.
-- Installable PWA behind a single password, served by one Cloudflare Worker with D1.
+- Installable PWA with GitHub sign-in and a private history per account, served by one Cloudflare Worker with D1.
 
 ## Quickstart
 
@@ -32,7 +32,7 @@ npm run db:setup:local
 npm run dev
 ```
 
-Open `http://localhost:5173` and log in with the `APP_PASSWORD` from `.env.development`. The [run locally guide](docs/guides/run-locally.md) covers seeding, tests and the other scripts.
+Open `http://localhost:5173` and tap **Entrar como dev** to sign in as the local seed user. The [run locally guide](docs/guides/run-locally.md) covers seeding, tests and the other scripts.
 
 ## Documentation
 

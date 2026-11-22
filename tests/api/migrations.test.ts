@@ -55,3 +55,66 @@ describe("migrations", () => {
     })
   })
 })
+
+describe("migration 0003", () => {
+  function migratedDb() {
+    const db = new DatabaseSync(":memory:")
+
+    db.exec(readMigration("0001"))
+    db.exec(readMigration("0002"))
+    db.exec(
+      `INSERT INTO measurements (id, date, weight_kg, created_at, updated_at)
+       VALUES ('ownerless', '2026-05-01', 75, 't', 't')`,
+    )
+    db.exec(readMigration("0003"))
+    db.exec(
+      `INSERT INTO users (id, display_name, created_at, updated_at)
+       VALUES ('a', 'A', 't', 't'), ('b', 'B', 't', 't')`,
+    )
+
+    return db
+  }
+
+  const insert = (userId: string, id: string) =>
+    `INSERT INTO measurements (id, user_id, date, weight_kg, created_at, updated_at)
+     VALUES ('${id}', '${userId}', '2026-06-01', 72, 't', 't')`
+
+  it("drops the measurements that have no owner", () => {
+    expect(migratedDb().prepare("SELECT * FROM measurements").all()).toEqual([])
+  })
+
+  it("lets two users record the same date but not one user twice", () => {
+    const db = migratedDb()
+
+    db.exec(insert("a", "a1"))
+    db.exec(insert("b", "b1"))
+
+    expect(() => db.exec(insert("a", "a2"))).toThrow(/UNIQUE/)
+  })
+
+  it("requires an existing owner and deletes a user's rows with the user", () => {
+    const db = migratedDb()
+
+    expect(() => db.exec(insert("missing", "x"))).toThrow(/FOREIGN KEY/)
+
+    db.exec(insert("a", "a1"))
+    db.exec(
+      `INSERT INTO sessions (id_hash, user_id, expires_at, max_expires_at, created_at)
+       VALUES ('h', 'a', 't', 't', 't')`,
+    )
+    db.exec("DELETE FROM users WHERE id = 'a'")
+
+    expect(db.prepare("SELECT * FROM measurements").all()).toEqual([])
+    expect(db.prepare("SELECT * FROM sessions").all()).toEqual([])
+  })
+
+  it("keeps one identity per provider user", () => {
+    const db = migratedDb()
+    const identity = `INSERT INTO user_identities (provider, provider_user_id, user_id, created_at)
+      VALUES ('github', '1', 'a', 't')`
+
+    db.exec(identity)
+
+    expect(() => db.exec(identity)).toThrow(/UNIQUE|PRIMARY KEY/)
+  })
+})

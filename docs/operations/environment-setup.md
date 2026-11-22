@@ -6,7 +6,7 @@ What a BodyLog environment is made of on Cloudflare and how it is configured. Th
 
 - One Worker with Hono that serves the API under `/api/*` and the built web app through Workers Static Assets.
 - One D1 database bound to that Worker as `DB`.
-- Worker secrets for the app password and the session secret.
+- Worker secrets for the environment's GitHub OAuth App ([Secrets](secrets.md)).
 
 BodyLog is meant to run within the Cloudflare free plan for personal use, so the implementation avoids unnecessary queries, frequent full scans on large tables, repeated dashboard calls, polling and heavy processing inside the Worker.
 
@@ -24,14 +24,27 @@ Locally, the Vite dev server on `http://localhost:5173` proxies `/api` requests 
 
 `apps/api/wrangler.toml` is the only Wrangler config:
 
-- The top level is local dev only: worker `bodylog-dev`, non-secret vars, and the `bodylog-dev` D1 binding with a placeholder `database_id`, so an accidental `--remote` without `--env production` cannot reach production data. Local API development loads the root `.env.development` file through `--env-file`.
+- The top level is local dev only: worker `bodylog-dev`, non-secret vars, and the `bodylog-dev` D1 binding with a placeholder `database_id`, so an accidental `--remote` without `--env production` cannot reach production data. Local API development loads the root `.env.development` file through `--envFile`.
 - `[env.production]` re-declares everything production needs, because named environments do not inherit vars or bindings: worker `bodylog`, vars, observability, the `bodylog-prod` D1 database and `[env.production.assets]`.
 - `[env.preview]` mirrors it for worker `bodylog-preview` and its own `bodylog-preview` D1 database, so preview never reads production data; a change to production's vars, assets or bindings is repeated there.
 - Assets stay out of the top level because `wrangler dev` fails when `apps/web/dist` is missing.
 
 `[env.production.assets]` uses `not_found_handling = "single-page-application"` so client routes such as `/historico` get `index.html`, and `run_worker_first = ["/api/*"]` so every API request, including unknown ones, reaches the Worker and gets a JSON response. `apps/web/public/_headers` is copied into `dist/` and applied by Workers Static Assets, which keeps `Cache-Control: no-cache` on `/` and `/index.html`.
 
-The web app and the API share one origin, so the session cookie is first-party: `HttpOnly`, `SameSite=Lax` and `Secure` (except on `localhost`). There is no CORS handling and no API base URL.
+The web app and the API share one origin, so the session cookie is first-party: `HttpOnly`, `SameSite=Lax` and `Secure` (except on `localhost`). There is no CORS handling and no API base URL. The GitHub `redirect_uri` is derived from the request origin, so each environment's OAuth App only needs its callback URL to match; there is no var for it.
+
+## Local GitHub Sign-in
+
+Locally, **Entrar como dev** covers day-to-day work ([Run locally](../guides/run-locally.md#start)). To try the real GitHub flow, create a separate OAuth App with `http://localhost:5173` as **Homepage URL** and `http://localhost:5173/api/auth/github/callback` as **Authorization callback URL**, and put its credentials in `.env.local` at the repo root:
+
+```txt
+GITHUB_CLIENT_ID="..."
+GITHUB_CLIENT_SECRET="..."
+```
+
+`wrangler dev` loads `.env.local` after `.env.development`, so these replace the placeholders. Without them, **Entrar com GitHub** reaches GitHub with a placeholder client id and GitHub rejects it.
+
+The API's `dev` script passes `--local-upstream localhost:5173`, so the Worker sees the Vite origin and derives that callback even though it listens on 8787; Vite runs with `strictPort`, so the port can't drift. GitHub sign-in doesn't work from a phone via `dev:lan` (the callback stays on localhost): use **Entrar como dev** there and test GitHub sign-in on preview.
 
 ## Non-Secret Variables
 
@@ -42,8 +55,9 @@ USER_HEIGHT_CM=168
 USER_TIME_ZONE=America/Sao_Paulo
 ```
 
-- `USER_HEIGHT_CM` is the single user's height in centimeters for BMI; the API converts it to meters before applying the formula (`0025-use-user-height-environment-variable.md`).
-- `USER_TIME_ZONE` is the single user's IANA time zone for dashboard date and week boundaries (`0027-use-user-time-zone-environment-variable.md`).
+- `USER_HEIGHT_CM` is the height in centimeters for BMI, shared by every account for now; the API converts it to meters before applying the formula (`0025-use-user-height-environment-variable.md`).
+- `USER_TIME_ZONE` is the IANA time zone for dashboard date and week boundaries, shared by every account for now (`0027-use-user-time-zone-environment-variable.md`).
+- `DEV_LOGIN_ENABLED="true"` turns on `POST /api/auth/dev-login`. Only `.env.development` sets it; `wrangler.toml` leaves it out of every environment, so preview and production answer that route with 404.
 
 Neither is a secret, so neither goes through `wrangler secret put`.
 

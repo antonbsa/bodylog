@@ -1,6 +1,7 @@
 ---
 status: Accepted
 area: delivery
+amended-by: ["0044"]
 ---
 
 # 0041 — Release-gated Production Deploys with a Preview Environment
@@ -32,3 +33,7 @@ Two gates between a merge and production were considered: a GitHub Environment w
 - Shipping to production takes one more step (tag and publish a release), which is intended friction for a single-owner project.
 - Preview has its own empty D1 and its own secrets, so its data and sessions never mix with production.
 - The Cloudflare API token must be able to edit Workers scripts and D1 for both Workers.
+
+## Update — GitHub OAuth secrets (ADR 0044)
+
+The required secrets are now `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`; `APP_PASSWORD` and `SESSION_SECRET` are no longer used or checked.

@@ -1,4 +1,10 @@
-import { expect, test, type Page, type Route } from "./fixtures"
+import {
+  expect,
+  type Page,
+  type Route,
+  signedInSession,
+  test,
+} from "./fixtures"
 
 type Averages = Partial<{
   bodyFatPercentage: number | null
@@ -107,7 +113,7 @@ async function mockHistory(
 
   await page.clock.setFixedTime(new Date(2026, 10, 13, 12))
   await page.route("**/api/auth/session", (route) =>
-    json(route, { authenticated: true }),
+    json(route, signedInSession),
   )
   await page.route("**/api/history/weeks*", (route) => {
     const before = new URL(route.request().url()).searchParams.get("before")

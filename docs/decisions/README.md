@@ -30,7 +30,7 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0004 — Exclude Google Sheets Integration from V1](0004-exclude-google-sheets-integration-v1.md) · Accepted
 - [0005 — Include CSV Export in V1](0005-include-csv-export-v1.md) · Accepted
 - [0006 — Include CSV Import in V1](0006-include-csv-import-v1.md) · Accepted · amended by 0043
-- [0007 — Enforce One Record per Date](0007-enforce-one-record-per-date.md) · Accepted
+- [0007 — Enforce One Record per Date](0007-enforce-one-record-per-date.md) · Accepted · amended by 0044
 - [0008 — Use Date Form Create-or-edit Behavior](0008-use-date-form-create-or-edit.md) · Accepted
 - [0009 — Require Only Weight in V1](0009-require-only-weight-v1.md) · Accepted
 - [0010 — Use Monday Week Start](0010-use-monday-week-start.md) · Accepted
@@ -51,6 +51,7 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0024 — Use Versioned Height Constant](0024-use-versioned-height-constant.md) · Superseded · superseded by 0025
 - [0025 — Use User Height Environment Variable](0025-use-user-height-environment-variable.md) · Accepted · supersedes 0024
 - [0027 — Use User Time Zone Environment Variable](0027-use-user-time-zone-environment-variable.md) · Accepted
+- [0044 — Multi-user Accounts with OAuth Sign-in](0044-multi-user-accounts-with-oauth-sign-in.md) · Accepted · amends 0007, 0041
 
 ### Web
 
@@ -71,7 +72,7 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0019 — Use Cloudflare Pages and Separate Worker](0019-use-cloudflare-pages-and-separate-worker.md) · Superseded · superseded by 0040
 - [0028 — Use Same-Site Custom Domains for PWA Session](0028-use-same-site-custom-domains-for-pwa-session.md) · Superseded · superseded by 0040
 - [0040 — Serve the Web App from the API Worker](0040-serve-the-web-app-from-the-api-worker.md) · Accepted · supersedes 0019, 0028
-- [0041 — Release-gated Production Deploys with a Preview Environment](0041-release-gated-production-deploys-with-a-preview-environment.md) · Accepted
+- [0041 — Release-gated Production Deploys with a Preview Environment](0041-release-gated-production-deploys-with-a-preview-environment.md) · Accepted · amended by 0044
 - [0042 — Scheduled Encrypted D1 Exports to Backblaze B2](0042-scheduled-encrypted-d1-exports-to-backblaze-b2.md) · Accepted
 
 ### Process

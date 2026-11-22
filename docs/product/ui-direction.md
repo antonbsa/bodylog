@@ -33,7 +33,7 @@ Bottom tab bar: Início, Histórico, a central add button, Tendências, Ajustes 
 
 ### Login
 
-The "BodyLog" title, a password field labeled "Senha" and an "Entrar" button. An empty submit shows "Digite a senha."; a wrong password shows "Senha incorreta. Tente de novo." in a reserved slot under the field and marks the field invalid. Successful login goes to Início.
+The "BodyLog" eyebrow, the "Entrar" title, one line of intro and an "Entrar com GitHub" button with the GitHub mark. A sign-in that comes back with an error shows its message above the button ("Você cancelou o login no GitHub…", "O login expirou…", "Não foi possível entrar com o GitHub…"). Successful sign-in goes to Início. Under `npm run dev` a secondary "Entrar como dev" button follows.
 
 ### Início
 

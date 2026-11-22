@@ -2,7 +2,7 @@
 
 ## Base Rules
 
-All data routes require authentication. The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404.
+All data routes require a session (see [Auth](#auth)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404.
 
 ## Status
 
@@ -23,40 +23,45 @@ respond; it does not check database connectivity.
 
 ## Auth
 
-### POST /api/auth/login
-
-Authenticates the single user.
-
-#### Request
+Every route outside `/api/auth/*` and `/api/health` needs the `bodylog_session` cookie and answers a missing, unknown or expired session with:
 
 ```json
 {
-  "password": "string"
+  "action": "Entre novamente para continuar.",
+  "message": "Sessão inválida ou expirada.",
+  "name": "UnauthorizedError",
+  "statusCode": 401
 }
 ```
 
-#### Response 200
+All data is scoped to the session's user: each route reads and writes only that user's measurements. A session lasts 30 days, is renewed (and its cookie re-sent) on a request in its last 7 days, and ends at most 180 days after sign-in.
 
-```json
-{
-  "ok": true
-}
-```
+### GET /api/auth/github
 
-#### Response 401
+Starts the GitHub sign-in. Sets a 10-minute `bodylog_github_oauth` cookie on `Path=/api/auth/github` holding the `state` and PKCE `code_verifier`, then answers 302 to `https://github.com/login/oauth/authorize` with `client_id`, `redirect_uri` (`<origin>/api/auth/github/callback`), `scope=read:user user:email`, `state` and an `S256` `code_challenge`.
 
-```json
-{
-  "ok": false,
-  "error": "INVALID_PASSWORD"
-}
-```
+### GET /api/auth/github/callback
+
+GitHub's redirect target. Clears the flow cookie in every case.
+
+- **Success:** creates the user and its GitHub identity on the first sign-in, or refreshes the display name (`name`, else `login`) and the email (the primary one when verified, else `null`) on later ones. Sets the session cookie and answers 200 with an HTML page that redirects to `/`.
+- **Failure:** sets no session and answers 302 to the login screen with an error code:
+
+| Redirect           | When                                                          |
+| ------------------ | ------------------------------------------------------------- |
+| `/?error=declined` | The user cancelled on GitHub (`error=access_denied`).         |
+| `/?error=state`    | The flow cookie is missing or expired, or `state` mismatches. |
+| `/?error=failed`   | The code exchange or the profile lookup failed.               |
+
+### POST /api/auth/dev-login
+
+Signs in as the local seed user (identity `dev`/`dev`, display name "Dev"), creating it on first use, and answers like `GET /api/auth/session`. Exists only when the Worker has `DEV_LOGIN_ENABLED="true"`; everywhere else it answers the same 404 as an unknown route.
 
 ---
 
 ### POST /api/auth/logout
 
-Ends the session.
+Deletes the session row, so replaying the old cookie answers 401, and clears the cookie. Answers 200 with or without a session.
 
 #### Response 200
 
@@ -70,23 +75,23 @@ Ends the session.
 
 ### GET /api/auth/session
 
-Checks the current session.
+Returns the signed-in user.
 
 #### Response 200
 
 ```json
 {
-  "authenticated": true
+  "user": {
+    "id": "string",
+    "displayName": "string",
+    "email": "string | null"
+  }
 }
 ```
 
 #### Response 401
 
-```json
-{
-  "authenticated": false
-}
-```
+The `UnauthorizedError` above.
 
 ## Measurements
 
@@ -401,7 +406,7 @@ Import is two steps over the same file: a preview that writes nothing, then the 
 - The delimiter is `,` or `;`, detected from the header line. The encoding is UTF-8 (BOM stripped), falling back to Windows-1252.
 - Dates are `YYYY-MM-DD` or `D/M/YYYY` (1-2 digit day and month, 4-digit year), may be mixed in one file and must be real calendar dates. `DD/MM` and 2-digit years are invalid.
 - Numbers accept a dot or comma decimal (`72.5`, `72,5`). A dot is a thousands separator only in `resting_metabolism_kcal` (`1.696` is 1696). Values with units or symbols (`72,5 kg`, `14%`, `7h`) and ranges (`6-7`) are invalid.
-- Values follow the limits in [database](database.md#csv-format) and `domain/measurement.ts`; `notes` are trimmed and blank notes are stored as `null`.
+- Values follow the limits in [measurements](measurements.md#csv-format) and `domain/measurement.ts`; `notes` are trimmed and blank notes are stored as `null`.
 
 | Field                     | Accepted headers (normalized)                                            |
 | ------------------------- | ------------------------------------------------------------------------ |

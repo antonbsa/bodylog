@@ -1,10 +1,24 @@
 # BodyLog
 
-Logs one person's daily bioimpedance scale readings and shows how each week compares with the one before.
+Logs each account's daily bioimpedance scale readings and shows how each week compares with the one before.
+
+## Accounts
+
+**User**: One account, with its own Measurements that no other account sees. Created on the first sign-in; its display name and email come from the provider.
+
+_Avoid_: owner, member, profile (for the account itself)
+
+**Identity**: A provider account (GitHub, later Google) that signs in as a User, unique by provider and the provider's user id. A User can have more than one.
+
+_Avoid_: login, provider account (in code)
+
+**Session**: A signed-in browser, stored server-side and identified by the `bodylog_session` cookie. It lasts 30 days, renews while in use and ends at most 180 days after sign-in, or at logout.
+
+_Avoid_: token (that's the cookie's value, not the session)
 
 ## Measurements
 
-**Measurement**: The readings recorded for one date: weight (required), and optionally body fat %, muscle %, resting metabolism, waist, sleep hours, disposition (1–5) and notes. There is at most one per date; selecting a date with a Measurement edits it.
+**Measurement**: The readings recorded for one date: weight (required), and optionally body fat %, muscle %, resting metabolism, waist, sleep hours, disposition (1–5) and notes. Each User has at most one per date; selecting a date with a Measurement edits it.
 
 _Avoid_: entry, record (in UI copy), weigh-in
 

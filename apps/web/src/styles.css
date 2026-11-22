@@ -275,7 +275,6 @@ input:disabled {
 .login-panel h1,
 .not-found-panel h1,
 .intro,
-.login-form label,
 .field-note,
 .form-error {
   margin: 0;
@@ -307,14 +306,6 @@ input:disabled {
   margin-top: 8px;
 }
 
-.login-form label {
-  display: grid;
-  gap: 8px;
-  color: var(--fg);
-  font-size: 0.875rem;
-  font-weight: 700;
-}
-
 .form-error {
   color: var(--danger);
   font-size: 0.875rem;
@@ -331,17 +322,6 @@ input:disabled {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-.password-manager-username {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  min-height: 1px;
-  padding: 0;
-  border: 0;
-  margin: 0;
-  opacity: 0;
 }
 
 @media (min-width: 680px) {

@@ -8,11 +8,19 @@ const templatePath = fileURLToPath(
   new URL("./seed-template.sql", import.meta.url),
 )
 
-export function buildSeedSql(measurements: SeedMeasurement[]): string {
+const devUserIdSql =
+  "(SELECT user_id FROM user_identities WHERE provider = 'dev' AND provider_user_id = 'dev')"
+
+export function buildSeedSql(
+  measurements: SeedMeasurement[],
+  now = new Date(),
+): string {
   const template = readFileSync(templatePath, "utf8")
   const rows = measurements.map(buildSeedRow).join(",\n")
 
-  return template.replace("{{rows}}", rows)
+  return template
+    .replaceAll("{{timestamp}}", sqlString(now.toISOString()))
+    .replace("{{rows}}", rows)
 }
 
 function buildSeedRow(measurement: SeedMeasurement): string {
@@ -20,6 +28,7 @@ function buildSeedRow(measurement: SeedMeasurement): string {
 
   return `  (
     ${sqlString(`${seedIdPrefix}${measurement.date}`)},
+    ${devUserIdSql},
     ${sqlString(measurement.date)},
     ${measurement.weightKg},
     ${sqlNullableNumber(measurement.bodyFatPercentage)},

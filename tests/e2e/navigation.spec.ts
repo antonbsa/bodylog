@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "./fixtures"
+import { expect, type Page, signedInSession, test } from "./fixtures"
 
 const THEME_STORAGE_KEY = "bodylog-theme"
 
@@ -14,7 +14,7 @@ async function mockApi(page: Page, authenticated = true) {
     await route.fulfill({
       body: JSON.stringify(
         authenticated
-          ? { authenticated: true }
+          ? signedInSession
           : {
               action: "Entre novamente para continuar.",
               message: "Sessão inválida ou expirada.",
@@ -243,7 +243,9 @@ test("hides the bar on the login screen", async ({ page }) => {
   await mockApi(page, false)
   await page.goto("/historico")
 
-  await expect(page.getByLabel("Senha")).toBeVisible()
+  await expect(
+    page.getByRole("link", { name: "Entrar com GitHub" }),
+  ).toBeVisible()
   await expect(mainNav(page)).toHaveCount(0)
 })
 

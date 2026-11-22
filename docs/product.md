@@ -23,7 +23,7 @@ Build a personal, mobile-first interface for daily body metrics logging and week
 - compare the current partial week against the previous full week;
 - import existing historical data from CSV;
 - export records to CSV for backup;
-- use the app through a simple authenticated personal interface.
+- sign in with a GitHub account and keep a private history of their own.
 
 ### Constraints
 
@@ -41,7 +41,7 @@ The app succeeds when:
 - historical spreadsheet data can be imported from CSV;
 - the user can export data as CSV backup;
 - the app is usable from a smartphone;
-- the app is deployed on Cloudflare and protected by simple authentication.
+- the app is deployed on Cloudflare, and each account sees only its own data.
 
 ## Core Flows
 
@@ -50,11 +50,11 @@ The authenticated app has four screens behind a bottom tab bar (Início, Histór
 ### Log In
 
 1. The user opens the app.
-2. If not authenticated, the login screen is displayed.
-3. The user enters the configured password.
-4. The system validates the password.
-5. If valid, the user lands on Início.
-6. If invalid, the system shows an error message.
+2. If not signed in, the login screen is displayed.
+3. The user taps "Entrar com GitHub" and authorizes BodyLog on GitHub.
+4. The first sign-in creates the account; later ones return to it.
+5. The user lands on Início.
+6. If the user cancels on GitHub or the sign-in fails, the login screen shows a message for that case.
 
 ### Read the Week on Início
 
@@ -282,18 +282,18 @@ The system must allow the user to import historical measurements from a CSV file
 
 ---
 
-### FR-011 — Simple Authentication
+### FR-011 — Accounts and Sign-in
 
-The system must protect the app with simple single-user authentication.
+The system must give each person their own account, signed in with GitHub (`0044-multi-user-accounts-with-oauth-sign-in.md`).
 
 #### Acceptance Criteria
 
-- The user must enter a password before accessing the app.
-- The password is stored as a Cloudflare secret or environment variable.
-- The password is not committed to the repository.
-- Authenticated state is stored using a secure session approach.
-- All data routes require authentication.
-- Logout is available.
+- The first GitHub sign-in creates an account (open sign-up); a later sign-in returns to the same account.
+- Each account sees and edits only its own measurements, on every screen, in the CSV export and through the import; two accounts can record the same date.
+- Sessions are stored on the server: they last 30 days, renew while in use and end at most 180 days after sign-in.
+- All data routes require a session.
+- Logout ends the session on the server, so a copied cookie stops working.
+- Cancelling on GitHub or a failed sign-in returns to the login screen with a message.
 
 ---
 
@@ -344,7 +344,7 @@ The app must be deployed fully on Cloudflare.
 
 ### NFR-005 — Personal Use
 
-The app is designed for a single user and does not need to support multiple accounts.
+Each account is one person's private log; there is no sharing between accounts, admin role or "owner" account.
 
 ### NFR-006 — Data Portability
 
@@ -358,13 +358,13 @@ The data access layer should be isolated enough to support a future migration fr
 
 ### Product
 
-- Personal body metrics tracker for a single user.
+- Personal body metrics tracker; each account keeps its own data.
 - Mobile-first interface.
 - Separate screens (Início, Histórico, Tendências, Ajustes) behind a bottom tab bar, and registration as a full-screen route (`0033-use-bottom-navigation.md`).
 
 ### Measurements
 
-- One record per date, with date-based create/edit behavior.
+- One record per date per account, with date-based create/edit behavior.
 - Required field: weight.
 - Optional fields: body fat percentage, muscle percentage, resting metabolism, waist, sleep hours, disposition (1–5) and notes.
 - BMI calculated from configured height; body fat mass and muscle mass calculated when possible.
@@ -385,8 +385,8 @@ The data access layer should be isolated enough to support a future migration fr
 
 ### Authentication
 
-- Simple single-user password authentication, with the password stored as a secret.
-- Data routes protected; logout available.
+- Sign-in with GitHub only, with open sign-up on the first sign-in (`0044-multi-user-accounts-with-oauth-sign-in.md`).
+- Server-side sessions; data routes protected; logout available.
 
 ### Deployment
 
@@ -396,7 +396,7 @@ The data access layer should be isolated enough to support a future migration fr
 
 The app does not provide:
 
-- multi-user support, account registration, OAuth/social login or role-based access control;
+- password or email sign-in, sharing data between accounts, or role-based access control;
 - Google Sheets integration or automatic sync;
 - offline-first behavior;
 - charts outside the Tendências screen and advanced chart features (`0030-allow-charts-in-trends.md`);

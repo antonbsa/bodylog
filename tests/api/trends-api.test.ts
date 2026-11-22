@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { app } from "../../apps/api/src/app"
-import {
-  createSessionCookieValue,
-  SESSION_COOKIE_NAME,
-} from "../../apps/api/src/features/auth/session"
+import { createSignedInEnv, SIGNED_IN_COOKIE } from "./test-env"
 import type { TrendsResponse } from "../../types/trends"
 
 type MeasurementRow = {
@@ -79,24 +76,15 @@ describe("trends api", () => {
 })
 
 async function getTrends(rows: MeasurementRow[]) {
-  const env = createEnv(rows)
-  const sessionCookieValue = await createSessionCookieValue(env.SESSION_SECRET)
-
   return app.request(
     "/api/trends",
-    { headers: { cookie: `${SESSION_COOKIE_NAME}=${sessionCookieValue}` } },
-    env,
+    { headers: { cookie: SIGNED_IN_COOKIE } },
+    createEnv(rows),
   )
 }
 
 function createEnv(rows: MeasurementRow[]) {
-  return {
-    APP_PASSWORD: "correct-password",
-    DB: new FakeD1(rows) as unknown as D1Database,
-    SESSION_SECRET: "test-session-secret",
-    USER_HEIGHT_CM: "168",
-    USER_TIME_ZONE: "America/Sao_Paulo",
-  }
+  return createSignedInEnv(rows).env
 }
 
 function measurementRow(
@@ -117,37 +105,5 @@ function measurementRow(
     created_at: "2026-06-10T12:00:00.000Z",
     updated_at: "2026-06-10T12:00:00.000Z",
     ...overrides,
-  }
-}
-
-class FakeD1 {
-  private readonly rows: MeasurementRow[]
-
-  constructor(rows: MeasurementRow[]) {
-    this.rows = rows
-  }
-
-  prepare(query: string) {
-    const rows = this.rows
-    const sql = query.replace(/\s+/g, " ").trim()
-    const statement = {
-      bind: () => statement,
-      async all<T>() {
-        if (
-          !sql.includes("FROM measurements") ||
-          !sql.includes("ORDER BY date DESC")
-        ) {
-          throw new Error(`Unsupported all query: ${sql}`)
-        }
-
-        const results = [...rows].sort((left, right) =>
-          right.date.localeCompare(left.date),
-        )
-
-        return { results: results as T[], success: true, meta: {} }
-      },
-    }
-
-    return statement
   }
 }

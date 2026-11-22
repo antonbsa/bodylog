@@ -57,7 +57,12 @@ describe("check-secrets", () => {
   it("passes when every required secret exists in the environment", () => {
     const result = runCheckSecrets(
       ["--env", "preview"],
-      [{ status: 0, stdout: secrets("APP_PASSWORD", "SESSION_SECRET") }],
+      [
+        {
+          status: 0,
+          stdout: secrets("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"),
+        },
+      ],
     )
 
     expect(result.status).toBe(0)
@@ -69,12 +74,12 @@ describe("check-secrets", () => {
   it("fails naming the missing secret", () => {
     const result = runCheckSecrets(
       ["--env", "production"],
-      [{ status: 0, stdout: secrets("APP_PASSWORD") }],
+      [{ status: 0, stdout: secrets("GITHUB_CLIENT_ID", "APP_PASSWORD") }],
     )
 
     expect(result.status).toBe(1)
     expect(result.stderr).toContain(
-      "Missing required secret(s) for --env production: SESSION_SECRET",
+      "Missing required secret(s) for --env production: GITHUB_CLIENT_SECRET",
     )
   })
 
@@ -90,7 +95,10 @@ describe("check-secrets", () => {
       ["--env", "preview"],
       [
         { status: 1, stderr: "upstream connect error or disconnect/reset" },
-        { status: 0, stdout: secrets("APP_PASSWORD", "SESSION_SECRET") },
+        {
+          status: 0,
+          stdout: secrets("GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET"),
+        },
       ],
     )
 

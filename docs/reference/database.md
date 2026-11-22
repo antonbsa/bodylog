@@ -1,144 +1,90 @@
-# Data Model
+# Database
 
-## Entity: Measurement
+The D1 (SQLite) schema: what each table holds, how the tables relate, which unique keys the write rules depend on, and the lifecycle of each status column. What a measurement means (fields, limits, derived values, weekly rules, CSV) is in [Measurements](measurements.md); why SQL stays behind repositories is in the [architecture overview](../architecture/overview.md#database). The [diagram](#diagram) lists every column with its type, checked against the migrations by `tests/api/database-doc.test.ts`; defaults and indexes live only in the migrations (`infra/migrations/`), the schema's source of truth.
 
-A measurement represents the body metrics recorded for one date.
+## Conventions
 
-There is at most one measurement per date.
+- **Ids** are random UUIDs in text columns (`crypto.randomUUID()` in the repositories). `user_identities` is keyed by the provider's own account id instead, and `sessions` by a hash of the cookie's id.
+- **Timestamps** are ISO 8601 UTC strings in `*_at` text columns, so comparing them as text compares them in time; dates (`measurements.date`) are `YYYY-MM-DD`.
+- **Every row belongs to a user.** Each table references `users(id)` with `ON DELETE CASCADE`, so deleting a user deletes their identities, sessions and measurements ([ADR 0044](../decisions/0044-multi-user-accounts-with-oauth-sign-in.md)). Every measurement query filters by `user_id`.
+- **Rows are hard-deleted.** No table has a soft-delete column: a deleted measurement, an ended session or an expired one is removed.
+- **Enumerations are checked in TypeScript, not by the database.** `user_identities.provider` is plain text with no `CHECK` constraint; its values are listed under [Lifecycles](#lifecycles).
 
-## Fields
+## Diagram
 
-| Field                   | Type        | Required | Description                                              |
-| ----------------------- | ----------- | -------: | -------------------------------------------------------- |
-| `id`                    | string      |      yes | Unique measurement identifier.                           |
-| `date`                  | string      |      yes | Measurement date in `YYYY-MM-DD` format. Must be unique. |
-| `weightKg`              | number      |      yes | Body weight in kilograms.                                |
-| `bodyFatPercentage`     | number/null |       no | Body fat percentage from the scale.                      |
-| `musclePercentage`      | number/null |       no | Muscle percentage from the scale.                        |
-| `restingMetabolismKcal` | number/null |       no | Resting metabolism from the scale.                       |
-| `waistCm`               | number/null |       no | Waist in centimeters, one decimal (30–250).              |
-| `sleepHours`            | number/null |       no | Hours slept the previous night, one decimal (0–24).      |
-| `disposition`           | number/null |       no | Integer from 1 (indisposto) to 5 (disposto).             |
-| `notes`                 | string/null |       no | Free text, trimmed; blank notes are stored as `null`.    |
-| `createdAt`             | string      |      yes | Creation timestamp.                                      |
-| `updatedAt`             | string      |      yes | Last update timestamp.                                   |
+The diagram lists every column, with its SQL type and `nullable` when it accepts null; `tests/api/database-doc.test.ts` fails when it and the migrated schema disagree.
 
-Hard validation limits that block saving: weight 20–300 kg, body fat and muscle 1–80%, resting metabolism 500–5000 kcal, waist 30–250 cm, sleep 0–24 h, disposition integer 1–5 (`0032-add-waist-sleep-disposition-and-notes-fields.md`). The limits live in `domain/measurement.ts`.
+```mermaid
+erDiagram
+    users ||--o{ user_identities : "signs in through"
+    users ||--o{ sessions : "holds"
+    users ||--o{ measurements : "records"
 
-## Derived Values
-
-Derived values should be calculated by the application and are not stored.
-
-### BMI
-
-```txt
-BMI = weightKg / (heightM * heightM)
+    users {
+        text id PK
+        text display_name
+        text email "nullable"
+        text created_at
+        text updated_at
+    }
+    user_identities {
+        text provider PK
+        text provider_user_id PK
+        text user_id FK
+        text email "nullable"
+        text created_at
+    }
+    sessions {
+        text id_hash PK
+        text user_id FK
+        text expires_at
+        text max_expires_at
+        text created_at
+    }
+    measurements {
+        text id PK
+        text user_id FK, UK
+        text date UK
+        real weight_kg
+        real body_fat_percentage "nullable"
+        real muscle_percentage "nullable"
+        integer resting_metabolism_kcal "nullable"
+        real waist_cm "nullable"
+        real sleep_hours "nullable"
+        integer disposition "nullable"
+        text notes "nullable"
+        text created_at
+        text updated_at
+    }
 ```
 
-`heightM` is derived from the API `USER_HEIGHT_CM` environment variable by converting centimeters to meters. Height should be configured outside the measurement record.
+`UK` marks a column that is part of a unique key; several `UK` columns in one table form one composite key, listed under [Unique Keys](#unique-keys).
 
-### Body Fat Mass
+## Tables
 
-```txt
-bodyFatKg = weightKg * bodyFatPercentage / 100
-```
+| Table             | One row per                     | Holds                                                                                                                                                                 |
+| ----------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`           | account                         | The display name and the email (nullable), refreshed from the provider on every sign-in; the email is set only when the provider verified it.                         |
+| `user_identities` | provider account that signed in | Which user a provider account maps to, with the email the provider reported. A user can have one identity per provider.                                               |
+| `sessions`        | signed-in browser               | The SHA-256 (hex) of the cookie's random id, never the id itself, plus the expiry and the hard limit on renewal ([auth](../architecture/overview.md#authentication)). |
+| `measurements`    | user and date                   | One day's body metrics: weight plus the optional metrics and notes described in [Measurements](measurements.md#fields).                                               |
 
-Only available when `bodyFatPercentage` is present.
+## Unique Keys
 
-### Muscle Mass
+The write rules lean on these keys: a write that would duplicate one updates the existing row instead, so saving a date again or re-importing a CSV changes values rather than adding rows.
 
-```txt
-muscleKg = weightKg * musclePercentage / 100
-```
+| Table             | Unique key                                 | Guarantees                                                                                              |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `user_identities` | `provider, provider_user_id` (primary key) | A provider account maps to one user; signing in again finds it and refreshes the profile.               |
+| `measurements`    | `user_id, date`                            | One measurement per date per user; saving a date that has one edits it, and CSV import upserts by date. |
 
-Only available when `musclePercentage` is present.
+## Lifecycles
 
-## Weekly Grouping
+| Column                     | Values          | Transitions                                                                                                                                                                                                                                                                                                                                    |
+| -------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `user_identities.provider` | `github`, `dev` | Set once on first sign-in. `dev` is the local passwordless user, signed in only where `DEV_LOGIN_ENABLED` is `true`.                                                                                                                                                                                                                           |
+| `sessions.expires_at`      | a timestamp     | Sign-in sets it 30 days out. A request in the session's last 7 days moves it to 30 days from now, never past `max_expires_at` (180 days after sign-in). A request that arrives after it deletes the row, and every sign-in sweeps expired rows, so no cron is needed. Signing out, or signing in again from the same browser, deletes the row. |
 
-Weeks start on Monday and end on Sunday.
+## Changing the Schema
 
-Each measurement belongs to exactly one week based on its `date`.
-
-## Weekly Average Rules
-
-- Only existing measurements are included.
-- Missing days are ignored.
-- Missing optional values are ignored for that specific metric.
-- A metric average should be `null` when no values are available for that metric.
-- Waist, sleep and disposition are averaged like the other optional metrics.
-- Each week also lists the `recordedDates` (ascending) that have a measurement; `measurementCount` is their count. The weekly registration target is 7 (`0035-use-seven-day-weekly-target.md`).
-
-Example:
-
-```txt
-If a week has 4 weight values and 2 body fat values:
-- weight average uses 4 values;
-- body fat average uses 2 values.
-```
-
-## Weekly Comparison Rules
-
-The comparison is:
-
-```txt
-partial current week vs previous full week
-```
-
-The API returns weekly averages only; the UI computes the variation between the two weeks (`0039-compute-weekly-variation-in-the-ui.md`). Missing metrics in either week produce no comparison, never a zero.
-
-For percentage-based metrics such as body fat percentage and muscle percentage, absolute variation must be displayed as percentage points.
-
-Example:
-
-```txt
-16.20% → 14.46% = -1.74 percentage points
-```
-
-## Future Postgres Portability
-
-The app uses Cloudflare D1. Because a later migration to serverless Postgres is planned, the application should avoid direct database access scattered across HTTP handlers.
-
-Recommendation:
-
-- handlers call services/use cases;
-- services call repositories;
-- repositories contain SQL and D1 details;
-- domain types should not depend on D1-specific types.
-
-## Suggested Initial SQL
-
-```sql
-CREATE TABLE measurements (
-  id TEXT PRIMARY KEY,
-  date TEXT NOT NULL UNIQUE,
-  weight_kg REAL NOT NULL,
-  body_fat_percentage REAL,
-  muscle_percentage REAL,
-  resting_metabolism_kcal INTEGER,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL
-);
-
-CREATE INDEX idx_measurements_date ON measurements(date);
-```
-
-Migration `0002_add_waist_sleep_disposition_notes.sql` adds the four nullable columns; existing rows keep them empty:
-
-```sql
-ALTER TABLE measurements ADD COLUMN waist_cm REAL;
-ALTER TABLE measurements ADD COLUMN sleep_hours REAL;
-ALTER TABLE measurements ADD COLUMN disposition INTEGER;
-ALTER TABLE measurements ADD COLUMN notes TEXT;
-```
-
-## CSV Format
-
-Canonical CSV headers:
-
-```txt
-date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
-```
-
-CSV export uses this full canonical format and omits the internal `id` field. CSV import identifies columns by header name (the canonical names and the spreadsheet aliases), requires only `date` and `weight_kg`, and upserts records by `date`; the format and the overwrite rules are in the [API contract](api-contract.md#csv-import).
-
-Imported values are validated against the same limits as the form; dates must be real calendar dates, such as `2026-02-28` or `28/02/2026`, never `2026-02-30`.
+Add a new migration file in `infra/migrations/` (never edit an applied one) and update the repository in `apps/api/src/db/repositories/` ([infra AGENTS.md](../../infra/AGENTS.md)). Update this page in the same change when a table, a relation, a unique key or an enumeration value changes, and [Measurements](measurements.md) when a measurement field or rule changes.

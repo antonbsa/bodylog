@@ -9,7 +9,7 @@ import { importMeasurementsCsv, previewMeasurementsCsv } from "./csv-import"
 export const csvExportRoutes = new Hono<AppEnv>()
 
 csvExportRoutes.get("/csv", async (c) => {
-  const repository = new MeasurementRepository(c.env.DB)
+  const repository = new MeasurementRepository(c.env.DB, c.get("userId"))
   const csv = serializeMeasurementsCsv(await repository.list())
 
   c.header(
@@ -44,7 +44,10 @@ csvImportRoutes.post("/csv/preview", async (c) => {
   const { bytes } = await readUpload(c)
 
   return c.json(
-    await previewMeasurementsCsv(bytes, new MeasurementRepository(c.env.DB)),
+    await previewMeasurementsCsv(
+      bytes,
+      new MeasurementRepository(c.env.DB, c.get("userId")),
+    ),
   )
 })
 
@@ -52,8 +55,12 @@ csvImportRoutes.post("/csv", async (c) => {
   const { bytes, skipInvalid } = await readUpload(c)
 
   return c.json(
-    await importMeasurementsCsv(bytes, new MeasurementRepository(c.env.DB), {
-      skipInvalid,
-    }),
+    await importMeasurementsCsv(
+      bytes,
+      new MeasurementRepository(c.env.DB, c.get("userId")),
+      {
+        skipInvalid,
+      },
+    ),
   )
 })

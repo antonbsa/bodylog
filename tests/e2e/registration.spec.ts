@@ -1,4 +1,10 @@
-import { expect, test, type Page, type Route } from "./fixtures"
+import {
+  expect,
+  type Page,
+  type Route,
+  signedInSession,
+  test,
+} from "./fixtures"
 
 type StoredMeasurement = {
   id: string
@@ -76,7 +82,7 @@ async function mockApi(
   const records = options.records ?? []
 
   await page.route("**/api/auth/session", (route) =>
-    json(route, { authenticated: true }),
+    json(route, signedInSession),
   )
   await page.route("**/api/dashboard/weekly", (route) => {
     const emptyWeek = {

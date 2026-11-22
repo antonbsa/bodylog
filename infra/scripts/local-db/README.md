@@ -34,7 +34,7 @@ npm run db:seed:local -- --today 2026-06-11
 
 ## Seed Data
 
-The seed creates:
+The seed attaches every measurement to the dev user that `POST /api/auth/dev-login` (**Entrar como dev**) signs in as, found by its `dev`/`dev` identity and created when missing. It creates:
 
 - the previous full Monday-to-Sunday week;
 - the current partial week through the selected `today` date;
