@@ -24,7 +24,8 @@ export default defineConfig({
   webServer: {
     command: [
       `rm -rf ${stateDir}`,
-      "npm --workspace @bodylog/web exec -- vite build",
+      // Own build folder: the mocked tier's reused `vite preview` serves apps/web/dist, which a rebuild there would empty mid-run.
+      `npm --workspace @bodylog/web exec -- vite build --outDir ../../${stateDir}/web`,
       `${wrangler} d1 migrations apply DB --env e2e --local --persist-to ${stateDir}`,
       `${wrangler} dev --env e2e --persist-to ${stateDir} --port ${port} --show-interactive-dev-session false`,
     ].join(" && "),

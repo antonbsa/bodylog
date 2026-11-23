@@ -112,6 +112,17 @@ describe("POST /api/test/session", () => {
     expect(counts).toEqual({ measurements: 0, users: 0 })
   })
 
+  it("rejects a JSON array body", async () => {
+    const { env, sqlite } = createTestEnv()
+    const response = await postTestSession(e2eApp, env, [])
+    const { users } = sqlite
+      .prepare("SELECT COUNT(*) AS users FROM users")
+      .get() as { users: number }
+
+    expect(response.status).toBe(400)
+    expect(users).toBe(0)
+  })
+
   it("rejects a body that is not JSON", async () => {
     const { env } = createTestEnv()
     const response = await e2eApp.request(

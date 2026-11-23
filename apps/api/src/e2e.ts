@@ -19,7 +19,7 @@ e2eApp.onError(handleAppError)
 e2eApp.notFound(handleNotFound)
 
 e2eApp.post("/api/test/session", async (c) => {
-  // Every item is validated before any write, so a rejected seed leaves no user behind.
+  // Every item is validated before any write, so invalid input leaves no user behind.
   const measurements = parseSeedMeasurements(
     await c.req.json().catch(() => null),
   )
@@ -44,7 +44,7 @@ e2eApp.route("/", app)
 
 /** The optional `measurements` of the body, each a date plus a `PUT /api/measurements/by-date/:date` body, on distinct dates. */
 function parseSeedMeasurements(body: unknown): CreateMeasurementInput[] {
-  if (typeof body !== "object" || body === null) {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
     throw createValidationError("INVALID_MEASUREMENT_INPUT")
   }
 

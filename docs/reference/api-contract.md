@@ -73,7 +73,7 @@ Signs in as the local seed user (identity `dev`/`dev`, display name "Dev"), crea
 
 ### POST /api/test/session
 
-Test-only: exists only in the `e2e` Worker (`wrangler dev --env e2e`, used by `npm run test:e2e:api`), and every deployed environment answers the same 404 as an unknown route. Creates a new user (display name "E2E") owning the given measurements, starts its session, and answers like `GET /api/auth/session`. The body is a JSON object whose `measurements` is optional; each item takes a `date` (`YYYY-MM-DD`) plus the `PUT /api/measurements/by-date/:date` body, on distinct dates. A body that isn't a JSON object, or any invalid item, answers 400 with the same errors as that `PUT` and creates nothing.
+Test-only: exists only in the `e2e` Worker (`wrangler dev --env e2e`, used by `npm run test:e2e:api`), and every deployed environment answers the same 404 as an unknown route. Creates a new user (display name "E2E") owning the given measurements, starts its session, and answers like `GET /api/auth/session`. The body is a JSON object whose `measurements` is optional; each item takes a `date` (`YYYY-MM-DD`) plus the `PUT /api/measurements/by-date/:date` body, on distinct dates. A body that isn't a JSON object, or any invalid item, answers 400 with the same errors as that `PUT` and creates nothing (a later database failure can leave a partial seed, which only a fresh run's wiped D1 clears).
 
 ```json
 {

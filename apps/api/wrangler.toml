@@ -46,7 +46,7 @@ directory = "../web/dist"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
 
-# Never deployed: `npm run test:e2e:api` runs it locally with its D1 under .e2e-state/.
+# Never deployed: `npm run test:e2e:api` runs it locally with its D1 and web build under .e2e-state/.
 [env.e2e]
 name = "bodylog-e2e"
 main = "src/e2e.ts"
@@ -58,6 +58,6 @@ database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "../../infra/migrations"
 
 [env.e2e.assets]
-directory = "../web/dist"
+directory = "../../.e2e-state/web"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
