@@ -537,3 +537,41 @@ test("app start sends the device zone when it differs from the stored one", asyn
   await expect(heightRow(page)).toBeVisible()
   expect(updates).toEqual([{ timeZone: deviceZone }])
 })
+
+test("Copiar instruções para agente copies the prompt with the origin's format page URL", async ({
+  context,
+  page,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"])
+  await mockApi(page)
+  await page.goto("/ajustes")
+
+  await page
+    .getByRole("button", { name: "Copiar instruções para agente" })
+    .click()
+
+  await expect(toast(page)).toHaveText("Instruções copiadas")
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    "Quero importar meu histórico de medidas no BodyLog. Siga as instruções em http://localhost:5174/import-format.md para converter a planilha que vou te enviar em um arquivo CSV. Pergunte quando algo estiver ambíguo e não invente valores. No fim, me devolva o arquivo para eu importar em Ajustes.",
+  )
+})
+
+test("a failed copy of the agent instructions shows an error toast", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: () => Promise.reject(new Error("denied")) },
+    })
+  })
+  await mockApi(page)
+  await page.goto("/ajustes")
+
+  await page
+    .getByRole("button", { name: "Copiar instruções para agente" })
+    .click()
+
+  await expect(failure(page)).toHaveText(
+    "Não foi possível copiar as instruções",
+  )
+})
