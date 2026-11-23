@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest"
 
 import { app } from "../../apps/api/src/app"
 import { MeasurementRepository } from "../../apps/api/src/db/repositories/measurements"
+import { FIELD_ALIASES } from "../../apps/api/src/features/csv/csv-columns"
+import { MEASUREMENT_LIMITS } from "../../domain/measurement"
 import {
   createSignedInEnv,
   createTestEnv,
@@ -107,6 +109,28 @@ describe("POST /api/import/csv/preview", () => {
     expect(rows()[0]).toMatchObject({ weight_kg: 80 })
   })
 
+  it("previews empty cells as updates that keep stored values, and an empty weight as invalid only on a new date", async () => {
+    const { env } = setup([{ date: "2026-06-10", waist: 80, weight: 70 }])
+    const response = await post(
+      env,
+      "/api/import/csv/preview",
+      "date,weight_kg,waist_cm\n2026-06-10,,85\n2026-06-11,,85",
+    )
+
+    expect(await response.json()).toMatchObject({
+      counts: { created: 0, invalid: 1, noMeasurement: 0, updated: 1 },
+      invalidRows: [
+        {
+          column: "weight_kg",
+          message: "Peso obrigatório.",
+          row: 3,
+          value: "",
+        },
+      ],
+      updatedDates: ["2026-06-10"],
+    })
+  })
+
   it("answers file-level problems with a 400 in Portuguese", async () => {
     const { env } = setup()
     const response = await post(
@@ -183,14 +207,14 @@ describe("POST /api/import/csv", () => {
     expect(rows()).toHaveLength(1)
   })
 
-  it("keeps stored fields without a column and the creation time on update", async () => {
+  it("keeps stored fields without a value and the creation time on update", async () => {
     const { env, rows } = setup([
       { date: "2026-06-10", notes: "keep me", waist: 80, weight: 70 },
     ])
     const response = await post(
       env,
       "/api/import/csv",
-      "Data,Peso,Cintura\n10/06/2026,72,",
+      "Data,Peso,Cintura,Notas\n10/06/2026,72,,",
     )
 
     expect(await response.json()).toEqual({
@@ -202,10 +226,49 @@ describe("POST /api/import/csv", () => {
       created_at: "2026-01-01T00:00:00.000Z",
       id: "id-2026-06-10",
       notes: "keep me",
-      waist_cm: null,
+      waist_cm: 80,
       weight_kg: 72,
     })
     expect(rows()[0]?.updated_at).not.toBe("2026-01-01T00:00:00.000Z")
+  })
+
+  it("keeps the stored weight when its cell is empty on an existing date", async () => {
+    const { env, rows } = setup([
+      { date: "2026-06-10", notes: "keep me", waist: 80, weight: 70 },
+    ])
+    const response = await post(
+      env,
+      "/api/import/csv",
+      "date,weight_kg,waist_cm\n2026-06-10,,85",
+    )
+
+    expect(await response.json()).toEqual({
+      created: 0,
+      skippedInvalid: 0,
+      updated: 1,
+    })
+    expect(rows()[0]).toMatchObject({
+      notes: "keep me",
+      waist_cm: 85,
+      weight_kg: 70,
+    })
+  })
+
+  it("writes the file's timestamps and fields on a weightless row, keeping the weight", async () => {
+    const { env, rows } = setup([{ date: "2026-06-10", weight: 70 }])
+
+    await post(
+      env,
+      "/api/import/csv",
+      "date,weight_kg,waist_cm,created_at,updated_at\n2026-06-10,,85,2026-02-01T00:00:00.000Z,2026-03-01T00:00:00.000Z",
+    )
+
+    expect(rows()[0]).toMatchObject({
+      created_at: "2026-02-01T00:00:00.000Z",
+      updated_at: "2026-03-01T00:00:00.000Z",
+      waist_cm: 85,
+      weight_kg: 70,
+    })
   })
 
   it("replaces created_at and updated_at when the file carries them", async () => {
@@ -254,5 +317,65 @@ describe("MeasurementRepository.upsertImportedBatch", () => {
     expect(
       sqlite.prepare("SELECT COUNT(*) AS n FROM measurements").get(),
     ).toEqual({ n: 0 })
+  })
+})
+
+describe("GET /import-format.md", () => {
+  async function getPage() {
+    const response = await app.request(
+      "/import-format.md",
+      {},
+      createTestEnv().env,
+    )
+
+    return { response, text: await response.text() }
+  }
+
+  it("is public Markdown listing every alias and limit", async () => {
+    const { response, text } = await getPage()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe(
+      "text/markdown; charset=utf-8",
+    )
+    expect(response.headers.get("cache-control")).toBeNull()
+
+    for (const aliases of Object.values(FIELD_ALIASES)) {
+      for (const alias of aliases) {
+        expect(text).toContain(`\`${alias}\``)
+      }
+    }
+
+    for (const { max, min } of Object.values(MEASUREMENT_LIMITS)) {
+      expect(text).toContain(`${min} a ${max}`)
+    }
+  })
+
+  it("tells the agent to drop what doesn't fit and never to ask", async () => {
+    const { text } = await getPage()
+
+    expect(text).not.toMatch(/pergunte/i)
+    expect(text).toContain("ano atual")
+    expect(text).toContain("a lista do que ficou de fora")
+  })
+
+  it("has an example CSV that passes the import preview", async () => {
+    const { text } = await getPage()
+    const example = /```csv\n([\s\S]*?)\n```/.exec(text)?.[1]
+
+    expect(example).toBeDefined()
+
+    const { env } = setup([])
+    const response = await post(
+      env,
+      "/api/import/csv/preview",
+      example as string,
+    )
+    const body = (await response.json()) as {
+      counts: { created: number; invalid: number }
+    }
+
+    expect(response.status).toBe(200)
+    expect(body.counts).toMatchObject({ created: 3, invalid: 0 })
   })
 })

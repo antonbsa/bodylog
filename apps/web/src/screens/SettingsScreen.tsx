@@ -79,6 +79,18 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
     }
   }
 
+  /** Copies the agent prompt; the clipboard can be missing or reject (e.g. Safari drops the click's activation). */
+  function handleCopyAgentPrompt() {
+    const prompt = `Quero importar meu histórico de medidas no BodyLog. Siga as instruções em ${window.location.origin}/import-format.md para converter a planilha que vou te enviar em um arquivo CSV. Extraia só os dados do formato e não invente valores. Não pergunte nada durante a conversão: o que não se encaixar fica de fora. Me devolva o arquivo para eu importar em Ajustes, junto com a lista do que foi ignorado.`
+
+    Promise.resolve()
+      .then(() => navigator.clipboard.writeText(prompt))
+      .then(
+        () => toast.showSuccess("Instruções copiadas"),
+        () => toast.showError("Não foi possível copiar as instruções"),
+      )
+  }
+
   function handleExportCsv() {
     setIsExporting(true)
 
@@ -213,6 +225,13 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           </button>
           <CsvFormatDialog />
         </div>
+        <button
+          className="set-row"
+          onClick={handleCopyAgentPrompt}
+          type="button"
+        >
+          Copiar instruções para agente
+        </button>
         <input
           ref={importFileInputRef}
           accept=".csv,text/csv"

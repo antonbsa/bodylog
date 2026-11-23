@@ -2,7 +2,7 @@
 
 ## Base Rules
 
-All data routes require a session (see [Auth](#auth)), except `/api/collector/*`, which requires a personal API token instead (see [Collector](#collector)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404.
+All data routes require a session (see [Auth](#auth)), except `/api/collector/*`, which requires a personal API token instead (see [Collector](#collector)), and the public pages `/api/health` and `/import-format.md` (see [Import Format](#import-format)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404. The only route outside `/api/*` is `/import-format.md`.
 
 ## Status
 
@@ -21,9 +21,19 @@ respond; it does not check database connectivity.
 
 ---
 
+## Import Format
+
+### GET /import-format.md
+
+Public (no session, no cookie) Markdown page written as instructions for an agent that converts a spreadsheet into a CSV the [importer](#csv-import) accepts. It is rendered from the importer's own alias table (`FIELD_ALIASES`) and limits (`MEASUREMENT_LIMITS`), plus a per-field type, unit and description, so it always matches the code. Prose is pt-BR; headers, field names, units and the example are English. The agent never asks during the conversion: it extracts only the schema's data, never invents a value, drops a whole row whose value is loose or doesn't fit (ranges, text in a number, ambiguous day/month order, every row of a repeated date), uses the current year for a date without one, and hands back the CSV with a list of what it ignored.
+
+The response is `200` with `content-type: text/markdown; charset=utf-8` and no explicit cache header. The path is outside `/api/*`, so `/import-format.md` is listed in `run_worker_first` in the preview and production `[assets]` config (otherwise the SPA fallback answers with `index.html`) and proxied by Vite in development.
+
+---
+
 ## Auth
 
-Every route outside `/api/auth/*` and `/api/health` needs the `bodylog_session` cookie and answers a missing, unknown or expired session with:
+Every route outside `/api/auth/*`, `/api/health` and `/import-format.md` needs the `bodylog_session` cookie and answers a missing, unknown or expired session with:
 
 ```json
 {
@@ -467,8 +477,10 @@ Import is two steps over the same file: a preview that writes nothing, then the 
 
 ### Supported Format
 
+The agent-facing version of these rules is the public [Import Format](#import-format) page.
+
 - Columns are identified by header name. Headers are normalized (lowercase, accents stripped, `_`, `-` and space equal, whitespace collapsed) and must then equal one alias exactly; there is no substring or fuzzy matching. Two headers that map to the same field reject the file.
-- Only `date` and `weight_kg` are required. A column that is absent keeps the stored value of existing records; a present column with an empty cell clears the value.
+- Only `date` and `weight_kg` are required. A column that is absent, or a cell that is empty, keeps the stored value of an existing record (ADR 0049), so an import never clears a field; an empty `weight_kg` is invalid only on a date with no record.
 - Unknown columns (for example `IMC`) are ignored and listed in the preview; cells past the last header are ignored without being listed.
 - The delimiter is `,` or `;`, detected from the header line. The encoding is UTF-8 (BOM stripped), falling back to Windows-1252.
 - Dates are `YYYY-MM-DD` or `D/M/YYYY` (1-2 digit day and month, 4-digit year), may be mixed in one file and must be real calendar dates. `DD/MM` and 2-digit years are invalid.

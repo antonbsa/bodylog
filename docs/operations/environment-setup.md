@@ -29,7 +29,7 @@ Locally, the Vite dev server on `http://localhost:5173` proxies `/api` requests 
 - `[env.preview]` mirrors it for worker `bodylog-preview` and its own `bodylog-preview` D1 database, so preview never reads production data; a change to production's vars, assets or bindings is repeated there.
 - Assets stay out of the top level because `wrangler dev` fails when `apps/web/dist` is missing.
 
-`[env.production.assets]` uses `not_found_handling = "single-page-application"` so client routes such as `/historico` get `index.html`, and `run_worker_first = ["/api/*"]` so every API request, including unknown ones, reaches the Worker and gets a JSON response. `apps/web/public/_headers` is copied into `dist/` and applied by Workers Static Assets, which keeps `Cache-Control: no-cache` on `/` and `/index.html`.
+`[env.production.assets]` uses `not_found_handling = "single-page-application"` so client routes such as `/historico` get `index.html`, and `run_worker_first = ["/api/*", "/import-format.md"]` so every API request, including unknown ones, reaches the Worker and gets a JSON response; the public `/import-format.md` page is listed because it lives outside `/api/*`, where the SPA fallback would otherwise serve `index.html`. `apps/web/public/_headers` is copied into `dist/` and applied by Workers Static Assets, which keeps `Cache-Control: no-cache` on `/` and `/index.html`.
 
 The web app and the API share one origin, so the session cookie is first-party: `HttpOnly`, `SameSite=Lax` and `Secure` (except on `localhost`). There is no CORS handling and no API base URL. Each provider's `redirect_uri` is derived from the request origin, so each environment's OAuth clients only need its callback URLs to match; there is no var for it.
 

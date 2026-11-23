@@ -12,7 +12,7 @@ export type CsvField =
   | "weightKg"
 
 /** Canonical English, pt-BR snake_case and spreadsheet header of each field; the first one names the field in messages. */
-const FIELD_ALIASES: Record<CsvField, string[]> = {
+export const FIELD_ALIASES: Record<CsvField, string[]> = {
   date: ["date", "data"],
   weightKg: ["weight_kg", "peso_kg", "Peso"],
   bodyFatPercentage: ["body_fat_percentage", "gordura_percentual", "Gordura"],

@@ -771,6 +771,7 @@ textarea#f-notes { display: block; width: 100%; min-height: 96px; margin: 12px 0
       '<div class="card"><div class="set-block"><span class="k" id="theme-label" style="display:block;font-size:17px;margin:12px 0">Tema</span><div class="seg" role="radiogroup" aria-labelledby="theme-label">' + themeSeg() + "</div></div>" +
       '<button type="button" class="set-row" id="set-export" data-act="export">Exportar CSV</button>' +
       '<button type="button" class="set-row" id="set-import" data-act="import">Importar CSV</button>' +
+      '<button type="button" class="set-row" id="set-agent" data-act="copy-agent">Copiar instruções para agente</button>' +
       '<input type="file" id="import-file" accept=".csv,text/csv" hidden>' +
       '<button type="button" class="set-row danger" id="set-logout" data-act="logout">Sair</button></div></main>';
     $("#import-file").addEventListener("change", function (e) {
@@ -1088,6 +1089,7 @@ textarea#f-notes { display: block; width: 100%; min-height: 96px; margin: 12px 0
       if (a === "today-register") { state.pendingDate = TODAY; go("#registro"); }
       else if (a === "edit-today") { state.pendingDate = TODAY; go("#registro"); }
       else if (a === "export") toast("CSV exportado");
+      else if (a === "copy-agent") toast("Instruções copiadas");
       else if (a === "import") $("#import-file").click();
       else if (a === "logout") go("#login");
       else if (a === "cancel") { if (reg && isDirty()) askDiscard(); else go(reg ? reg.returnHash || "#inicio" : "#inicio"); }

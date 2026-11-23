@@ -109,13 +109,14 @@ The authenticated app has four screens behind a bottom tab bar (Início, Histór
 
 ### Import CSV
 
-1. The user chooses the import action in Ajustes.
-2. The user selects a CSV exported from the previous spreadsheet workflow.
-3. The system validates the file.
-4. Valid rows are imported or updated by date.
-5. Invalid rows are reported.
-6. The system shows an import summary.
-7. Início and Histórico reflect imported records.
+1. Optionally, the user copies the agent instructions in Ajustes and gives them to an agent with the spreadsheet; the agent returns a CSV that follows the public format page, plus a list of what it left out.
+2. The user chooses the import action in Ajustes.
+3. The user selects a CSV exported from the previous spreadsheet workflow.
+4. The system validates the file.
+5. Valid rows are imported or updated by date.
+6. Invalid rows are reported.
+7. The system shows an import summary.
+8. Início and Histórico reflect imported records.
 
 ### Manage Personal API Tokens
 
@@ -281,11 +282,12 @@ The system must allow the user to import historical measurements from a CSV file
 
 - The user can upload a CSV file whose columns are identified by header name (canonical, pt-BR or spreadsheet names; unknown columns are ignored and listed), with `,` or `;` delimiters and UTF-8 or Windows-1252 encoding.
 - Settings describes the supported format before a file is chosen.
+- The public page `/import-format.md` describes the format as instructions for an agent, and a "Copiar instruções para agente" row in Settings copies a prompt that points to it with the current origin's URL, confirming with a toast.
 - Only date and weight are required; dates are `YYYY-MM-DD` or `DD/MM/YYYY`, and numbers accept a dot or comma decimal.
 - The system validates the file and each row, and shows a preview before writing: period, counts of new, updated, no-measurement and invalid rows, the dates that will be updated, the ignored columns and every invalid row with its reason.
 - Nothing is written until the user confirms; cancelling leaves the data unchanged.
 - With invalid rows, the user chooses between importing only the valid rows and cancelling.
-- The system upserts records by date, replacing only the fields whose column is in the file, and writes all valid rows or none.
+- The system upserts records by date, replacing only the fields whose cell has a value (empty cells and absent columns keep the stored value, ADR 0049), and writes all valid rows or none.
 - The system reports how many measurements were imported (new and updated) and how many invalid rows were skipped.
 
 ---

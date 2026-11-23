@@ -76,7 +76,7 @@ Routes, handled client-side by `react-router`:
 
 The tab screens share a full-height flex layout: a scrolling content area above a bottom tab bar that sits in the layout flow (not fixed), with a central button that opens `/registro` for today (`0033-use-bottom-navigation.md`, [UI direction](../product/ui-direction.md)). Unauthenticated visits show the login screen without the bar, except `/privacidade`, which the login screen links to and Google's consent screen requires as a public page; unknown paths show the not-found screen. The registration route is a full-screen form outside the tab layout: a sticky header with the date bar, a form that scrolls with the document (so iOS scrolls focused fields natively) and a fixed footer that is hidden while the iOS keyboard is open (detected from the visual viewport height). Numeric fields use a right-to-left digit mask, and validation limits, notes normalization and derived values come from `domain/measurement.ts` at the repo root, so the web form and the API share them. Tab switches and opening or closing `/registro` replace the history entry (decided in `apps/web/src/hooks/useTabNavigate.ts`) because the iOS edge swipe follows history; Cancelar returns to the origin path kept in location state. Server data goes through TanStack Query (one client in `main.tsx`, keys in `apps/web/src/api/queryKeys.ts`), so screens show cached data while refetching and Registro prefetches the adjacent days; see `0037-use-tanstack-query-for-server-state.md`.
 
-Deep links rely on the Worker's static assets serving `index.html` for unknown non-API paths (`not_found_handling = "single-page-application"` in `apps/api/wrangler.toml`).
+Deep links rely on the Worker's static assets serving `index.html` for unknown paths outside `run_worker_first` (`not_found_handling = "single-page-application"` in `apps/api/wrangler.toml`).
 
 Colors are CSS custom properties in `apps/web/src/styles/tokens.css`. The theme preference (`system`, `light` or `dark`) is stored in `localStorage` and applied as `data-theme` on `<html>` by an inline script in `apps/web/index.html`, with `apps/web/src/theme.ts` as the module that reads and writes it. `system` leaves `data-theme` unset so the `prefers-color-scheme` media query decides. Geist and Geist Mono are self-hosted from `apps/web/public/fonts`.
 
@@ -106,13 +106,13 @@ apps/api/src/
   app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
   config.ts             env-derived settings (GitHub and Google OAuth clients, dev login flag)
   types.ts              API-only bindings and input types
-  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens, collector)
+  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens, collector, import-format)
   db/repositories/      D1 access, one file per table
   http/                 cross-feature HTTP helpers (request validation, session and API token guards, the user's height and zone, secret generation and hashing)
   domain/               API domain objects (Measurement, week range, week summary)
 ```
 
-`app.ts` mounts `/api/auth/*` and `/api/health` as public routes, and `/api/collector/measurements` behind `requireApiToken`, which accepts only a personal API token in `Authorization: Bearer` and sets `c.var.userId` to its owner (ADR 0047). Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix and sets `c.var.userId`, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
+`app.ts` mounts `/api/auth/*`, `/api/health` and `/import-format.md` as public routes, and `/api/collector/measurements` behind `requireApiToken`, which accepts only a personal API token in `Authorization: Bearer` and sets `c.var.userId` to its owner (ADR 0047). Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix and sets `c.var.userId`, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
 
 ## Database
 
@@ -172,7 +172,7 @@ Accounts sign in with GitHub or Google OAuth; the full decision is `0044-multi-u
 
 The whole app deploys to Cloudflare.
 
-- One Worker serves the API under `/api/*` and the built web app through Workers Static Assets, on one origin (`0040-serve-the-web-app-from-the-api-worker.md`).
+- One Worker serves the API under `/api/*`, the public `/import-format.md` page (both in `run_worker_first`) and the built web app through Workers Static Assets, on one origin (`0040-serve-the-web-app-from-the-api-worker.md`).
 - `apps/api/wrangler.toml` is the only Wrangler config; the deployed environments are `[env.preview]` (every merge to `main`) and `[env.production]` (each published release, `0041-release-gated-production-deploys-with-a-preview-environment.md`). The runbook is [Deploying](../operations/deploying.md).
 
 ## Non-Goals

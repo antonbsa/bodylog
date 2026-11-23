@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+
 import { describe, expect, it } from "vitest"
 
 import {
@@ -45,4 +47,21 @@ describe("auth config", () => {
     expect(isDevLoginEnabled({ DEV_LOGIN_ENABLED: "TRUE" })).toBe(false)
     expect(isDevLoginEnabled({})).toBe(false)
   })
+})
+
+describe("wrangler assets config", () => {
+  const wrangler = readFileSync("apps/api/wrangler.toml", "utf8")
+
+  it.each(["production", "preview"])(
+    "runs the Worker first for /import-format.md in %s",
+    (environment) => {
+      const section = wrangler
+        .split(/^\[/m)
+        .find((part) => part.startsWith(`env.${environment}.assets]`))
+
+      expect(section).toMatch(
+        /run_worker_first = \[[^\]]*"\/import-format\.md"/,
+      )
+    },
+  )
 })

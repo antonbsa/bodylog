@@ -11,6 +11,7 @@ import { collectorRoutes } from "./features/collector/routes"
 import { csvExportRoutes, csvImportRoutes } from "./features/csv/routes"
 import { dashboardRoutes } from "./features/dashboard/routes"
 import { historyRoutes } from "./features/history/routes"
+import { importFormatRoutes } from "./features/import-format/routes"
 import { meRoutes } from "./features/me/routes"
 import { measurementRoutes } from "./features/measurements/routes"
 import { trendsRoutes } from "./features/trends/routes"
@@ -28,7 +29,7 @@ export const handleAppError: ErrorHandler<AppEnv> = (error, c) => {
   return c.json(appError.toJSON(), appError.statusCode)
 }
 
-// In production only /api/* reaches the Worker (run_worker_first); other paths are static assets or the SPA.
+// In production only /api/* and the paths in run_worker_first reach the Worker; other paths are static assets or the SPA.
 export const handleNotFound: NotFoundHandler<AppEnv> = (c) => {
   const error = new NotFoundError({
     action: "Verifique o endereço e tente novamente.",
@@ -46,6 +47,8 @@ app.get("/api/health", (c) => {
     ok: true,
   })
 })
+
+app.route("/", importFormatRoutes)
 
 app.route("/api/auth", authRoutes)
 

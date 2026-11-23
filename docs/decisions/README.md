@@ -39,7 +39,8 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0029 — Include Offline-first Logging in V2](0029-include-offline-first-logging-v2.md) · Accepted
 - [0032 — Add Waist, Sleep, Disposition and Notes Fields](0032-add-waist-sleep-disposition-and-notes-fields.md) · Accepted
 - [0035 — Use Seven-day Weekly Target](0035-use-seven-day-weekly-target.md) · Accepted
-- [0043 — Import CSV by Column Name with a Validated Preview](0043-import-csv-by-column-name-with-validated-preview.md) · Accepted · amends 0006
+- [0043 — Import CSV by Column Name with a Validated Preview](0043-import-csv-by-column-name-with-validated-preview.md) · Accepted · amends 0006 · amended by 0049
+- [0049 — Empty CSV Cell Keeps the Stored Value](0049-empty-csv-cell-keeps-the-stored-value.md) · Accepted · amends 0043
 
 ### Platform
 
