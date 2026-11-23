@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import { app } from "../../apps/api/src/app"
+import { buildImportAgentPrompt } from "../../domain/import-agent-prompt"
+import { renderImportFormat } from "../../apps/api/src/features/import-format/render-import-format"
 import { collectorMeasurementsOutputSchema } from "../../apps/api/src/features/mcp/server"
 import type {
   ApiTokenListResponse,
@@ -268,5 +270,77 @@ describe("GET /mcp", () => {
 
     expect(withToken.status).toBe(405)
     expect(withoutToken.status).toBe(401)
+  })
+})
+
+describe("import format resource and prompt", () => {
+  it("lists and reads the import format as Markdown, the same as /import-format.md", async () => {
+    const { anaToken, env, rpc } = await setup()
+    const list = await readRpc<{
+      result: { resources: { mimeType: string; uri: string }[] }
+    }>(await rpc(bearer(anaToken.token), "resources/list"))
+    const read = await readRpc<{
+      result: { contents: { mimeType: string; text: string; uri: string }[] }
+    }>(
+      await rpc(bearer(anaToken.token), "resources/read", {
+        uri: "bodylog://import-format",
+      }),
+    )
+    const page = await app.request("/import-format.md", {}, env)
+
+    expect(list.result.resources).toEqual([
+      expect.objectContaining({
+        mimeType: "text/markdown",
+        uri: "bodylog://import-format",
+      }),
+    ])
+    expect(read.result.contents[0]).toMatchObject({
+      mimeType: "text/markdown",
+      uri: "bodylog://import-format",
+    })
+    expect(read.result.contents[0].text).toBe(renderImportFormat())
+    expect(read.result.contents[0].text).toBe(await page.text())
+  })
+
+  it("lists convert_spreadsheet and returns the shared text with the format embedded", async () => {
+    const { anaToken, rpc } = await setup()
+    const list = await readRpc<{
+      result: { prompts: { name: string; title: string }[] }
+    }>(await rpc(bearer(anaToken.token), "prompts/list"))
+    const get = await readRpc<{
+      result: {
+        messages: {
+          content: { resource?: { text: string; uri: string }; text?: string }
+          role: string
+        }[]
+      }
+    }>(
+      await rpc(bearer(anaToken.token), "prompts/get", {
+        name: "convert_spreadsheet",
+      }),
+    )
+    const [instructions, format] = get.result.messages
+
+    expect(list.result.prompts).toEqual([
+      expect.objectContaining({
+        name: "convert_spreadsheet",
+        title: "Converter planilha",
+      }),
+    ])
+    expect(instructions.role).toBe("user")
+    expect(instructions.content.text).toBe(
+      buildImportAgentPrompt("do formato de importação incluído abaixo"),
+    )
+    expect(format.content.resource).toMatchObject({
+      text: renderImportFormat(),
+      uri: "bodylog://import-format",
+    })
+  })
+
+  it("requires a token for resources and prompts", async () => {
+    const { rpc } = await setup()
+
+    expect((await rpc({}, "resources/list")).status).toBe(401)
+    expect((await rpc({}, "prompts/list")).status).toBe(401)
   })
 })

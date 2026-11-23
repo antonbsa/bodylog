@@ -1,6 +1,7 @@
 import { useRef, useState, useSyncExternalStore } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
+import { buildImportAgentPrompt } from "../../../../domain/import-agent-prompt"
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { PageTitle } from "./components/PageTitle"
 import { updateProfile } from "../api/auth"
@@ -81,7 +82,9 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
 
   /** Copies the agent prompt; the clipboard can be missing or reject (e.g. Safari drops the click's activation). */
   function handleCopyAgentPrompt() {
-    const prompt = `Quero importar meu histórico de medidas no BodyLog. Siga as instruções em ${window.location.origin}/import-format.md para converter a planilha que vou te enviar em um arquivo CSV. Extraia só os dados do formato e não invente valores. Não pergunte nada durante a conversão: o que não se encaixar fica de fora. Me devolva o arquivo para eu importar em Ajustes, junto com a lista do que foi ignorado.`
+    const prompt = buildImportAgentPrompt(
+      `em ${window.location.origin}/import-format.md`,
+    )
 
     Promise.resolve()
       .then(() => navigator.clipboard.writeText(prompt))

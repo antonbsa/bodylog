@@ -1,9 +1,13 @@
 import { McpServer } from "@modelcontextprotocol/server"
 import * as z from "zod"
 
+import { buildImportAgentPrompt } from "../../../../../domain/import-agent-prompt"
 import { ValidationError } from "../../../../../infra/errors"
 import type { CollectorMeasurementsResponse } from "../../../../../types/measurements"
 import { listCollectorMeasurements } from "../collector/list-measurements"
+import { renderImportFormat } from "../import-format/render-import-format"
+
+const IMPORT_FORMAT_URI = "bodylog://import-format"
 
 const nullableNumber = z.number().nullable()
 
@@ -92,6 +96,59 @@ export function createMcpServer(db: D1Database, userId: string): McpServer {
         throw error
       }
     },
+  )
+
+  server.registerResource(
+    "import-format",
+    IMPORT_FORMAT_URI,
+    {
+      title: "Formato de importação",
+      description:
+        "Instruções do formato de CSV que o BodyLog importa, para converter uma planilha.",
+      mimeType: "text/markdown",
+    },
+    () => ({
+      contents: [
+        {
+          uri: IMPORT_FORMAT_URI,
+          mimeType: "text/markdown",
+          text: renderImportFormat(),
+        },
+      ],
+    }),
+  )
+
+  server.registerPrompt(
+    "convert_spreadsheet",
+    {
+      title: "Converter planilha",
+      description:
+        "Converte a planilha do usuário em um CSV no formato de importação do BodyLog.",
+    },
+    () => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: buildImportAgentPrompt(
+              "do formato de importação incluído abaixo",
+            ),
+          },
+        },
+        {
+          role: "user",
+          content: {
+            type: "resource",
+            resource: {
+              uri: IMPORT_FORMAT_URI,
+              mimeType: "text/markdown",
+              text: renderImportFormat(),
+            },
+          },
+        },
+      ],
+    }),
   )
 
   return server
