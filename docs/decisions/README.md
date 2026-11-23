@@ -55,7 +55,8 @@ supersedes: ["0022"] # relations are optional: supersedes, superseded-by, amends
 - [0044 — Multi-user Accounts with OAuth Sign-in](0044-multi-user-accounts-with-oauth-sign-in.md) · Accepted · amends 0007, 0041
 - [0045 — Timestamp-Prefixed D1 Migrations](0045-timestamp-prefixed-d1-migrations.md) · Accepted
 - [0046 — Per-user Height and Device Time Zone](0046-per-user-height-and-device-time-zone.md) · Accepted · supersedes 0025, 0027
-- [0047 — Read-only Collector Endpoint Authorized by Personal Tokens](0047-read-only-collector-endpoint-authorized-by-personal-tokens.md) · Accepted
+- [0047 — Read-only Collector Endpoint Authorized by Personal Tokens](0047-read-only-collector-endpoint-authorized-by-personal-tokens.md) · Accepted · amended by 0048
+- [0048 — Read-only MCP Server Authorized by Personal Tokens](0048-read-only-mcp-server-authorized-by-personal-tokens.md) · Accepted · amends 0047
 
 ### Web
 

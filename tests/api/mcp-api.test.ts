@@ -17,7 +17,7 @@ type ToolResult = {
   structuredContent?: CollectorMeasurementsResponse
 }
 
-/** Legacy (2025) clients get the JSON-RPC message as one SSE `data:` frame; modern ones get plain JSON. */
+/** The stateless legacy (2025) leg frames the JSON-RPC message as one SSE `data:` frame; a plain JSON body is also accepted. */
 async function readRpc<T>(response: Response) {
   const text = await response.text()
   const data = text.startsWith("{")
