@@ -213,4 +213,57 @@ describe("per-user data", () => {
     ).toBe(404)
     expect(sqlite.prepare("SELECT id FROM api_tokens").all()).toHaveLength(2)
   })
+
+  it("serves each token's owner only their own measurements through /mcp", async () => {
+    const { ana, bia, env, request } = setup()
+    const createToken = async (cookie: string) =>
+      (await (
+        await request(cookie, "/api/tokens", {
+          body: JSON.stringify({ name: "Agente" }),
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        })
+      ).json()) as CreateApiTokenResponse
+    const listWeights = async (token: string) => {
+      const response = await app.request(
+        "/mcp",
+        {
+          body: JSON.stringify({
+            id: 1,
+            jsonrpc: "2.0",
+            method: "tools/call",
+            params: { arguments: {}, name: "list_measurements" },
+          }),
+          headers: {
+            accept: "application/json, text/event-stream",
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          method: "POST",
+        },
+        env,
+      )
+      const frame = (await response.text())
+        .split("\n")
+        .find((line) => line.startsWith("data:"))!
+      const body = JSON.parse(frame.slice(5)) as {
+        result: {
+          structuredContent: { items: { date: string; weightKg: number }[] }
+        }
+      }
+
+      return body.result.structuredContent.items.map((item) => [
+        item.date,
+        item.weightKg,
+      ])
+    }
+    const anaToken = await createToken(ana)
+    const biaToken = await createToken(bia)
+
+    expect(await listWeights(anaToken.token)).toEqual([["2026-06-08", 60]])
+    expect(await listWeights(biaToken.token)).toEqual([
+      ["2026-06-08", 90],
+      ["2026-06-09", 91],
+    ])
+  })
 })

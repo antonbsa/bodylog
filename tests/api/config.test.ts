@@ -53,7 +53,7 @@ describe("wrangler assets config", () => {
   const wrangler = readFileSync("apps/api/wrangler.toml", "utf8")
 
   it.each(["production", "preview", "e2e"])(
-    "runs the Worker first for /import-format.md in %s",
+    "runs the Worker first for the public paths in %s",
     (environment) => {
       const section = wrangler
         .split(/^\[/m)
@@ -62,6 +62,7 @@ describe("wrangler assets config", () => {
       expect(section).toMatch(
         /run_worker_first = \[[^\]]*"\/import-format\.md"/,
       )
+      expect(section).toMatch(/run_worker_first = \[[^\]]*"\/mcp"/)
     },
   )
 })

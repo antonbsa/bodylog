@@ -15,6 +15,7 @@ export default defineConfig({
     proxy: {
       "/api": "http://localhost:8787",
       "/import-format.md": "http://localhost:8787",
+      "/mcp": "http://localhost:8787",
     },
   },
 })
