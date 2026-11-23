@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { Check } from "@phosphor-icons/react/dist/csr/Check"
 import { Copy } from "@phosphor-icons/react/dist/csr/Copy"
 import { Dialog, Flex } from "@radix-ui/themes"
@@ -12,10 +12,7 @@ import {
 import { Button } from "../../components/Button"
 import { createApiToken } from "../../api/api-tokens"
 import { queryKeys } from "../../api/queryKeys"
-
-const COPIED_FEEDBACK_MS = 2500
-// Keep in agreement with the `.token-copied` opacity transition in settings.css.
-const COPIED_FADE_MS = 300
+import { useCopyFeedback } from "../../hooks/useCopyFeedback"
 
 type CreateApiTokenDialogProps = {
   existingNames: string[]
@@ -34,10 +31,8 @@ export function CreateApiTokenDialog({
   const [error, setError] = useState<string | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [createdToken, setCreatedToken] = useState<string | null>(null)
-  const [copyStatus, setCopyStatus] = useState<"copied" | "failed" | null>(null)
-  const [isCopiedByIcon, setIsCopiedByIcon] = useState(false)
-  const [isFading, setIsFading] = useState(false)
-  const copiedTimeout = useRef<number | undefined>(undefined)
+  const { copy, copyStatus, isFading, isJustCopied, reset } = useCopyFeedback()
+  const [isCopyFromIcon, setIsCopyFromIcon] = useState(false)
   const normalizedName = normalizeApiTokenName(name)
   const isDuplicateName =
     normalizedName !== null && existingNames.includes(normalizedName)
@@ -51,13 +46,11 @@ export function CreateApiTokenDialog({
     }
 
     if (!nextOpen) {
-      window.clearTimeout(copiedTimeout.current)
+      reset()
       setName("")
       setError(null)
       setCreatedToken(null)
-      setCopyStatus(null)
-      setIsCopiedByIcon(false)
-      setIsFading(false)
+      setIsCopyFromIcon(false)
     }
 
     onOpenChange(nextOpen)
@@ -92,30 +85,8 @@ export function CreateApiTokenDialog({
 
   /** Copies the token; with `fromIcon`, the icon also turns into a check until the feedback fades. */
   function copyToken(token: string, fromIcon = false) {
-    window.clearTimeout(copiedTimeout.current)
-
-    // Can fail after the request (e.g. Safari drops the click's activation), so the copy button stays.
-    navigator.clipboard.writeText(token).then(
-      () => {
-        setCopyStatus("copied")
-        setIsCopiedByIcon(fromIcon)
-        setIsFading(false)
-        copiedTimeout.current = window.setTimeout(() => {
-          setIsCopiedByIcon(false)
-          setIsFading(true)
-          // Cleared after the fade so a later copy changes the text and is announced again.
-          copiedTimeout.current = window.setTimeout(() => {
-            setCopyStatus(null)
-            setIsFading(false)
-          }, COPIED_FADE_MS)
-        }, COPIED_FEEDBACK_MS)
-      },
-      () => {
-        setCopyStatus("failed")
-        setIsCopiedByIcon(false)
-        setIsFading(false)
-      },
-    )
+    setIsCopyFromIcon(fromIcon)
+    copy(token)
   }
 
   return (
@@ -147,7 +118,7 @@ export function CreateApiTokenDialog({
                 onClick={() => copyToken(createdToken, true)}
                 type="button"
               >
-                {isCopiedByIcon ? (
+                {isCopyFromIcon && isJustCopied ? (
                   <Check aria-hidden size={20} />
                 ) : (
                   <Copy aria-hidden size={20} />
