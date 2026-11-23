@@ -287,7 +287,7 @@ The system must allow the user to import historical measurements from a CSV file
 - The system validates the file and each row, and shows a preview before writing: period, counts of new, updated, no-measurement and invalid rows, the dates that will be updated, the ignored columns and every invalid row with its reason.
 - Nothing is written until the user confirms; cancelling leaves the data unchanged.
 - With invalid rows, the user chooses between importing only the valid rows and cancelling.
-- The system upserts records by date, replacing only the fields whose column is in the file, and writes all valid rows or none.
+- The system upserts records by date, replacing only the fields whose cell has a value (empty cells and absent columns keep the stored value, ADR 0048), and writes all valid rows or none.
 - The system reports how many measurements were imported (new and updated) and how many invalid rows were skipped.
 
 ---

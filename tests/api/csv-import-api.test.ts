@@ -109,6 +109,28 @@ describe("POST /api/import/csv/preview", () => {
     expect(rows()[0]).toMatchObject({ weight_kg: 80 })
   })
 
+  it("previews empty cells as updates that keep stored values, and an empty weight as invalid only on a new date", async () => {
+    const { env } = setup([{ date: "2026-06-10", waist: 80, weight: 70 }])
+    const response = await post(
+      env,
+      "/api/import/csv/preview",
+      "date,weight_kg,waist_cm\n2026-06-10,,85\n2026-06-11,,85",
+    )
+
+    expect(await response.json()).toMatchObject({
+      counts: { created: 0, invalid: 1, noMeasurement: 0, updated: 1 },
+      invalidRows: [
+        {
+          column: "weight_kg",
+          message: "Peso obrigatório.",
+          row: 3,
+          value: "",
+        },
+      ],
+      updatedDates: ["2026-06-10"],
+    })
+  })
+
   it("answers file-level problems with a 400 in Portuguese", async () => {
     const { env } = setup()
     const response = await post(
@@ -185,14 +207,14 @@ describe("POST /api/import/csv", () => {
     expect(rows()).toHaveLength(1)
   })
 
-  it("keeps stored fields without a column and the creation time on update", async () => {
+  it("keeps stored fields without a value and the creation time on update", async () => {
     const { env, rows } = setup([
       { date: "2026-06-10", notes: "keep me", waist: 80, weight: 70 },
     ])
     const response = await post(
       env,
       "/api/import/csv",
-      "Data,Peso,Cintura\n10/06/2026,72,",
+      "Data,Peso,Cintura,Notas\n10/06/2026,72,,",
     )
 
     expect(await response.json()).toEqual({
@@ -204,10 +226,32 @@ describe("POST /api/import/csv", () => {
       created_at: "2026-01-01T00:00:00.000Z",
       id: "id-2026-06-10",
       notes: "keep me",
-      waist_cm: null,
+      waist_cm: 80,
       weight_kg: 72,
     })
     expect(rows()[0]?.updated_at).not.toBe("2026-01-01T00:00:00.000Z")
+  })
+
+  it("keeps the stored weight when its cell is empty on an existing date", async () => {
+    const { env, rows } = setup([
+      { date: "2026-06-10", notes: "keep me", waist: 80, weight: 70 },
+    ])
+    const response = await post(
+      env,
+      "/api/import/csv",
+      "date,weight_kg,waist_cm\n2026-06-10,,85",
+    )
+
+    expect(await response.json()).toEqual({
+      created: 0,
+      skippedInvalid: 0,
+      updated: 1,
+    })
+    expect(rows()[0]).toMatchObject({
+      notes: "keep me",
+      waist_cm: 85,
+      weight_kg: 70,
+    })
   })
 
   it("replaces created_at and updated_at when the file carries them", async () => {

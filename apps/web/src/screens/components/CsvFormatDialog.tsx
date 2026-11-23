@@ -33,8 +33,8 @@ export function CsvFormatDialog() {
           separador pode ser vírgula ou ponto e vírgula.
         </p>
         <p>
-          Colunas desconhecidas, como IMC, são ignoradas. Colunas ausentes
-          mantêm o valor já salvo; célula vazia limpa o valor.
+          Colunas desconhecidas, como IMC, são ignoradas. Colunas ausentes e
+          células vazias mantêm o valor já salvo.
         </p>
         <p>Antes de gravar, o app mostra uma prévia para você confirmar.</p>
         <Flex className="dialog-actions" direction="column" mt="4">

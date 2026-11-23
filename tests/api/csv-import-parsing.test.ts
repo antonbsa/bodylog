@@ -173,8 +173,8 @@ describe("analyzeMeasurementsCsv", () => {
       updatedAt: NOW,
       weightKg: 72.5,
     })
-    expect(analysis.validRows[1]?.fields).toMatchObject({ sleepHours: null })
-    expect(analysis.validRows[1]?.fields).not.toHaveProperty("notes")
+    // Empty cells carry no field, so they keep the stored value.
+    expect(analysis.validRows[1]?.fields).toEqual({})
   })
 
   it("reports row, original header, value and a Portuguese reason", () => {
@@ -220,6 +220,23 @@ describe("row classification", () => {
     expect(result.noMeasurementCount).toBe(0)
     expect(result.invalidRows).toEqual([
       { column: "weight_kg", message: "Peso obrigatório.", row: 2, value: "" },
+    ])
+  })
+
+  it("accepts an empty weight only on a date that already has a record", () => {
+    const text = ["date,weight_kg,notes", "2026-06-10,,só uma nota"]
+    const known = analyzeMeasurementsCsv(
+      bytes(text.join("\n")),
+      NOW,
+      new Set(["2026-06-10"]),
+    )
+
+    expect(known.invalidRows).toEqual([])
+    expect(known.validRows).toEqual([
+      expect.objectContaining({
+        fields: { notes: "só uma nota" },
+        weightKg: undefined,
+      }),
     ])
   })
 

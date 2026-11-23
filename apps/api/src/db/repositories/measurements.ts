@@ -208,6 +208,28 @@ export class MeasurementRepository {
     const fieldEntries = importableFieldColumns.flatMap(([field, column]) =>
       field in row.fields ? [{ column, value: row.fields[field] ?? null }] : [],
     )
+
+    // Without a weight the date already has a record (the importer checks), and the INSERT would violate NOT NULL.
+    if (row.weightKg === undefined) {
+      const updated = [
+        ...fieldEntries.map((entry) => entry.column),
+        ...(row.createdAt ? ["created_at"] : []),
+        "updated_at",
+      ]
+
+      return this.db
+        .prepare(
+          `UPDATE measurements SET ${updated.map((column) => `${column} = ?`).join(", ")} WHERE user_id = ? AND date = ?`,
+        )
+        .bind(
+          ...fieldEntries.map((entry) => entry.value),
+          ...(row.createdAt ? [row.createdAt] : []),
+          row.updatedAt,
+          this.userId,
+          row.date,
+        )
+    }
+
     const columns = ["weight_kg", ...fieldEntries.map((entry) => entry.column)]
     const values = [row.weightKg, ...fieldEntries.map((entry) => entry.value)]
     // Overwrite only what the file carries: absent columns and, without a created_at column, the stored creation time stay.

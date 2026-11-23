@@ -58,10 +58,14 @@ export type CsvAnalysis = {
   validRows: ImportedMeasurementRow[]
 }
 
-/** Validates a whole file without touching the database; throws a validation error for file-level problems. */
+/**
+ * Validates a whole file without touching the database; throws a validation error for file-level problems.
+ * `existingDates` are the user's recorded dates: only there may a row omit its weight (ADR 0048).
+ */
 export function analyzeMeasurementsCsv(
   bytes: ArrayBuffer,
   importedAt: string = new Date().toISOString(),
+  existingDates: ReadonlySet<string> = new Set(),
 ): CsvAnalysis {
   const text = decodeCsvBytes(bytes)
 
@@ -170,7 +174,11 @@ export function analyzeMeasurementsCsv(
       )
     }
 
-    if (errors.length > 0 || !date || parsed.weightKg === undefined) {
+    if (date && cell(weightColumn) === "" && !existingDates.has(date)) {
+      addError(weightColumn, "Peso obrigatório.")
+    }
+
+    if (errors.length > 0 || !date) {
       recordInvalid(analysis, errors)
       continue
     }
@@ -192,8 +200,12 @@ export async function previewMeasurementsCsv(
   bytes: ArrayBuffer,
   repository: MeasurementRepository,
 ): Promise<CsvImportPreview> {
-  const analysis = analyzeMeasurementsCsv(bytes)
   const existingDates = new Set(await repository.listDates())
+  const analysis = analyzeMeasurementsCsv(
+    bytes,
+    new Date().toISOString(),
+    existingDates,
+  )
   const dates = analysis.validRows.map((row) => row.date).sort()
   const updatedDates = dates.filter((date) => existingDates.has(date))
 
@@ -219,9 +231,11 @@ export async function importMeasurementsCsv(
   repository: MeasurementRepository,
   options: { importedAt?: Date; skipInvalid: boolean },
 ): Promise<CsvImportResult> {
+  const existingDates = new Set(await repository.listDates())
   const analysis = analyzeMeasurementsCsv(
     bytes,
     (options.importedAt ?? new Date()).toISOString(),
+    existingDates,
   )
 
   if (analysis.invalidRowCount > 0 && !options.skipInvalid) {
@@ -232,7 +246,6 @@ export async function importMeasurementsCsv(
     throw createCsvFileError("O arquivo não tem medidas válidas para importar.")
   }
 
-  const existingDates = new Set(await repository.listDates())
   const updated = analysis.validRows.filter((row) =>
     existingDates.has(row.date),
   ).length
@@ -309,6 +322,11 @@ function parseRowValues(
   for (const column of columns) {
     const text = cell(column)
 
+    // An empty cell carries no value: the stored one stays (ADR 0048).
+    if (text === "") {
+      continue
+    }
+
     if (column.field === "notes") {
       fields.notes = normalizeNotes(text)
     } else if (column.field === "createdAt" || column.field === "updatedAt") {
@@ -316,7 +334,7 @@ function parseRowValues(
 
       if (timestamp === null) {
         addError(column, "Data e hora inválidas.")
-      } else if (timestamp !== undefined) {
+      } else {
         result[column.field] = timestamp
       }
     } else if (isNumericField(column.field)) {
@@ -325,11 +343,7 @@ function parseRowValues(
       if (typeof value === "string") {
         addError(column, value)
       } else if (column.field === "weightKg") {
-        if (value === null) {
-          addError(column, "Peso obrigatório.")
-        } else {
-          result.weightKg = value
-        }
+        result.weightKg = value
       } else {
         fields[column.field] = value
       }
@@ -343,15 +357,8 @@ function isNumericField(field: CsvField): field is NumericField {
   return (NUMERIC_FIELDS as readonly string[]).includes(field)
 }
 
-/** The number, null for an empty cell, or a Portuguese error message. */
-function parseNumericCell(
-  field: NumericField,
-  text: string,
-): number | string | null {
-  if (text === "") {
-    return null
-  }
-
+/** The number or a Portuguese error message. */
+function parseNumericCell(field: NumericField, text: string): number | string {
   const parsed = parseCsvNumber(text, {
     thousandsDot: field === "restingMetabolismKcal",
   })
@@ -374,12 +381,8 @@ function parseNumericCell(
     : `Fora do limite. Use um valor de ${min} a ${max}.`
 }
 
-/** An ISO-normalized timestamp, undefined for an empty cell (keep the stored or default one) and null when unreadable. */
-function parseTimestamp(text: string): string | null | undefined {
-  if (text === "") {
-    return undefined
-  }
-
+/** An ISO-normalized timestamp, or null when unreadable. */
+function parseTimestamp(text: string): string | null {
   const time = Date.parse(text)
 
   return Number.isNaN(time) ? null : new Date(time).toISOString()

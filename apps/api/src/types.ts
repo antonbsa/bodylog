@@ -39,11 +39,11 @@ export type AppEnv = {
   }
 }
 
-/** A valid import row; `fields` holds only the columns present in the file, where null clears the stored value. */
+/** A valid import row; `fields` holds only the cells that carry a value, and `weightKg` is omitted only for a date that already has a record. */
 export type ImportedMeasurementRow = {
   createdAt?: string
   date: string
   fields: Omit<UpdateMeasurementByDateInput, "weightKg">
   updatedAt: string
-  weightKg: number
+  weightKg?: number
 }
