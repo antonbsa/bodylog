@@ -53,7 +53,8 @@ async function importCsv(page: Page) {
   })
 }
 
-const toast = (page: Page) => page.getByRole("status")
+// Scoped to the toast region: other sections have their own status text.
+const toast = (page: Page) => page.locator(".toast-region").getByRole("status")
 const failure = (page: Page) => page.getByRole("alert")
 
 test("the theme selector applies immediately, persists and Sistema follows the OS", async ({
@@ -573,5 +574,56 @@ test("a failed copy of the agent instructions shows an error toast", async ({
 
   await expect(failure(page)).toHaveText(
     "Não foi possível copiar as instruções",
+  )
+})
+
+const connectAgentSection = (page: Page) =>
+  page.getByRole("region", { name: "Conectar um agente" })
+
+test("Conectar um agente shows the MCP URL and the Claude Code command, and copies the URL", async ({
+  context,
+  page,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"])
+  await mockApi(page)
+  await page.goto("/ajustes")
+
+  const section = connectAgentSection(page)
+
+  await expect(section.getByLabel("URL do servidor MCP")).toHaveValue(
+    "http://localhost:5174/mcp",
+  )
+  await expect(section).toContainText(
+    'claude mcp add --transport http bodylog http://localhost:5174/mcp --header "Authorization: Bearer <token>"',
+  )
+  await expect(section).toContainText("Team e Enterprise")
+
+  await section.getByRole("button", { name: "Copiar URL" }).click()
+
+  await expect(section.getByRole("status")).toHaveText("URL copiada.")
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    "http://localhost:5174/mcp",
+  )
+  // The confirmation fades after a few seconds.
+  await expect(section.getByRole("status")).toBeEmpty()
+})
+
+test("a failed copy of the MCP URL shows the failure next to it", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: () => Promise.reject(new Error("denied")) },
+    })
+  })
+  await mockApi(page)
+  await page.goto("/ajustes")
+
+  const section = connectAgentSection(page)
+
+  await section.getByRole("button", { name: "Copiar URL" }).click()
+
+  await expect(section.getByRole("status")).toHaveText(
+    "Não foi possível copiar. Selecione a URL e copie.",
   )
 })
