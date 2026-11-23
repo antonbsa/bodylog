@@ -2,7 +2,7 @@
 
 ## Base Rules
 
-All data routes require a session (see [Auth](#auth)), except `/api/collector/*`, which requires a personal API token instead (see [Collector](#collector)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404.
+All data routes require a session (see [Auth](#auth)), except `/api/collector/*`, which requires a personal API token instead (see [Collector](#collector)), and the public pages `/api/health` and `/import-format.md` (see [Import Format](#import-format)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404. The only route outside `/api/*` is `/import-format.md`.
 
 ## Status
 
@@ -21,9 +21,19 @@ respond; it does not check database connectivity.
 
 ---
 
+## Import Format
+
+### GET /import-format.md
+
+Public (no session, no cookie) Markdown page written as instructions for an agent that converts a spreadsheet into a CSV the [importer](#csv-import) accepts. It is rendered from the importer's own alias table (`FIELD_ALIASES`) and limits (`MEASUREMENT_LIMITS`), plus a per-field type, unit and description, so it always matches the code. Prose is pt-BR; headers, field names, units and the example are English.
+
+The response is `200` with `content-type: text/markdown; charset=utf-8` and no explicit cache header. The path is outside `/api/*`, so `/import-format.md` is listed in `run_worker_first` in the preview and production `[assets]` config (otherwise the SPA fallback answers with `index.html`) and proxied by Vite in development.
+
+---
+
 ## Auth
 
-Every route outside `/api/auth/*` and `/api/health` needs the `bodylog_session` cookie and answers a missing, unknown or expired session with:
+Every route outside `/api/auth/*`, `/api/health` and `/import-format.md` needs the `bodylog_session` cookie and answers a missing, unknown or expired session with:
 
 ```json
 {
@@ -466,6 +476,8 @@ date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,wai
 Import is two steps over the same file: a preview that writes nothing, then the import. Both take a multipart upload with the CSV in a `file` field and re-validate the whole file; the second call never trusts the first.
 
 ### Supported Format
+
+The agent-facing version of these rules is the public [Import Format](#import-format) page.
 
 - Columns are identified by header name. Headers are normalized (lowercase, accents stripped, `_`, `-` and space equal, whitespace collapsed) and must then equal one alias exactly; there is no substring or fuzzy matching. Two headers that map to the same field reject the file.
 - Only `date` and `weight_kg` are required. A column that is absent keeps the stored value of existing records; a present column with an empty cell clears the value.

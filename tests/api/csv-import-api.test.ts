@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest"
 
 import { app } from "../../apps/api/src/app"
 import { MeasurementRepository } from "../../apps/api/src/db/repositories/measurements"
+import { FIELD_ALIASES } from "../../apps/api/src/features/csv/csv-columns"
+import { MEASUREMENT_LIMITS } from "../../domain/measurement"
 import {
   createSignedInEnv,
   createTestEnv,
@@ -254,5 +256,57 @@ describe("MeasurementRepository.upsertImportedBatch", () => {
     expect(
       sqlite.prepare("SELECT COUNT(*) AS n FROM measurements").get(),
     ).toEqual({ n: 0 })
+  })
+})
+
+describe("GET /import-format.md", () => {
+  async function getPage() {
+    const response = await app.request(
+      "/import-format.md",
+      {},
+      createTestEnv().env,
+    )
+
+    return { response, text: await response.text() }
+  }
+
+  it("is public Markdown listing every alias and limit", async () => {
+    const { response, text } = await getPage()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe(
+      "text/markdown; charset=utf-8",
+    )
+    expect(response.headers.get("cache-control")).toBeNull()
+
+    for (const aliases of Object.values(FIELD_ALIASES)) {
+      for (const alias of aliases) {
+        expect(text).toContain(`\`${alias}\``)
+      }
+    }
+
+    for (const { max, min } of Object.values(MEASUREMENT_LIMITS)) {
+      expect(text).toContain(`${min} a ${max}`)
+    }
+  })
+
+  it("has an example CSV that passes the import preview", async () => {
+    const { text } = await getPage()
+    const example = /```csv\n([\s\S]*?)\n```/.exec(text)?.[1]
+
+    expect(example).toBeDefined()
+
+    const { env } = setup([])
+    const response = await post(
+      env,
+      "/api/import/csv/preview",
+      example as string,
+    )
+    const body = (await response.json()) as {
+      counts: { created: number; invalid: number }
+    }
+
+    expect(response.status).toBe(200)
+    expect(body.counts).toMatchObject({ created: 3, invalid: 0 })
   })
 })

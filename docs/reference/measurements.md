@@ -105,6 +105,6 @@ Canonical CSV headers:
 date,weight_kg,body_fat_percentage,muscle_percentage,resting_metabolism_kcal,waist_cm,sleep_hours,disposition,notes,created_at,updated_at
 ```
 
-CSV export uses this full canonical format and omits the internal `id` field. CSV import identifies columns by header name (the canonical names and the spreadsheet aliases), requires only `date` and `weight_kg`, and upserts the signed-in user's records by `date`; the format and the overwrite rules are in the [API contract](api-contract.md#csv-import).
+CSV export uses this full canonical format and omits the internal `id` field. CSV import identifies columns by header name (the canonical names and the spreadsheet aliases), requires only `date` and `weight_kg`, and upserts the signed-in user's records by `date`; the format and the overwrite rules are in the [API contract](api-contract.md#csv-import). The agent-facing version, rendered from the importer's aliases and limits, is the public page `/import-format.md` ([API contract](api-contract.md#import-format)).
 
 Imported values are validated against the same limits as the form; dates must be real calendar dates, such as `2026-02-28` or `28/02/2026`, never `2026-02-30`.
