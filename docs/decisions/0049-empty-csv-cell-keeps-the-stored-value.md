@@ -4,7 +4,7 @@ area: product
 amends: ["0043"]
 ---
 
-# 0048 — Empty CSV Cell Keeps the Stored Value
+# 0049 — Empty CSV Cell Keeps the Stored Value
 
 ## Status
 

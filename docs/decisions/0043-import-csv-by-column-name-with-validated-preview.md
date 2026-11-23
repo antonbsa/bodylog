@@ -2,7 +2,7 @@
 status: Accepted
 area: product
 amends: ["0006"]
-amended-by: ["0048"]
+amended-by: ["0049"]
 ---
 
 # 0043 — Import CSV by Column Name with a Validated Preview

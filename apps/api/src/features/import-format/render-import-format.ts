@@ -128,7 +128,7 @@ O importador também aceita datas \`D/M/YYYY\`, vírgula decimal, delimitador \`
 3. Se uma data aparecer em mais de uma linha, todas as linhas dessa data ficam de fora. O arquivo não pode ter a mesma data duas vezes.
 4. Remova unidades e símbolos (\`82,4 kg\` vira \`82.4\`, \`21%\` vira \`21\`). Valor solto, mal definido ou que não cabe no campo (uma faixa como \`6-7\`, texto onde vai um número, um valor fora dos limites) faz a linha inteira ficar de fora.
 5. Valor desconhecido fica vazio. Nunca estime nem preencha com um padrão.
-6. Se a planilha não tem uma coluna, não inclua a coluna no arquivo. Uma célula vazia também mantém o valor já salvo daquela data (a importação nunca apaga um valor); um \`weight_kg\` vazio só vale em uma data que já tem registro.
+6. Se a planilha não tem uma coluna, não inclua a coluna no arquivo. Uma célula vazia também mantém o valor já salvo daquela data (a importação nunca apaga um valor); você não sabe quais datas já têm registro, então uma linha com peso desconhecido entra no arquivo com \`weight_kg\` vazio; em uma data nova a prévia a marca como inválida e a pessoa pode pulá-la ali.
 7. Linhas sem nenhum valor além da data são ignoradas; linhas totalmente vazias também.
 
 ## created_at e updated_at

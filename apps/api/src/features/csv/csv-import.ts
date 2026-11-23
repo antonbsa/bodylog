@@ -60,7 +60,7 @@ export type CsvAnalysis = {
 
 /**
  * Validates a whole file without touching the database; throws a validation error for file-level problems.
- * `existingDates` are the user's recorded dates: only there may a row omit its weight (ADR 0048).
+ * `existingDates` are the user's recorded dates: only there may a row omit its weight (ADR 0049).
  */
 export function analyzeMeasurementsCsv(
   bytes: ArrayBuffer,
@@ -322,7 +322,7 @@ function parseRowValues(
   for (const column of columns) {
     const text = cell(column)
 
-    // An empty cell carries no value: the stored one stays (ADR 0048).
+    // An empty cell carries no value: the stored one stays (ADR 0049).
     if (text === "") {
       continue
     }

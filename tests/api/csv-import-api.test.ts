@@ -254,6 +254,23 @@ describe("POST /api/import/csv", () => {
     })
   })
 
+  it("writes the file's timestamps and fields on a weightless row, keeping the weight", async () => {
+    const { env, rows } = setup([{ date: "2026-06-10", weight: 70 }])
+
+    await post(
+      env,
+      "/api/import/csv",
+      "date,weight_kg,waist_cm,created_at,updated_at\n2026-06-10,,85,2026-02-01T00:00:00.000Z,2026-03-01T00:00:00.000Z",
+    )
+
+    expect(rows()[0]).toMatchObject({
+      created_at: "2026-02-01T00:00:00.000Z",
+      updated_at: "2026-03-01T00:00:00.000Z",
+      waist_cm: 85,
+      weight_kg: 70,
+    })
+  })
+
   it("replaces created_at and updated_at when the file carries them", async () => {
     const { env, rows } = setup([{ date: "2026-06-10", weight: 70 }])
 

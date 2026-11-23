@@ -480,7 +480,7 @@ Import is two steps over the same file: a preview that writes nothing, then the 
 The agent-facing version of these rules is the public [Import Format](#import-format) page.
 
 - Columns are identified by header name. Headers are normalized (lowercase, accents stripped, `_`, `-` and space equal, whitespace collapsed) and must then equal one alias exactly; there is no substring or fuzzy matching. Two headers that map to the same field reject the file.
-- Only `date` and `weight_kg` are required. A column that is absent, or a cell that is empty, keeps the stored value of an existing record (ADR 0048), so an import never clears a field; an empty `weight_kg` is invalid only on a date with no record.
+- Only `date` and `weight_kg` are required. A column that is absent, or a cell that is empty, keeps the stored value of an existing record (ADR 0049), so an import never clears a field; an empty `weight_kg` is invalid only on a date with no record.
 - Unknown columns (for example `IMC`) are ignored and listed in the preview; cells past the last header are ignored without being listed.
 - The delimiter is `,` or `;`, detected from the header line. The encoding is UTF-8 (BOM stripped), falling back to Windows-1252.
 - Dates are `YYYY-MM-DD` or `D/M/YYYY` (1-2 digit day and month, 4-digit year), may be mixed in one file and must be real calendar dates. `DD/MM` and 2-digit years are invalid.
