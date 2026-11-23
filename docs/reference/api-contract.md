@@ -25,7 +25,7 @@ respond; it does not check database connectivity.
 
 ### GET /import-format.md
 
-Public (no session, no cookie) Markdown page written as instructions for an agent that converts a spreadsheet into a CSV the [importer](#csv-import) accepts. It is rendered from the importer's own alias table (`FIELD_ALIASES`) and limits (`MEASUREMENT_LIMITS`), plus a per-field type, unit and description, so it always matches the code. Prose is pt-BR; headers, field names, units and the example are English.
+Public (no session, no cookie) Markdown page written as instructions for an agent that converts a spreadsheet into a CSV the [importer](#csv-import) accepts. It is rendered from the importer's own alias table (`FIELD_ALIASES`) and limits (`MEASUREMENT_LIMITS`), plus a per-field type, unit and description, so it always matches the code. Prose is pt-BR; headers, field names, units and the example are English. The agent never asks during the conversion: it extracts only the schema's data, never invents a value, drops a whole row whose value is loose or doesn't fit (ranges, text in a number, ambiguous day/month order, every row of a repeated date), uses the current year for a date without one, and hands back the CSV with a list of what it ignored.
 
 The response is `200` with `content-type: text/markdown; charset=utf-8` and no explicit cache header. The path is outside `/api/*`, so `/import-format.md` is listed in `run_worker_first` in the preview and production `[assets]` config (otherwise the SPA fallback answers with `index.html`) and proxied by Vite in development.
 

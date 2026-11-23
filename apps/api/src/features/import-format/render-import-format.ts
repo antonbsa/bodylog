@@ -99,7 +99,7 @@ export function renderImportFormat(): string {
 
   return `# Formato de importação de CSV do BodyLog
 
-Estas instruções são para um agente que vai converter a planilha de uma pessoa em um arquivo CSV que o BodyLog importa. Siga os passos na ordem e pergunte à pessoa sempre que algo estiver ambíguo. Nunca invente valores.
+Estas instruções são para um agente que vai converter a planilha de uma pessoa em um arquivo CSV que o BodyLog importa. Extraia só os dados deste formato, nunca invente nem estime valores e não faça perguntas durante a conversão: o que não se encaixar fica de fora e vai na lista de ignorados.
 
 ## Campos
 
@@ -123,10 +123,10 @@ O importador também aceita datas \`D/M/YYYY\`, vírgula decimal, delimitador \`
 
 ## Regras de conversão
 
-1. Descubra qual coluna da planilha corresponde a cada campo. Coluna sem campo correspondente (por exemplo IMC, ou gordura em kg) é descartada, sem conversão.
-2. Datas: se alguma data da coluna tiver uma parte maior que 12, deduza a ordem dia/mês a partir dela; caso contrário, pergunte à pessoa. Se faltar o ano, pergunte.
-3. Se uma data aparecer em mais de uma linha, pergunte qual registro manter. O arquivo não pode ter a mesma data duas vezes.
-4. Remova unidades e símbolos (\`82,4 kg\` vira \`82.4\`, \`21%\` vira \`21\`). Faixas como \`6-7\` não são aceitas: pergunte qual valor usar.
+1. Descubra qual coluna da planilha corresponde a cada campo. Coluna sem campo correspondente (por exemplo IMC, ou gordura em kg) é descartada, sem conversão. Dados fora do formato não entram no arquivo.
+2. Datas: se alguma data da coluna tiver uma parte maior que 12, deduza a ordem dia/mês a partir dela. Se nenhuma tiver, a ordem não pode ser definida e todas as linhas dessa coluna ficam de fora. Se faltar o ano, use o ano atual.
+3. Se uma data aparecer em mais de uma linha, todas as linhas dessa data ficam de fora. O arquivo não pode ter a mesma data duas vezes.
+4. Remova unidades e símbolos (\`82,4 kg\` vira \`82.4\`, \`21%\` vira \`21\`). Valor solto, mal definido ou que não cabe no campo (uma faixa como \`6-7\`, texto onde vai um número, um valor fora dos limites) faz a linha inteira ficar de fora.
 5. Valor desconhecido fica vazio. Nunca estime nem preencha com um padrão.
 6. Se a planilha não tem uma coluna, não inclua a coluna no arquivo. Uma célula vazia também mantém o valor já salvo daquela data (a importação nunca apaga um valor); um \`weight_kg\` vazio só vale em uma data que já tem registro.
 7. Linhas sem nenhum valor além da data são ignoradas; linhas totalmente vazias também.
@@ -143,6 +143,6 @@ ${EXAMPLE_CSV}
 
 ## Último passo
 
-Entregue o arquivo CSV à pessoa. Ela importa o arquivo em Ajustes, no BodyLog, e confere a prévia antes de confirmar.
+Entregue à pessoa o arquivo CSV e a lista do que ficou de fora: colunas descartadas e padrões de linhas ignoradas, cada um com linhas de exemplo. Se ela quiser ajustes, faça-os em uma segunda rodada. A pessoa importa o arquivo em Ajustes, no BodyLog, e confere a prévia antes de confirmar.
 `
 }

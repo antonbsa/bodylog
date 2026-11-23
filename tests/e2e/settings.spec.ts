@@ -552,7 +552,7 @@ test("Copiar instruções para agente copies the prompt with the origin's format
 
   await expect(toast(page)).toHaveText("Instruções copiadas")
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-    "Quero importar meu histórico de medidas no BodyLog. Siga as instruções em http://localhost:5174/import-format.md para converter a planilha que vou te enviar em um arquivo CSV. Pergunte quando algo estiver ambíguo e não invente valores. No fim, me devolva o arquivo para eu importar em Ajustes.",
+    "Quero importar meu histórico de medidas no BodyLog. Siga as instruções em http://localhost:5174/import-format.md para converter a planilha que vou te enviar em um arquivo CSV. Extraia só os dados do formato e não invente valores. Não pergunte nada durante a conversão: o que não se encaixar fica de fora. Me devolva o arquivo para eu importar em Ajustes, junto com a lista do que foi ignorado.",
   )
 })
 

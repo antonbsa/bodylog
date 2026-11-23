@@ -109,7 +109,7 @@ The authenticated app has four screens behind a bottom tab bar (Início, Histór
 
 ### Import CSV
 
-1. Optionally, the user copies the agent instructions in Ajustes and gives them to an agent with the spreadsheet; the agent returns a CSV that follows the public format page.
+1. Optionally, the user copies the agent instructions in Ajustes and gives them to an agent with the spreadsheet; the agent returns a CSV that follows the public format page, plus a list of what it left out.
 2. The user chooses the import action in Ajustes.
 3. The user selects a CSV exported from the previous spreadsheet workflow.
 4. The system validates the file.

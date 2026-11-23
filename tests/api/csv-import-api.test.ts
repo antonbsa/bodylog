@@ -334,6 +334,14 @@ describe("GET /import-format.md", () => {
     }
   })
 
+  it("tells the agent to drop what doesn't fit and never to ask", async () => {
+    const { text } = await getPage()
+
+    expect(text).not.toMatch(/pergunte/i)
+    expect(text).toContain("ano atual")
+    expect(text).toContain("a lista do que ficou de fora")
+  })
+
   it("has an example CSV that passes the import preview", async () => {
     const { text } = await getPage()
     const example = /```csv\n([\s\S]*?)\n```/.exec(text)?.[1]
