@@ -1,4 +1,4 @@
-import { Hono } from "hono"
+import { type ErrorHandler, Hono, type NotFoundHandler } from "hono"
 
 import {
   AppError,
@@ -19,24 +19,27 @@ import type { AppEnv } from "./types"
 
 export const app = new Hono<AppEnv>()
 
-app.onError((error, c) => {
+export const handleAppError: ErrorHandler<AppEnv> = (error, c) => {
   const appError =
     error instanceof AppError
       ? error
       : new InternalServerError({ cause: error })
 
   return c.json(appError.toJSON(), appError.statusCode)
-})
+}
 
 // In production only /api/* reaches the Worker (run_worker_first); other paths are static assets or the SPA.
-app.notFound((c) => {
+export const handleNotFound: NotFoundHandler<AppEnv> = (c) => {
   const error = new NotFoundError({
     action: "Verifique o endereço e tente novamente.",
     message: "Rota não encontrada.",
   })
 
   return c.json(error.toJSON(), error.statusCode)
-})
+}
+
+app.onError(handleAppError)
+app.notFound(handleNotFound)
 
 app.get("/api/health", (c) => {
   return c.json({

@@ -9,7 +9,7 @@ function projectsFor(file) {
   }
   if (file.startsWith("apps/api/")) return ["api", "tests"]
   if (file.startsWith("apps/web/")) return ["web", "tests"]
-  if (file.startsWith("tests/e2e/") || file === "playwright.config.ts") {
+  if (/^tests\/e2e(-api)?\//.test(file) || /^playwright\./.test(file)) {
     return ["e2e"]
   }
   if (file.startsWith("tests/")) return ["tests"]

@@ -71,6 +71,7 @@ npm run typecheck
 npm run lint
 npm run test:unit
 npm run test:e2e
+npm run test:e2e:api
 ```
 
 Test tiers and how to filter them are in [`tests/AGENTS.md`](../../tests/AGENTS.md). `npm run build` builds the web app into `apps/web/dist`, which is what production serves.

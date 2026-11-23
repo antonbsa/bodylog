@@ -27,7 +27,8 @@ apps/
 tests/
   api/      API and backend behavior tests
   web/      web unit tests
-  e2e/      Playwright E2E tests
+  e2e/      Playwright E2E tests with the API mocked
+  e2e-api/  Playwright E2E tests against the real API and a local D1
 infra/
   migrations/ Cloudflare D1 migrations
   scripts/    local infrastructure and docs tooling
@@ -165,6 +166,7 @@ Accounts sign in with GitHub or Google OAuth; the full decision is `0044-multi-u
 - `features/auth/session.ts` keeps sessions in D1: the `bodylog_session` cookie holds a random id, `sessions` stores its SHA-256, and `requireSession` resolves it to the user id, renewing it in its last week and deleting it once expired. Each new sign-in sweeps expired rows.
 - Every measurement query goes through `MeasurementRepository`, which is built for one user id and filters each statement by it.
 - `POST /api/auth/dev-login` signs in as a local seed user only when `DEV_LOGIN_ENABLED="true"` (set only in `.env.development`).
+- `POST /api/test/session` exists only in `src/e2e.ts`, the Worker entry of the local-only `[env.e2e]`; preview and production bundle `src/index.ts`, which never imports it.
 
 ## Deployment
 
