@@ -52,7 +52,7 @@ describe("auth config", () => {
 describe("wrangler assets config", () => {
   const wrangler = readFileSync("apps/api/wrangler.toml", "utf8")
 
-  it.each(["production", "preview"])(
+  it.each(["production", "preview", "e2e"])(
     "runs the Worker first for /import-format.md in %s",
     (environment) => {
       const section = wrangler
