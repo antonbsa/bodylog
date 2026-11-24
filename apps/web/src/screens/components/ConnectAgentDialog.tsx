@@ -44,7 +44,10 @@ export function ConnectAgentDialog({ mcpUrl }: { mcpUrl: string }) {
             <button
               aria-checked={option.value === client}
               key={option.value}
-              onClick={() => setClient(option.value)}
+              onClick={() => {
+                setClient(option.value)
+                reset()
+              }}
               role="radio"
               type="button"
             >

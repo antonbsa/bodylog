@@ -286,10 +286,6 @@
   line-height: 1.45;
 }
 
-.tokens-note:last-child {
-  padding-bottom: 4px;
-}
-
 .token-list {
   margin: 0;
   padding: 0;
@@ -339,6 +335,7 @@
 
 .token-list + .tokens-note,
 .token-message + .tokens-note,
+.token-message + .form-error,
 .token-message + .token-create,
 .token-list + .token-create,
 .tokens-card .connect-open {
@@ -348,6 +345,10 @@
 .token-list + .tokens-note,
 .token-message + .tokens-note {
   padding-top: 12px;
+}
+
+.token-message + .form-error {
+  padding: 12px 0;
 }
 
 .token-create {

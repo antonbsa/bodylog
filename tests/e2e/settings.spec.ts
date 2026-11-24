@@ -683,3 +683,30 @@ test("Como conectar shows the steps per client and copies the Claude Code comman
     aiAgentsSection(page).getByRole("button", { name: "Como conectar" }),
   ).toBeFocused()
 })
+
+test("switching clients in Como conectar clears a failed command copy", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: () => Promise.reject(new Error("denied")) },
+    })
+  })
+  await mockApi(page)
+  await page.goto("/ajustes")
+  await aiAgentsSection(page)
+    .getByRole("button", { name: "Como conectar" })
+    .click()
+
+  const guide = page.getByRole("dialog", { name: "Como conectar" })
+
+  await guide.getByRole("radio", { name: "Claude Code" }).click()
+  await guide.getByRole("button", { name: "Copiar comando" }).click()
+  await expect(guide.getByRole("status")).toHaveText(
+    "Não foi possível copiar. Selecione o comando e copie.",
+  )
+
+  await guide.getByRole("radio", { name: "Claude.ai" }).click()
+  await guide.getByRole("radio", { name: "Claude Code" }).click()
+  await expect(guide.getByRole("status")).toBeEmpty()
+})
