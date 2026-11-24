@@ -25,6 +25,10 @@ npx playwright test tests/e2e/registration.spec.ts -g "for editing"
 - Verify before trusting a run: `lsof -i :5174` shows nothing, or shows a process started from your worktree. A server held by another session is contention: leave it running and tell the owner instead of killing it.
 - The real-API tier sets `reuseExistingServer: false`, so a run fails fast when port 8788 is taken instead of testing against another run's D1; `lsof -i :8788` shows who holds it.
 
+## UI screenshots
+
+The screenshot a UI issue is validated with comes from a temporary spec under `tests/e2e` that reuses that tier's mocks, at 390 px width in light and dark, saved outside the repo; delete the spec before committing. Symptom: the capture stops at the tab bar and cuts off the section you wanted. Why it slips: tab screens scroll inside an inner container under a `100dvh` root, so `fullPage: true` still captures one viewport, and the spec passes either way. Verify by opening each PNG; capture the element with `locator.screenshot()` or scroll it into view first.
+
 ## SQLite is not D1
 
 An API test passing proves the SQL runs on Node's SQLite, not on D1; [apps/api/AGENTS.md](../apps/api/AGENTS.md) "SQL that only SQLite has run" has the real check.
