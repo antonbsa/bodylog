@@ -59,7 +59,7 @@ async function mockTokensApi(page: Page, initial: ApiTokenSummary[] = []) {
 }
 
 const tokenList = (page: Page) =>
-  page.getByRole("region", { name: "Tokens de API" }).getByRole("listitem")
+  page.getByRole("list", { name: "Tokens de API" }).getByRole("listitem")
 
 test("creating a token shows it once, already copied, and the list shows only its last four", async ({
   context,

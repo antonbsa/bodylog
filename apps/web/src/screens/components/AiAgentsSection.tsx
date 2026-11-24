@@ -2,24 +2,22 @@ import { Check } from "@phosphor-icons/react/dist/csr/Check"
 import { Copy } from "@phosphor-icons/react/dist/csr/Copy"
 
 import { useCopyFeedback } from "../../hooks/useCopyFeedback"
+import { ApiTokenList } from "./ApiTokenList"
+import { ConnectAgentDialog } from "./ConnectAgentDialog"
 
-/** Ajustes section with the MCP endpoint URL and how to connect an agent to it with a personal API token. */
-export function ConnectAgentSection() {
+/** Ajustes group with everything an AI agent needs to read the user's measurements: the MCP URL, the API tokens and the setup guide. */
+export function AiAgentsSection() {
   const mcpUrl = `${window.location.origin}/mcp`
   const { copy, copyStatus, isFading, isJustCopied } = useCopyFeedback()
 
   return (
     <>
-      <h2 className="sec-title" id="connect-agent-title">
-        Conectar um agente
+      <h2 className="sec-title" id="ai-agents-title">
+        Agentes de IA
       </h2>
-      <section
-        aria-labelledby="connect-agent-title"
-        className="card tokens-card"
-      >
+      <section aria-labelledby="ai-agents-title" className="card tokens-card">
         <p className="tokens-intro">
-          Agentes de IA com este endereço e um token acima leem suas medidas,
-          sem alterar nada.
+          Conecte um agente com esta URL e um token. Ele só lê suas medidas.
         </p>
         <div className="token-value-field">
           <input
@@ -58,19 +56,8 @@ export function ConnectAgentSection() {
           </p>
         </div>
 
-        <h3 className="connect-step-title">Claude.ai</h3>
-        <p className="tokens-note">
-          Em Configurações, Conectores, adicione um conector personalizado com
-          esta URL e o cabeçalho de requisição{" "}
-          <code>Authorization: Bearer &lt;token&gt;</code>, usando um token
-          criado acima. Em planos Team e Enterprise, o proprietário define o
-          cabeçalho e todos os membros compartilham o mesmo acesso.
-        </p>
-
-        <h3 className="connect-step-title">Claude Code</h3>
-        <pre className="connect-code">
-          {`claude mcp add --transport http bodylog ${mcpUrl} --header "Authorization: Bearer <token>"`}
-        </pre>
+        <ApiTokenList />
+        <ConnectAgentDialog mcpUrl={mcpUrl} />
       </section>
     </>
   )

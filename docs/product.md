@@ -120,7 +120,7 @@ The authenticated app has four screens behind a bottom tab bar (Início, Histór
 
 ### Manage Personal API Tokens
 
-1. The user opens "Tokens de API" in Ajustes, which lists each token's name, last four characters, creation date and last use.
+1. The user opens the "Agentes de IA" group in Ajustes, which lists each token's name, last four characters, creation date and last use.
 2. The user creates a token by giving it a name, unique among their tokens and at most 50 characters; a name already in use is flagged while typing and blocks creation.
 3. The system shows the token once, copies it to the clipboard, and warns that it won't be shown again; a copy button stays in case the automatic copy fails.
 4. A user who already has three tokens sees a message to revoke one before creating another.
@@ -356,7 +356,7 @@ The system must let AI chat clients read a user's measurements and convert a spr
 - `/mcp` answers MCP requests with the tool `list_measurements`, which returns the same data as the collector endpoint (optional inclusive `from`/`to`), and an invalid date is a tool error with a pt-BR message.
 - The resource `bodylog://import-format` serves the import format Markdown, and the prompt `convert_spreadsheet` gives the agent the conversion instructions with that format embedded.
 - Only a personal API token in `Authorization: Bearer` authorizes it, with the same 401 as the collector; nothing it offers writes data.
-- A "Conectar um agente" block in Ajustes, below the API tokens, shows the `/mcp` URL of the current origin with a copy button, the steps for a Claude.ai custom connector and the Claude Code command.
+- The "Agentes de IA" group in Ajustes shows the `/mcp` URL of the current origin with a copy button above the API tokens, and a "Como conectar" row opens the steps for a Claude.ai custom connector and the Claude Code command with its own copy button.
 
 ## Non-Functional Requirements
 

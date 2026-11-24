@@ -12,9 +12,8 @@ import {
   previewMeasurementsCsv,
 } from "../api/measurements"
 import type { CsvImportPreview } from "../../../../types/measurements"
-import { ApiTokensSection } from "./components/ApiTokensSection"
+import { AiAgentsSection } from "./components/AiAgentsSection"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
-import { ConnectAgentSection } from "./components/ConnectAgentSection"
 import { CsvFormatDialog } from "./components/CsvFormatDialog"
 import { HeightDialog } from "./components/HeightDialog"
 import { ImportPreviewDialog } from "./components/ImportPreviewDialog"
@@ -210,6 +209,12 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
             {user ? formatHeight(user.heightCm) : "—"}
           </span>
         </button>
+      </div>
+
+      <h2 className="sec-title" id="data-title">
+        Dados
+      </h2>
+      <section aria-labelledby="data-title" className="card">
         <button
           className="set-row"
           disabled={isExporting}
@@ -234,7 +239,12 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           onClick={handleCopyAgentPrompt}
           type="button"
         >
-          Copiar instruções para agente
+          <span className="set-label">
+            Copiar instruções para agente
+            <span className="set-note">
+              Para um agente de IA converter sua planilha em CSV.
+            </span>
+          </span>
         </button>
         <input
           ref={importFileInputRef}
@@ -243,6 +253,11 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           onChange={(event) => handleChooseImportFile(event.target.files?.[0])}
           type="file"
         />
+      </section>
+
+      <AiAgentsSection />
+
+      <div className="card set-end">
         <button
           className="set-row danger"
           onClick={() => setIsLogoutDialogOpen(true)}
@@ -251,10 +266,6 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           Sair
         </button>
       </div>
-
-      <ApiTokensSection />
-
-      <ConnectAgentSection />
 
       <HeightDialog
         heightCm={user?.heightCm ?? null}

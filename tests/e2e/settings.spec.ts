@@ -548,7 +548,7 @@ test("Copiar instruções para agente copies the prompt with the origin's format
   await page.goto("/ajustes")
 
   await page
-    .getByRole("button", { name: "Copiar instruções para agente" })
+    .getByRole("button", { name: /^Copiar instruções para agente/ })
     .click()
 
   await expect(toast(page)).toHaveText("Instruções copiadas")
@@ -569,7 +569,7 @@ test("a failed copy of the agent instructions shows an error toast", async ({
   await page.goto("/ajustes")
 
   await page
-    .getByRole("button", { name: "Copiar instruções para agente" })
+    .getByRole("button", { name: /^Copiar instruções para agente/ })
     .click()
 
   await expect(failure(page)).toHaveText(
@@ -577,10 +577,33 @@ test("a failed copy of the agent instructions shows an error toast", async ({
   )
 })
 
-const connectAgentSection = (page: Page) =>
-  page.getByRole("region", { name: "Conectar um agente" })
+const aiAgentsSection = (page: Page) =>
+  page.getByRole("region", { name: "Agentes de IA" })
 
-test("Conectar um agente shows the MCP URL and the Claude Code command, and copies the URL", async ({
+test("Ajustes groups the actions into Dados and Agentes de IA", async ({
+  page,
+}) => {
+  await mockApi(page)
+  await page.goto("/ajustes")
+
+  const data = page.getByRole("region", { name: "Dados" })
+
+  await expect(data.getByRole("button", { name: "Exportar CSV" })).toBeVisible()
+  await expect(data.getByRole("button", { name: "Importar CSV" })).toBeVisible()
+  await expect(
+    data.getByRole("button", { name: /^Copiar instruções para agente/ }),
+  ).toBeVisible()
+  await expect(
+    aiAgentsSection(page).getByRole("button", { name: "Criar token" }),
+  ).toBeVisible()
+  await expect(
+    aiAgentsSection(page).getByRole("button", { name: "Como conectar" }),
+  ).toBeVisible()
+  // The setup steps stay in the guide, not on the screen.
+  await expect(page.getByText("Team e Enterprise")).toHaveCount(0)
+})
+
+test("Agentes de IA shows the MCP URL and copies it", async ({
   context,
   page,
 }) => {
@@ -588,15 +611,11 @@ test("Conectar um agente shows the MCP URL and the Claude Code command, and copi
   await mockApi(page)
   await page.goto("/ajustes")
 
-  const section = connectAgentSection(page)
+  const section = aiAgentsSection(page)
 
   await expect(section.getByLabel("URL do servidor MCP")).toHaveValue(
     "http://localhost:5174/mcp",
   )
-  await expect(section).toContainText(
-    'claude mcp add --transport http bodylog http://localhost:5174/mcp --header "Authorization: Bearer <token>"',
-  )
-  await expect(section).toContainText("Team e Enterprise")
 
   await section.getByRole("button", { name: "Copiar URL" }).click()
 
@@ -619,11 +638,48 @@ test("a failed copy of the MCP URL shows the failure next to it", async ({
   await mockApi(page)
   await page.goto("/ajustes")
 
-  const section = connectAgentSection(page)
+  const section = aiAgentsSection(page)
 
   await section.getByRole("button", { name: "Copiar URL" }).click()
 
   await expect(section.getByRole("status")).toHaveText(
     "Não foi possível copiar. Selecione a URL e copie.",
   )
+})
+
+test("Como conectar shows the steps per client and copies the Claude Code command", async ({
+  context,
+  page,
+}) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"])
+  await mockApi(page)
+  await page.goto("/ajustes")
+  await aiAgentsSection(page)
+    .getByRole("button", { name: "Como conectar" })
+    .click()
+
+  const guide = page.getByRole("dialog", { name: "Como conectar" })
+  const command =
+    'claude mcp add --transport http bodylog http://localhost:5174/mcp --header "Authorization: Bearer <token>"'
+
+  await expect(guide.getByRole("radio", { name: "Claude.ai" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  )
+  await expect(guide).toContainText("Em URL, use http://localhost:5174/mcp.")
+  await expect(guide).toContainText("Team e Enterprise")
+
+  await guide.getByRole("radio", { name: "Claude Code" }).click()
+  await expect(guide).toContainText(command)
+  await guide.getByRole("button", { name: "Copiar comando" }).click()
+  await expect(guide.getByRole("status")).toHaveText("Comando copiado.")
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+    command,
+  )
+
+  await guide.getByRole("button", { name: "Fechar" }).click()
+  await expect(guide).toHaveCount(0)
+  await expect(
+    aiAgentsSection(page).getByRole("button", { name: "Como conectar" }),
+  ).toBeFocused()
 })
