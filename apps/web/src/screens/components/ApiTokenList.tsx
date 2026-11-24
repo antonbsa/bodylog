@@ -11,8 +11,8 @@ import { formatApiTokenDetails } from "../../utils/api-tokens"
 import { ConfirmationDialog } from "./ConfirmationDialog"
 import { CreateApiTokenDialog } from "./CreateApiTokenDialog"
 
-/** Ajustes section where the user lists, creates and revokes personal API tokens. */
-export function ApiTokensSection() {
+/** Rows of the Agentes de IA card where the user lists, creates and revokes personal API tokens. */
+export function ApiTokenList() {
   const queryClient = useQueryClient()
   const toast = useToast()
   const tokensQuery = useQuery({
@@ -48,60 +48,51 @@ export function ApiTokensSection() {
 
   return (
     <>
-      <h2 className="sec-title" id="tokens-title">
-        Tokens de API
-      </h2>
-      <section aria-labelledby="tokens-title" className="card tokens-card">
-        <p className="tokens-intro">
-          Permitem que apps e agentes externos leiam suas medidas.
+      {tokensQuery.isPending && <p className="tokens-note">Carregando...</p>}
+      {tokensQuery.isError && (
+        <p className="form-error" role="alert">
+          {formatApiErrorMessage(tokensQuery.error)}
         </p>
+      )}
 
-        {tokensQuery.isPending && <p className="tokens-note">Carregando...</p>}
-        {tokensQuery.isError && (
-          <p className="form-error" role="alert">
-            {formatApiErrorMessage(tokensQuery.error)}
-          </p>
-        )}
-
-        {tokens.length > 0 && (
-          <ul className="token-list">
-            {tokens.map((token) => (
-              <li className="token-row" key={token.id}>
-                <span className="token-text">
-                  <strong>{token.name}</strong>
-                  <span className="token-details">
-                    {formatApiTokenDetails(token)}
-                  </span>
+      {tokens.length > 0 && (
+        <ul aria-label="Tokens de API" className="token-list">
+          {tokens.map((token) => (
+            <li className="token-row" key={token.id}>
+              <span className="token-text">
+                <strong>{token.name}</strong>
+                <span className="token-details">
+                  {formatApiTokenDetails(token)}
                 </span>
-                <button
-                  aria-label={`Revogar ${token.name}`}
-                  className="token-revoke"
-                  onClick={() => setPendingRevoke(token)}
-                  type="button"
-                >
-                  Revogar
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {tokensQuery.isSuccess &&
-          (isAtLimit ? (
-            <p className="tokens-note">
-              Você já tem {MAX_API_TOKENS_PER_USER} tokens. Revogue um para
-              criar outro.
-            </p>
-          ) : (
-            <button
-              className="set-row token-create"
-              onClick={() => setIsCreateOpen(true)}
-              type="button"
-            >
-              Criar token
-            </button>
+              </span>
+              <button
+                aria-label={`Revogar ${token.name}`}
+                className="token-revoke"
+                onClick={() => setPendingRevoke(token)}
+                type="button"
+              >
+                Revogar
+              </button>
+            </li>
           ))}
-      </section>
+        </ul>
+      )}
+
+      {tokensQuery.isSuccess &&
+        (isAtLimit ? (
+          <p className="tokens-note">
+            Você já tem {MAX_API_TOKENS_PER_USER} tokens. Revogue um para criar
+            outro.
+          </p>
+        ) : (
+          <button
+            className="set-row token-create"
+            onClick={() => setIsCreateOpen(true)}
+            type="button"
+          >
+            Criar token
+          </button>
+        ))}
 
       <CreateApiTokenDialog
         existingNames={tokens.map((token) => token.name)}

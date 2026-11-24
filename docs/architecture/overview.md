@@ -106,13 +106,13 @@ apps/api/src/
   app.ts                builds the Hono app: error and 404 handlers, health route, router mounts
   config.ts             env-derived settings (GitHub and Google OAuth clients, dev login flag)
   types.ts              API-only bindings and input types
-  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens, collector, import-format)
+  features/<name>/      routes.ts plus that feature's services (auth, me, measurements, dashboard, history, trends, csv, api-tokens, collector, import-format, mcp)
   db/repositories/      D1 access, one file per table
   http/                 cross-feature HTTP helpers (request validation, session and API token guards, the user's height and zone, secret generation and hashing)
   domain/               API domain objects (Measurement, week range, week summary)
 ```
 
-`app.ts` mounts `/api/auth/*`, `/api/health` and `/import-format.md` as public routes, and `/api/collector/measurements` behind `requireApiToken`, which accepts only a personal API token in `Authorization: Bearer` and sets `c.var.userId` to its owner (ADR 0047). Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix and sets `c.var.userId`, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
+`app.ts` mounts `/api/auth/*`, `/api/health` and `/import-format.md` as public routes, and `/api/collector/measurements` behind `requireApiToken`, which accepts only a personal API token in `Authorization: Bearer` and sets `c.var.userId` to its owner (ADR 0047). `/mcp` is mounted the same way, behind `requireApiToken` for every method, and builds one MCP server per request for that user (ADR 0048). Every other feature router is mounted under its own `/api/<prefix>` on a protected router whose `requireSession` guard covers that prefix and sets `c.var.userId`, so a new data router gets the guard by being added to that mount list, and unknown `/api/*` paths still answer 404 rather than 401.
 
 ## Database
 
@@ -172,7 +172,7 @@ Accounts sign in with GitHub or Google OAuth; the full decision is `0044-multi-u
 
 The whole app deploys to Cloudflare.
 
-- One Worker serves the API under `/api/*`, the public `/import-format.md` page (both in `run_worker_first`) and the built web app through Workers Static Assets, on one origin (`0040-serve-the-web-app-from-the-api-worker.md`).
+- One Worker serves the API under `/api/*`, the public `/import-format.md` page and `/mcp` (all in `run_worker_first`) and the built web app through Workers Static Assets, on one origin (`0040-serve-the-web-app-from-the-api-worker.md`).
 - `apps/api/wrangler.toml` is the only Wrangler config; the deployed environments are `[env.preview]` (every merge to `main`) and `[env.production]` (each published release, `0041-release-gated-production-deploys-with-a-preview-environment.md`). The runbook is [Deploying](../operations/deploying.md).
 
 ## Non-Goals

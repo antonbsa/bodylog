@@ -2,7 +2,7 @@
 
 ## Base Rules
 
-All data routes require a session (see [Auth](#auth)), except `/api/collector/*`, which requires a personal API token instead (see [Collector](#collector)), and the public pages `/api/health` and `/import-format.md` (see [Import Format](#import-format)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404. The only route outside `/api/*` is `/import-format.md`.
+All data routes require a session (see [Auth](#auth)), except `/api/collector/*` and `/mcp`, which require a personal API token instead (see [Collector](#collector) and [MCP](#mcp)), and the public pages `/api/health` and `/import-format.md` (see [Import Format](#import-format)). The API is served under `/api/*` on the same origin as the web app, so it sends no CORS headers; unknown `/api/*` routes return a JSON `NotFoundError` with status 404. The only routes outside `/api/*` are `/import-format.md` and `/mcp`.
 
 ## Status
 
@@ -620,7 +620,7 @@ A `ValidationError` whose `message` is "Nome do token inválido." (missing, blan
 
 ### DELETE /api/tokens/:id
 
-Revokes a token by deleting it; the collector rejects it from the next request.
+Revokes a token by deleting it; the collector and `/mcp` reject it from the next request.
 
 #### Response 200
 
@@ -642,7 +642,7 @@ Returns the token owner's measurements as JSON for external clients and agents (
 
 #### Authentication
 
-`Authorization: Bearer <personal API token>` (scheme case-insensitive), with a token created in Ajustes (see [Personal API Tokens](#personal-api-tokens)). Each authorized call updates the token's `lastUsedAt`. The session cookie does not authorize this route, and the token authorizes no other route. A missing, malformed, unknown or revoked token returns an `UnauthorizedError` with status 401 and `message` "Token de API inválido ou ausente.".
+`Authorization: Bearer <personal API token>` (scheme case-insensitive), with a token created in Ajustes (see [Personal API Tokens](#personal-api-tokens)). Each authorized call updates the token's `lastUsedAt`. The session cookie does not authorize this route, and the token authorizes no route besides this one and [`/mcp`](#mcp). A missing, malformed, unknown or revoked token returns an `UnauthorizedError` with status 401 and `message` "Token de API inválido ou ausente.".
 
 #### Optional query params
 
@@ -688,3 +688,31 @@ to=YYYY-MM-DD
 - Returns every matching measurement of the token owner, ordered by date ascending, with no pagination.
 - Empty optional values are `null`; the internal `id` is not included, since `date` identifies a measurement.
 - `heightCm` is the user's height, or `null` while it isn't set, and then `derived.bmi` is `null`.
+
+## MCP
+
+### /mcp
+
+Model Context Protocol server over Streamable HTTP for AI chat clients, read-only (ADR 0048). It is stateless and outside `/api/*`, so `/mcp` is in `run_worker_first` and proxied by Vite in development.
+
+#### Authentication
+
+The same personal API token as the [collector](#collector), checked for every method before MCP handling, with the same 401 `UnauthorizedError` body and no `WWW-Authenticate` header. Every MCP message counts as one authorized call and updates the token's `lastUsedAt`.
+
+#### Transport
+
+`POST /mcp` carries the JSON-RPC messages; other methods get the SDK's `405`. A client that opens with a 2025-era handshake gets each reply as one SSE `data:` frame.
+
+#### Tool `list_measurements`
+
+Optional `from` and `to` (`YYYY-MM-DD`, inclusive). It returns the [collector response](#get-apicollectormeasurements) as `structuredContent` and the same JSON as a text block; the output schema is declared in `tools/list`. An invalid date returns a tool result with `isError: true` and the text "Data inválida. Use uma data real do calendário no formato YYYY-MM-DD.", not a JSON-RPC error.
+
+#### Resource `bodylog://import-format`
+
+`text/markdown`, the body of [`/import-format.md`](#get-import-formatmd).
+
+#### Prompt `convert_spreadsheet`
+
+No arguments. Returns two user messages: the agent prompt text (the one Ajustes copies, pointing at the embedded format instead of the URL) and the import format as an embedded resource.
+
+Titles and descriptions shown to the user are pt-BR; names, the URI and JSON keys are English.

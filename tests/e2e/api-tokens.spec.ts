@@ -59,7 +59,7 @@ async function mockTokensApi(page: Page, initial: ApiTokenSummary[] = []) {
 }
 
 const tokenList = (page: Page) =>
-  page.getByRole("region", { name: "Tokens de API" }).getByRole("listitem")
+  page.getByRole("list", { name: "Tokens de API" }).getByRole("listitem")
 
 test("creating a token shows it once, already copied, and the list shows only its last four", async ({
   context,
@@ -167,7 +167,9 @@ test("at three tokens creation is replaced by a message until one is revoked", a
   await expect(confirmation).toContainText('Clientes que usam "Planilha"')
   await confirmation.getByRole("button", { name: "Revogar" }).click()
 
-  await expect(page.getByRole("status")).toContainText("Token revogado")
+  await expect(page.locator(".toast-region").getByRole("status")).toContainText(
+    "Token revogado",
+  )
   await expect(tokenList(page)).toHaveText([/Agente/, /Script/])
   await expect(page.getByRole("button", { name: "Criar token" })).toBeVisible()
 })

@@ -111,9 +111,12 @@ Hard limits that block saving: weight 20–300 kg, fat and muscle 1–80%, metab
 
 ### Ajustes
 
-One card with: Tema (segmented Sistema, Claro, Escuro), "Altura" (the value, or "Não informada" with "Informe sua altura para calcular o IMC." below the label; tapping opens a dialog to edit it), "Exportar CSV", "Importar CSV" (opens the file picker) and a danger "Sair". Status feedback uses toasts (for example "CSV exportado", "24 medidas importadas"), not in-flow callouts.
+Grouped cards, in this order. Status feedback uses toasts (for example "CSV exportado", "24 medidas importadas"), not in-flow callouts.
 
-Below it, a "Tokens de API" section title and a second card: a one-line explanation, one row per token (name, then "•••• last four · Criado em · Último uso" in secondary text, and a trailing danger "Revogar" that asks for confirmation), and a "Criar token" row, replaced by a note at three tokens. "Criar token" opens a dialog that asks for the name and then shows the token once in a monospace box, already copied, with a trailing copy icon that turns into a check only when the user taps it; feedback in that dialog stays inline, since the modal hides toasts from screen readers.
+1. A card without a title: Tema (segmented Sistema, Claro, Escuro) and "Altura" (the value, or "Não informada" with "Informe sua altura para calcular o IMC." below the label; tapping opens a dialog to edit it).
+2. "Dados": "Exportar CSV", "Importar CSV" (opens the file picker, with an info button for the format) and "Copiar instruções para agente", with "Para um agente de IA converter sua planilha em CSV." below the label.
+3. "Agentes de IA": one line saying an agent connects with the URL and a token and only reads the measurements, the `/mcp` URL in a monospace box with a trailing copy icon and an inline status line, one row per token (name, then "•••• last four · Criado em · Último uso" in secondary text, and a trailing danger "Revogar" that asks for confirmation), a "Criar token" row (replaced by a note at three tokens) and a "Como conectar" row with a chevron. "Criar token" opens a dialog that asks for the name and then shows the token once in a monospace box, already copied, with a trailing copy icon that turns into a check only when the user taps it; feedback in that dialog stays inline, since the modal hides toasts from screen readers. "Como conectar" opens a dialog with a segmented Claude.ai / Claude Code switch: numbered steps for the Claude.ai custom connector, or the wrapped Claude Code command with a copy icon and inline feedback. The long instructions live there so the screen stays short.
+4. A danger "Sair" alone in the last card, set further apart.
 
 ## Variation display
 

@@ -12,6 +12,7 @@ import { csvExportRoutes, csvImportRoutes } from "./features/csv/routes"
 import { dashboardRoutes } from "./features/dashboard/routes"
 import { historyRoutes } from "./features/history/routes"
 import { importFormatRoutes } from "./features/import-format/routes"
+import { mcpRoutes } from "./features/mcp/routes"
 import { meRoutes } from "./features/me/routes"
 import { measurementRoutes } from "./features/measurements/routes"
 import { trendsRoutes } from "./features/trends/routes"
@@ -49,6 +50,8 @@ app.get("/api/health", (c) => {
 })
 
 app.route("/", importFormatRoutes)
+
+app.route("/", mcpRoutes)
 
 app.route("/api/auth", authRoutes)
 

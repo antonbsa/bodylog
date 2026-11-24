@@ -1,4 +1,4 @@
-/* Ajustes: one card with the theme selector, profile rows, CSV actions and logout, then the API tokens card. */
+/* Ajustes: grouped cards for preferences, data, AI agents and logout. */
 .set-block {
   padding: 4px 0 16px;
 }
@@ -271,7 +271,12 @@
   text-align: right;
 }
 
-/* Tokens de API: a second card under its section title, one row per token with a trailing revoke action. */
+/* Logout sits alone at the end, set apart like the last group of iOS Settings. */
+.card + .card.set-end {
+  margin-top: 24px;
+}
+
+/* Agentes de IA: the MCP URL field, one row per token with a trailing revoke action, then the token and guide rows. */
 .tokens-intro,
 .tokens-note {
   margin: 0;
@@ -279,10 +284,6 @@
   color: var(--fg-2);
   font-size: 14px;
   line-height: 1.45;
-}
-
-.tokens-note:last-child {
-  padding-bottom: 4px;
 }
 
 .token-list {
@@ -333,13 +334,21 @@
 }
 
 .token-list + .tokens-note,
-.tokens-intro + .token-create,
-.token-list + .token-create {
+.token-message + .tokens-note,
+.token-message + .form-error,
+.token-message + .token-create,
+.token-list + .token-create,
+.tokens-card .connect-open {
   border-top: 1px solid var(--line);
 }
 
-.token-list + .tokens-note {
+.token-list + .tokens-note,
+.token-message + .tokens-note {
   padding-top: 12px;
+}
+
+.token-message + .form-error {
+  padding: 12px 0;
 }
 
 .token-create {
@@ -439,4 +448,62 @@
   .token-copied {
     transition: none;
   }
+}
+
+/* Como conectar: client switch, then numbered steps or the command, wrapped so the dialog keeps the screen width. */
+.connect-dialog .seg {
+  margin: 4px 0 16px;
+}
+
+.connect-steps {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.connect-steps li + li {
+  margin-top: 8px;
+}
+
+.connect-steps li::marker {
+  color: var(--fg-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.connect-steps code {
+  overflow-wrap: anywhere;
+}
+
+.connect-note,
+.connect-lead {
+  margin: 12px 0 0;
+  color: var(--fg-2);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.connect-lead {
+  margin: 0;
+}
+
+.connect-steps code,
+.connect-code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.connect-code {
+  margin: 0;
+  padding: 12px 52px 12px 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--fg);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.connect-dialog .token-copy {
+  top: 6px;
+  transform: none;
 }

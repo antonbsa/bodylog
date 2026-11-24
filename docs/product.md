@@ -120,7 +120,7 @@ The authenticated app has four screens behind a bottom tab bar (Início, Histór
 
 ### Manage Personal API Tokens
 
-1. The user opens "Tokens de API" in Ajustes, which lists each token's name, last four characters, creation date and last use.
+1. The user opens the "Agentes de IA" group in Ajustes, which lists each token's name, last four characters, creation date and last use.
 2. The user creates a token by giving it a name, unique among their tokens and at most 50 characters; a name already in use is flagged while typing and blocks creation.
 3. The system shows the token once, copies it to the clipboard, and warns that it won't be shown again; a copy button stays in case the automatic copy fails.
 4. A user who already has three tokens sees a message to revoke one before creating another.
@@ -302,7 +302,7 @@ The system must give each person their own account, signed in with GitHub or Goo
 - Signing in with the other provider using the same verified email opens the same account; an unverified email always creates a separate one.
 - Each account sees and edits only its own measurements, on every screen, in the CSV export and through the import; two accounts can record the same date.
 - Sessions are stored on the server: they last 30 days, renew while in use and end at most 180 days after sign-in.
-- All data routes require a session, except the collector endpoint, which requires a personal API token (FR-014).
+- All data routes require a session, except the collector endpoint and `/mcp`, which require a personal API token (FR-014, FR-015).
 - Logout ends the session on the server, so a copied cookie stops working.
 - Cancelling on the provider or a failed sign-in returns to the login screen with a message.
 
@@ -344,8 +344,19 @@ The system must let external clients and agents read a user's measurements as JS
 #### Acceptance Criteria
 
 - `GET /api/collector/measurements` returns the token owner's measurements with derived values, ordered by date ascending, optionally limited by an inclusive `from`/`to` date range.
-- Only a personal API token in `Authorization: Bearer` authorizes it; the session cookie does not, a revoked token stops working, and a token authorizes no other route.
+- Only a personal API token in `Authorization: Bearer` authorizes it; the session cookie does not, a revoked token stops working, and a token authorizes no route besides the collector and `/mcp` (FR-015).
 - Each authorized call updates the token's last use shown in Ajustes.
+
+### FR-015 — Read-only MCP Server
+
+The system must let AI chat clients read a user's measurements and convert a spreadsheet through an MCP server authorized by the user's personal API token (`0048-read-only-mcp-server-authorized-by-personal-tokens.md`).
+
+#### Acceptance Criteria
+
+- `/mcp` answers MCP requests with the tool `list_measurements`, which returns the same data as the collector endpoint (optional inclusive `from`/`to`), and an invalid date is a tool error with a pt-BR message.
+- The resource `bodylog://import-format` serves the import format Markdown, and the prompt `convert_spreadsheet` gives the agent the conversion instructions with that format embedded.
+- Only a personal API token in `Authorization: Bearer` authorizes it, with the same 401 as the collector; nothing it offers writes data.
+- The "Agentes de IA" group in Ajustes shows the `/mcp` URL of the current origin with a copy button above the API tokens, and a "Como conectar" row opens the steps for a Claude.ai custom connector and the Claude Code command with its own copy button.
 
 ## Non-Functional Requirements
 
@@ -420,7 +431,7 @@ The data access layer should be isolated enough to support a future migration fr
 The app does not provide:
 
 - password or email sign-in, sharing data between accounts, or role-based access control;
-- Google Sheets integration or push sync to external services; a read-only pull of a user's measurements with a personal token is allowed (`0047-read-only-collector-endpoint-authorized-by-personal-tokens.md`);
+- Google Sheets integration or push sync to external services; a read-only pull of a user's measurements with a personal token, through the collector endpoint or the MCP server, is allowed (`0047-read-only-collector-endpoint-authorized-by-personal-tokens.md`, `0048-read-only-mcp-server-authorized-by-personal-tokens.md`);
 - offline-first behavior;
 - charts outside the Tendências screen and advanced chart features (`0030-allow-charts-in-trends.md`);
 - automatic recommendations, health diagnosis or body composition interpretation;

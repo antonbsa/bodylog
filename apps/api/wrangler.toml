@@ -27,7 +27,7 @@ migrations_dir = "../../infra/migrations"
 [env.production.assets]
 directory = "../web/dist"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*", "/import-format.md"]
+run_worker_first = ["/api/*", "/import-format.md", "/mcp"]
 
 [env.preview]
 name = "bodylog-preview"
@@ -44,7 +44,7 @@ migrations_dir = "../../infra/migrations"
 [env.preview.assets]
 directory = "../web/dist"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*", "/import-format.md"]
+run_worker_first = ["/api/*", "/import-format.md", "/mcp"]
 
 # Never deployed: `npm run test:e2e:api` runs it locally with its D1 and web build under .e2e-state/.
 [env.e2e]
@@ -60,4 +60,4 @@ migrations_dir = "../../infra/migrations"
 [env.e2e.assets]
 directory = "../../.e2e-state/web"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*", "/import-format.md"]
+run_worker_first = ["/api/*", "/import-format.md", "/mcp"]

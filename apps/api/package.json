@@ -10,7 +10,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
     "hono": "^4.7.0",
-    "oauth4webapi": "^3.8.9"
+    "oauth4webapi": "^3.8.9",
+    "zod": "^4.6.7"
   }
 }

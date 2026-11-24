@@ -1,6 +1,7 @@
 ---
 status: Accepted
 area: platform
+amended-by: ["0048"]
 ---
 
 # 0047 — Read-only Collector Endpoint Authorized by Personal Tokens

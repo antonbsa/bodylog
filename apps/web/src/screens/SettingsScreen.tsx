@@ -1,6 +1,7 @@
 import { useRef, useState, useSyncExternalStore } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
+import { buildImportAgentPrompt } from "../../../../domain/import-agent-prompt"
 import { formatApiErrorMessage } from "../../../../infra/errors"
 import { PageTitle } from "./components/PageTitle"
 import { updateProfile } from "../api/auth"
@@ -11,7 +12,7 @@ import {
   previewMeasurementsCsv,
 } from "../api/measurements"
 import type { CsvImportPreview } from "../../../../types/measurements"
-import { ApiTokensSection } from "./components/ApiTokensSection"
+import { AiAgentsSection } from "./components/AiAgentsSection"
 import { ConfirmationDialog } from "./components/ConfirmationDialog"
 import { CsvFormatDialog } from "./components/CsvFormatDialog"
 import { HeightDialog } from "./components/HeightDialog"
@@ -81,7 +82,9 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
 
   /** Copies the agent prompt; the clipboard can be missing or reject (e.g. Safari drops the click's activation). */
   function handleCopyAgentPrompt() {
-    const prompt = `Quero importar meu histórico de medidas no BodyLog. Siga as instruções em ${window.location.origin}/import-format.md para converter a planilha que vou te enviar em um arquivo CSV. Extraia só os dados do formato e não invente valores. Não pergunte nada durante a conversão: o que não se encaixar fica de fora. Me devolva o arquivo para eu importar em Ajustes, junto com a lista do que foi ignorado.`
+    const prompt = buildImportAgentPrompt(
+      `em ${window.location.origin}/import-format.md`,
+    )
 
     Promise.resolve()
       .then(() => navigator.clipboard.writeText(prompt))
@@ -206,6 +209,12 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
             {user ? formatHeight(user.heightCm) : "—"}
           </span>
         </button>
+      </div>
+
+      <h2 className="sec-title" id="data-title">
+        Dados
+      </h2>
+      <section aria-labelledby="data-title" className="card">
         <button
           className="set-row"
           disabled={isExporting}
@@ -230,7 +239,12 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           onClick={handleCopyAgentPrompt}
           type="button"
         >
-          Copiar instruções para agente
+          <span className="set-label">
+            Copiar instruções para agente
+            <span className="set-note">
+              Para um agente de IA converter sua planilha em CSV.
+            </span>
+          </span>
         </button>
         <input
           ref={importFileInputRef}
@@ -239,6 +253,11 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           onChange={(event) => handleChooseImportFile(event.target.files?.[0])}
           type="file"
         />
+      </section>
+
+      <AiAgentsSection />
+
+      <div className="card set-end">
         <button
           className="set-row danger"
           onClick={() => setIsLogoutDialogOpen(true)}
@@ -247,8 +266,6 @@ export function SettingsScreen({ onLogout }: SettingsScreenProps) {
           Sair
         </button>
       </div>
-
-      <ApiTokensSection />
 
       <HeightDialog
         heightCm={user?.heightCm ?? null}
