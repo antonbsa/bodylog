@@ -644,6 +644,8 @@ Returns the token owner's measurements as JSON for external clients and agents (
 
 `Authorization: Bearer <personal API token>` (scheme case-insensitive), with a token created in Ajustes (see [Personal API Tokens](#personal-api-tokens)). Each authorized call updates the token's `lastUsedAt`. The session cookie does not authorize this route, and the token authorizes no route besides this one and [`/mcp`](#mcp). A missing, malformed, unknown or revoked token returns an `UnauthorizedError` with status 401 and `message` "Token de API inválido ou ausente.".
 
+Non-browser clients must send their own `User-Agent`: production sits behind Cloudflare, which answers a request with the default `urllib` one (`Python-urllib/3.x`) with a 403 `error code: 1010` before it reaches the Worker. Any custom value (`my-client/1.0`) passes, and the same applies to [`/mcp`](#mcp).
+
 #### Optional query params
 
 ```txt
